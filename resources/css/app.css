@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.student-theme-dashboard {
+  background: var(--theme-page);
+  border-radius: 2rem;
+  transition: background .25s ease, color .25s ease;
+}
+
+.student-theme-dashboard .student-theme-hero {
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--theme-accent) 38%, transparent), inset 0 1px rgba(255,255,255,.28);
+}
+
+.student-theme-dashboard .theme-surface {
+  background: var(--theme-card);
+  border-color: color-mix(in srgb, var(--theme-accent) 26%, white);
+  box-shadow: 0 9px 24px color-mix(in srgb, var(--theme-accent) 13%, transparent);
+}
+
+.student-theme-dashboard .theme-subject-card {
+  background: color-mix(in srgb, var(--theme-card) 86%, var(--theme-page));
+  border-color: color-mix(in srgb, var(--theme-accent) 20%, white);
+}
+
+.student-theme-dashboard .theme-subject-card:hover {
+  border-color: var(--theme-accent);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #3a3a3a;
+  border-radius: 10px;
+}

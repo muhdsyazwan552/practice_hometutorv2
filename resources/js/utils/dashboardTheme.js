@@ -1,0 +1,17 @@
+const themes = {
+  'ocean-blue': { page: '#eaf9ff', hero: 'linear-gradient(135deg, #027fc4, #61d0ec)', accent: '#0788c9', ink: '#073f72', card: '#ffffff' },
+  'space-explorer': { page: '#111238', hero: 'linear-gradient(135deg, #111a4a, #7137b8)', accent: '#8d4cff', ink: '#f7f3ff', card: '#f7f2ff' },
+  'jungle-adventure': { page: '#edf9ec', hero: 'linear-gradient(135deg, #075d47, #4d9f28)', accent: '#188b50', ink: '#083e32', card: '#fffef4' },
+  'gold-champion': { page: '#fff7df', hero: 'linear-gradient(135deg, #8e5300, #d69b13)', accent: '#af7000', ink: '#4c2d00', card: '#fffaf0' },
+  'candy-garden': { page: '#fff2fa', hero: 'linear-gradient(135deg, #ba3a82, #8e57cd)', accent: '#c53f91', ink: '#6e2156', card: '#fffaff' },
+  'sky-kingdom': { page: '#edf9ff', hero: 'linear-gradient(135deg, #1478c8, #80d7f3)', accent: '#258dcc', ink: '#124c7b', card: '#ffffff' },
+  'brick-builders': { page: '#fff7df', hero: 'linear-gradient(135deg, #e33436, #f1ae18)', accent: '#dc3d36', ink: '#173e79', card: '#fffdf6' },
+  'robo-lab': { page: '#0b1a32', hero: 'linear-gradient(135deg, #102f4b, #0a929d)', accent: '#00aeca', ink: '#e8fbff', card: '#f2fdff' },
+  'dino-discovery': { page: '#f4fae9', hero: 'linear-gradient(135deg, #2f784e, #e69c30)', accent: '#317a51', ink: '#24462f', card: '#fffdf1' },
+  'study-campus': { page: '#f3f8ff', hero: 'linear-gradient(135deg, #1d6fc6, #7cb3ec)', accent: '#286fc1', ink: '#183f72', card: '#ffffff' },
+  'cat-club': { page: '#fff4ec', hero: 'linear-gradient(135deg, #bc5e61, #f0a660)', accent: '#c76259', ink: '#663c4d', card: '#fffdf9' },
+};
+
+export function resolveDashboardTheme(theme) {
+  return themes[theme?.slug] || themes['ocean-blue'];
+}
