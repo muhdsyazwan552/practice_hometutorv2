@@ -79,7 +79,6 @@ class LearningDashboardController extends Controller
             'student' => $student,
             'courses' => $courses,
             'assignments' => [],
-            'zoomMeetings' => [],
             'streaks' => app(StreakService::class)->summary($child->id),
             'teachers' => $teachers,
             'locale' => $locale,

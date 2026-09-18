@@ -7,12 +7,9 @@ import {
     BoltIcon,
     BookOpenIcon,
     CalendarDaysIcon,
-    CheckCircleIcon,
     ChevronRightIcon,
-    ClockIcon,
     FireIcon,
     PencilSquareIcon,
-    PlayIcon,
     SparklesIcon,
 } from '@heroicons/react/24/outline';
 
@@ -121,7 +118,7 @@ function StreakCalendar({ streaks }) {
 }
 
 export default function Dashboard() {
-    const { auth, profileData = {}, student, courses = [], zoomMeetings = [], streaks = {}, teachers = [], viewerMode, viewedChild, returnToParentUrl, parentReportUrl, reportCardUrl } = usePage().props;
+    const { auth, profileData = {}, student, courses = [], streaks = {}, teachers = [], viewerMode, viewedChild, returnToParentUrl, parentReportUrl, reportCardUrl } = usePage().props;
     const user = auth?.user;
     const isParentView = viewerMode === 'parent';
     const firstName = (profileData.name || user?.name || 'Super Learner').split(' ')[0];
@@ -186,10 +183,8 @@ export default function Dashboard() {
                         {teacher && <motion.aside initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }} className="relative overflow-hidden rounded-[2rem] bg-[#fff5cd] p-6 shadow-[0_12px_30px_rgba(181,130,0,.11)]"><div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#ffd942]/30" /><div className="relative"><div className="flex items-center gap-2 text-sm font-bold text-[#9a6900]"><AcademicCapIcon className="h-5 w-5" /> Cikgu</div><img src={teacher.image} alt={teacher.name} className="mt-4 h-36 w-full rounded-2xl object-cover object-top shadow-md" /><div className="mt-4"><div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-extrabold text-[#5a3b00]">{teacher.name}</h2><p className="mt-1 text-sm font-medium text-[#8c681f]">{teacher.available}</p></div><span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg shadow-sm">👩‍🏫</span></div><p className="mt-4 rounded-xl bg-white/65 px-3 py-2 text-sm font-semibold leading-6 text-[#725319]">“{teacher.message}”</p><p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[#9a6900]">Teaches</p><div className="mt-2 flex flex-wrap gap-2">{teacher.subjects.map((subject) => <span key={subject} className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#725319] shadow-sm">{subject}</span>)}</div></div></div></motion.aside>}
                     </section>
 
-                    <section className="grid gap-7 lg:grid-cols-[.95fr_1.05fr]">
+                    <section>
                         <StreakCalendar streaks={streaks} />
-
-                        <motion.article initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.32 }} className="rounded-[2rem] border border-white bg-white p-6 shadow-[0_12px_30px_rgba(45,110,149,.08)]"><div className="flex items-center justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-[#0788c9]">Live learning</p><h2 className="mt-1 text-xl font-extrabold text-[#082c58]">Upcoming sessions</h2></div><CalendarDaysIcon className="h-8 w-8 text-[#86d5ef]" /></div>{zoomMeetings.length ? <div className="mt-5 space-y-3">{zoomMeetings.slice(0, 2).map((meeting) => <div key={meeting.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 p-4"><div><p className="font-extrabold text-[#082c58]">{meeting.title}</p><p className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-500"><ClockIcon className="h-3.5 w-3.5" /> {new Date(meeting.startsAt).toLocaleString()}</p></div>{meeting.canJoin ? <Link href={meeting.joinUrl} className="inline-flex items-center gap-1 rounded-xl bg-[#0788c9] px-3 py-2 text-xs font-bold text-white hover:bg-[#056fa7]"><PlayIcon className="h-3.5 w-3.5 fill-current" /> Join</Link> : <span className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-500">Coming soon</span>}</div>)}</div> : <div className="mt-5 flex items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-500"><CheckCircleIcon className="h-6 w-6 text-emerald-500" /> No live session right now. Explore a subject instead!</div>}</motion.article>
                     </section>
                 </div>
             </div>

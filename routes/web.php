@@ -36,7 +36,6 @@ use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SubjectContentController;
 use App\Http\Controllers\Web\SubjectController;
 use App\Http\Controllers\Web\SubjectiveController;
-use App\Http\Controllers\Web\ZoomMeetingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -158,11 +157,6 @@ Route::middleware(['auth', 'verified', 'role:code-manager'])->prefix('code-manag
 Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/zoom/meetings/{zoomMeeting}/join', [ZoomMeetingController::class, 'show'])
-        ->name('zoom.meetings.join');
-    Route::post('/zoom/meetings/{zoomMeeting}/signature', [ZoomMeetingController::class, 'signature'])
-        ->middleware('throttle:10,1')
-        ->name('zoom.meetings.signature');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/theme', [ProfileController::class, 'updateThemes'])->name('profile.themes.update');

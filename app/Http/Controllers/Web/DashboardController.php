@@ -12,7 +12,6 @@ use App\Models\QuizSession;
 use App\Models\User;
 use App\Models\Friend;
 use App\Models\FriendRequest;
-use App\Models\ZoomMeeting;
 use App\Models\Subject;
 use App\Models\Topic;
 use App\Models\DashboardTheme;
@@ -168,21 +167,6 @@ public function index()
         ]
     ];
 
-    $zoomMeetings = ZoomMeeting::query()
-        ->where('is_active', true)
-        ->where('ends_at', '>=', now()->subMinutes(config('zoom.join_window.minutes_after', 30)))
-        ->where('starts_at', '<=', now()->addDays(7))
-        ->orderBy('starts_at')
-        ->get()
-        ->map(fn (ZoomMeeting $meeting) => [
-            'id' => $meeting->id,
-            'title' => $meeting->title,
-            'startsAt' => $meeting->starts_at->toIso8601String(),
-            'endsAt' => $meeting->ends_at->toIso8601String(),
-            'canJoin' => $meeting->isJoinableAt(now()),
-            'joinUrl' => route('zoom.meetings.join', $meeting),
-        ]);
-    
     Log::info('=== DASHBOARD LANGUAGE DEBUG END ===');
     Log::info('Returning to Inertia:', [
         'locale' => $locale,
@@ -196,7 +180,6 @@ public function index()
         'student' => $student,
         'courses' => $courses,
         'assignments' => $assignments,
-        'zoomMeetings' => $zoomMeetings,
         'streaks' => $streaks,
         'teachers' => $teachers,
         'auth' => $authData,
