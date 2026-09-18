@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\EnsureTemporaryPasswordChanged::class,
         ]);
 
         // 🛣 Alias

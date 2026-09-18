@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
+use App\Services\TemporaryPasswordService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -48,15 +50,26 @@ class LoginRequest extends FormRequest
         $identifier = $this->string('username')->toString();
         $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (! Auth::attempt([
-            $field => $identifier,
-            'password' => $this->string('password')->toString(),
-        ], $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $password = $this->string('password')->toString();
+        $temporaryPasswords = app(TemporaryPasswordService::class);
 
-            throw ValidationException::withMessages([
-                'username' => trans('auth.failed'),
-            ]);
+        if (Auth::attempt([$field => $identifier, 'password' => $password], $this->boolean('remember'))) {
+            // Signing in normally means they remembered it: drop any unused temporary password.
+            $temporaryPasswords->forget(Auth::user());
+        } else {
+            $user = User::query()->where($field, $identifier)->first();
+
+            if (! $user || ! $temporaryPasswords->consume($user, $password)) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'username' => trans('auth.failed'),
+                ]);
+            }
+
+            // Never "remember" a temporary-password login; a new password is required first.
+            Auth::login($user);
+            $this->session()->put(TemporaryPasswordService::SESSION_FLAG, true);
         }
 
         RateLimiter::clear($this->throttleKey());

@@ -33,6 +33,14 @@ class AppServiceProvider extends ServiceProvider
         // is keyed by client and sized for a whole school logging in at once.
         RateLimiter::for('game-sso', fn (Request $request) => Limit::perMinute(30)
             ->by('game-sso|'.$request->route()?->getName().'|'.($request->user()?->id ?: $request->ip())));
+        // Routes that send email (register OTP, resend, forgot password): cap per
+        // address so nobody can flood a parent's inbox, and per IP overall.
+        RateLimiter::for('auth-email', fn (Request $request) => [
+            Limit::perMinutes(10, 5)->by('auth-email|'.$request->route()?->getName().'|'.strtolower((string) ($request->input('email') ?? $request->session()->get('pending_registration.email')))),
+            Limit::perMinute(20)->by('auth-email-ip|'.$request->ip()),
+        ]);
+        RateLimiter::for('auth-otp', fn (Request $request) => Limit::perMinute(10)->by('auth-otp|'.$request->ip()));
+
         RateLimiter::for('game-sso-exchange', fn (Request $request) => Limit::perMinute(600)
             ->by('game-sso-exchange|'.(string) $request->input('client_id')));
 

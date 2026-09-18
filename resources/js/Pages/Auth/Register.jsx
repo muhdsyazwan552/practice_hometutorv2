@@ -84,9 +84,10 @@ export default function RegisterForm({ onSubmit }) {
                 <InputError message={errors.reference_code} className="mt-2" />
             </div>
 
-            <div className="flex justify-end">
-                <PrimaryButton disabled={processing}>
-                    Create parent account
+            <div className="flex items-center justify-between gap-4">
+                <p className="text-xs leading-5 text-slate-500">We'll email you a 6-digit code to confirm your address.</p>
+                <PrimaryButton disabled={processing} className="shrink-0">
+                    {processing ? 'Sending code…' : 'Continue'}
                 </PrimaryButton>
             </div>
         </form>
