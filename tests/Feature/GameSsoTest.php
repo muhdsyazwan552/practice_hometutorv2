@@ -99,7 +99,7 @@ class GameSsoTest extends TestCase
 
         $exchange->assertOk()->assertJson([
             'data' => [
-                'sub' => (string) $child->id,
+                'sub' => 'v2:'.$child->id,
                 'name' => 'Aiman Child',
                 'email' => 'aiman@example.com',
                 'role' => 'student',

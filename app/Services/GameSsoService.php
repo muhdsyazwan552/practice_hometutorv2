@@ -84,8 +84,10 @@ class GameSsoService
             throw new RuntimeException('The account for this code no longer exists.');
         }
 
+        // Games stores this as users.sso_subject; existing linked accounts use
+        // the "v2:<id>" form, so changing it would orphan their progress.
         return [
-            'sub' => (string) $user->id,
+            'sub' => 'v2:'.$user->id,
             'name' => (string) $user->name,
             'email' => (string) $user->email,
             'role' => $record->role,
