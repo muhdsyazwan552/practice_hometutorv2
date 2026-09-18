@@ -66,6 +66,11 @@ Route::get('/games/play', [GameSsoController::class, 'play'])
     ->middleware(['auth', 'verified'])
     ->name('games.play');
 
+// Game SSO: single logout from hometutor-games (signed URL, works with or without a session).
+Route::get('/games/sso/logout', [GameSsoController::class, 'logout'])
+    ->middleware('throttle:20,1')
+    ->name('games.sso.logout');
+
 // Game SSO: browser-facing authorize step needs the caller's own hometutorV2 session.
 Route::get('/api/games/sso', [GameSsoController::class, 'authorize'])
     ->middleware(['auth', 'verified', 'throttle:20,1'])

@@ -7,6 +7,7 @@ use App\Services\GameSsoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class GameSsoController extends Controller
@@ -25,6 +26,35 @@ class GameSsoController extends Controller
         }
 
         return redirect()->away($gamesUrl.'/sso/authorize');
+    }
+
+    /**
+     * Front-channel single logout: a student who logs out of hometutor-games is
+     * sent here (games has already dropped its own session) so we end this
+     * session too and land them on our login page. Only a URL signed by games
+     * is honoured, so other sites can't log students out.
+     */
+    public function logout(Request $request, GameSsoService $sso): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sub' => ['required', 'string', 'max:64'],
+            'expires' => ['required', 'integer'],
+            'signature' => ['required', 'string', 'size:64'],
+        ]);
+
+        if (! $sso->verifyLogoutSignature($validated['sub'], (int) $validated['expires'], $validated['signature'])) {
+            return redirect()->route('login');
+        }
+
+        $user = $request->user();
+
+        if ($user && $sso->subjectFor($user) === $validated['sub']) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return redirect()->route('login');
     }
 
     public function authorize(Request $request, GameSsoService $sso): RedirectResponse
@@ -54,17 +84,6 @@ class GameSsoController extends Controller
             'state' => ['required', 'string', 'max:255'],
             'client_id' => ['required', 'string', 'max:255'],
             'client_secret' => ['required', 'string', 'max:255'],
-        ]);
-
-        // TEMPORARY diagnostic logging while tracking down a live exchange
-        // failure reported by hometutor-games — remove once resolved.
-        Log::info('Game SSO exchange attempt received.', [
-            'code_hash' => hash('sha256', $validated['code']),
-            'state_hash' => hash('sha256', $validated['state']),
-            'client_id_received' => $validated['client_id'],
-            'client_id_matches' => hash_equals((string) config('services.game_sso.client_id'), $validated['client_id']),
-            'client_secret_matches' => hash_equals((string) config('services.game_sso.client_secret'), $validated['client_secret']),
-            'matching_row_exists' => \App\Models\GameSsoAuthorizationCode::where('code_hash', hash('sha256', $validated['code']))->exists(),
         ]);
 
         if (! $sso->verifyClient($validated['client_id'], $validated['client_secret'])) {

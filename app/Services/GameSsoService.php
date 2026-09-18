@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\GameSsoAuthorizationCode;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -49,6 +51,59 @@ class GameSsoService
         return $code;
     }
 
+    /**
+     * Games stores this as users.sso_subject; existing linked accounts use the
+     * "v2:<id>" form, so changing it would orphan their progress.
+     */
+    public function subjectFor(User $user): string
+    {
+        return 'v2:'.$user->id;
+    }
+
+    /**
+     * Logout messages in both directions are signed with the shared client
+     * secret so a third-party page can't force a student to log out.
+     */
+    public function logoutSignature(string $sub, int $expires): string
+    {
+        return hash_hmac('sha256', "logout|{$sub}|{$expires}", (string) config('services.game_sso.client_secret'));
+    }
+
+    public function verifyLogoutSignature(string $sub, int $expires, string $signature): bool
+    {
+        return (string) config('services.game_sso.client_secret') !== ''
+            && $expires >= now()->timestamp
+            && $expires <= now()->addMinutes(5)->timestamp
+            && hash_equals($this->logoutSignature($sub, $expires), $signature);
+    }
+
+    /**
+     * Back-channel logout: ask hometutor-games to drop this user's sessions so
+     * logging out here also logs them out there. Best-effort — a games outage
+     * must never block logging out of hometutorV2.
+     */
+    public function notifyGamesLogout(User $user): void
+    {
+        $gamesUrl = (string) config('services.game_sso.games_url');
+
+        if ($gamesUrl === '' || (string) config('services.game_sso.client_secret') === '') {
+            return;
+        }
+
+        $sub = $this->subjectFor($user);
+        $expires = now()->addMinute()->timestamp;
+
+        try {
+            Http::acceptJson()->timeout(3)->post($gamesUrl.'/api/v1/sso/logout', [
+                'sub' => $sub,
+                'expires' => $expires,
+                'signature' => $this->logoutSignature($sub, $expires),
+            ]);
+        } catch (\Throwable $exception) {
+            Log::warning('Game SSO back-channel logout failed.', ['reason' => $exception->getMessage()]);
+        }
+    }
+
     public function verifyClient(string $clientId, string $clientSecret): bool
     {
         return hash_equals((string) config('services.game_sso.client_id'), $clientId)
@@ -84,10 +139,8 @@ class GameSsoService
             throw new RuntimeException('The account for this code no longer exists.');
         }
 
-        // Games stores this as users.sso_subject; existing linked accounts use
-        // the "v2:<id>" form, so changing it would orphan their progress.
         return [
-            'sub' => 'v2:'.$user->id,
+            'sub' => $this->subjectFor($user),
             'name' => (string) $user->name,
             'email' => (string) $user->email,
             'role' => $record->role,

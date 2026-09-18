@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\GameSsoAuthorizationCode;
 use App\Models\User;
+use App\Services\GameSsoService;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -161,6 +163,72 @@ class GameSsoTest extends TestCase
             'client_id' => 'hometutor-games',
             'client_secret' => 'test-shared-secret',
         ])->assertStatus(422);
+    }
+
+    public function test_signed_games_logout_ends_the_matching_session(): void
+    {
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        $this->actingAs($child)->get($this->signedLogoutUrl('v2:'.$child->id))
+            ->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_games_logout_with_a_bad_signature_keeps_the_session(): void
+    {
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+        $url = '/games/sso/logout?'.http_build_query([
+            'sub' => 'v2:'.$child->id,
+            'expires' => now()->addMinute()->timestamp,
+            'signature' => str_repeat('0', 64),
+        ]);
+
+        $this->actingAs($child)->get($url)->assertRedirect(route('login'));
+        $this->assertAuthenticatedAs($child);
+    }
+
+    public function test_games_logout_for_another_subject_keeps_the_session(): void
+    {
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        $this->actingAs($child)->get($this->signedLogoutUrl('v2:999999'));
+        $this->assertAuthenticatedAs($child);
+    }
+
+    public function test_logging_out_here_tells_games_to_drop_the_session(): void
+    {
+        Http::fake(['games.example.test/*' => Http::response(null, 204)]);
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        $this->actingAs($child)->post('/logout')->assertRedirect('/login');
+
+        Http::assertSent(function ($request) use ($child) {
+            $sso = app(GameSsoService::class);
+
+            return $request->url() === 'https://games.example.test/api/v1/sso/logout'
+                && $request['sub'] === 'v2:'.$child->id
+                && $sso->verifyLogoutSignature($request['sub'], $request['expires'], $request['signature']);
+        });
+    }
+
+    public function test_logout_still_works_when_games_is_down(): void
+    {
+        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        $this->actingAs($child)->post('/logout')->assertRedirect('/login');
+        $this->assertGuest();
+    }
+
+    private function signedLogoutUrl(string $sub): string
+    {
+        $expires = now()->addMinute()->timestamp;
+
+        return '/games/sso/logout?'.http_build_query([
+            'sub' => $sub,
+            'expires' => $expires,
+            'signature' => app(GameSsoService::class)->logoutSignature($sub, $expires),
+        ]);
     }
 
     private function extractCodeFromRedirect($response): string
