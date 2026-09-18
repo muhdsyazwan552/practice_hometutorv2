@@ -25,6 +25,28 @@ class GameSsoTest extends TestCase
         ]);
     }
 
+    public function test_play_redirects_an_allowed_user_to_the_games_sso_login(): void
+    {
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        $this->actingAs($child)->get('/games/play')
+            ->assertRedirect('https://games.example.test/sso/authorize');
+    }
+
+    public function test_play_sends_a_disallowed_user_back_with_an_error(): void
+    {
+        $user = User::factory()->create(['role_id' => 999]);
+
+        $this->actingAs($user)->from('/dashboard')->get('/games/play')
+            ->assertRedirect('/dashboard')
+            ->assertSessionHas('error');
+    }
+
+    public function test_play_requires_login(): void
+    {
+        $this->get('/games/play')->assertRedirect('/login');
+    }
+
     public function test_authorize_issues_a_code_and_redirects_to_games_callback(): void
     {
         $child = User::factory()->create(['role_id' => User::ROLE_CHILD, 'name' => 'Aiman Child']);

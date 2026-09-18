@@ -61,6 +61,11 @@ Route::get('/demo/literasi-huruf', function () {
 // Public DOKU server-to-server webhook — no session, protected by HMAC signature instead of auth.
 Route::post('/doku/notification', [ParentPaymentGatewayController::class, 'notification'])->name('doku.notification');
 
+// "HomeTutor Play" button: checks access, then sends the browser to the games SSO login.
+Route::get('/games/play', [GameSsoController::class, 'play'])
+    ->middleware(['auth', 'verified'])
+    ->name('games.play');
+
 // Game SSO: browser-facing authorize step needs the caller's own hometutorV2 session.
 Route::get('/api/games/sso', [GameSsoController::class, 'authorize'])
     ->middleware(['auth', 'verified', 'throttle:20,1'])

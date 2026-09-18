@@ -11,6 +11,22 @@ use Illuminate\Support\Facades\Log;
 
 class GameSsoController extends Controller
 {
+    /**
+     * "HomeTutor Play" button target: checks access here first, then hands the
+     * browser to hometutor-games, which starts the SSO round-trip (it creates
+     * the state and bounces back to authorize() below).
+     */
+    public function play(Request $request, GameSsoService $sso): RedirectResponse
+    {
+        $gamesUrl = (string) config('services.game_sso.games_url');
+
+        if ($gamesUrl === '' || ! $sso->resolveRole($request->user())) {
+            return back()->with('error', 'HomeTutor Play is not available for this account.');
+        }
+
+        return redirect()->away($gamesUrl.'/sso/authorize');
+    }
+
     public function authorize(Request $request, GameSsoService $sso): RedirectResponse
     {
         $validated = $request->validate([

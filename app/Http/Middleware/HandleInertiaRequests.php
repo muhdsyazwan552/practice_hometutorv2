@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Student;
 use App\Http\Controllers\Web\MenuController;
+use App\Services\GameSsoService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -89,7 +90,9 @@ class HandleInertiaRequests extends Middleware
 
             'appName' => config('app.name'),
             'appUrl' => config('app.url'),
-            'gamesUrl' => config('services.game_sso.games_url'),
+            'canPlayGames' => fn () => $request->user()
+                && config('services.game_sso.games_url')
+                && app(GameSsoService::class)->resolveRole($request->user()) !== null,
         ]);
     }
 
