@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PackageDurationOption;
-use App\Services\CartCheckoutService;
+use App\Services\GatewayCheckoutService;
 use App\Services\SubscriptionOrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -72,18 +72,16 @@ class CartController extends Controller
         return redirect()->route('parent.cart.index')->with('success', 'The child and package details were updated.');
     }
 
-    public function checkout(Request $request, CartCheckoutService $checkout): RedirectResponse
+    public function checkout(Request $request, GatewayCheckoutService $gateway): RedirectResponse
     {
         $order = $request->user()->orders()
             ->where('status', Order::STATUS_DRAFT)
             ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->latest('id')
             ->firstOrFail();
-        $result = $checkout->checkout($request, $order);
+        $checkoutUrl = $gateway->initiate($order, $request->user());
 
-        return $result['receipt_sent']
-            ? redirect()->route('parent.children.index')->with('success', 'One payment completed for all cart items. The child accounts were created and a combined receipt was emailed.')
-            : redirect()->route('parent.children.index')->with('error', 'The child accounts were created, but the combined receipt email could not be sent.');
+        return redirect()->away($checkoutUrl);
     }
 
     private function parentDraftItem(Request $request, string $itemUuid): OrderItem

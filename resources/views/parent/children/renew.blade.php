@@ -62,8 +62,8 @@
                     </div>
 
                     @error('duration_option_id')<span class="mt-3 block text-sm text-rose-600">{{ $message }}</span>@enderror
-                    <p class="mt-5 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Temporary payment mode: clicking below records the payment immediately and emails a child-specific renewal code with the receipt.</p>
-                    <button class="mt-4 w-full rounded-xl bg-[#f2c237] px-5 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">Submit payment and email code</button>
+                    <p class="mt-5 rounded-xl bg-sky-50 p-3 text-xs leading-5 text-sky-900">You'll be redirected to our secure payment gateway. The renewal is applied only after payment is confirmed, and a receipt is emailed to you.</p>
+                    <button class="mt-4 w-full rounded-xl bg-[#f2c237] px-5 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">Proceed to payment</button>
                 </form>
             @empty
                 <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 lg:col-span-2">No active 6 or 12 month package is configured for this child's level.</div>

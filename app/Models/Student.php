@@ -39,6 +39,10 @@ class Student extends Model
         static::creating(function (Student $student): void {
             $student->uuid ??= (string) Str::uuid();
         });
+
+        static::created(function (Student $student): void {
+            app(\App\Services\QuizArenaWalletService::class)->grantStarterBonus($student->user_id);
+        });
     }
 
     /**

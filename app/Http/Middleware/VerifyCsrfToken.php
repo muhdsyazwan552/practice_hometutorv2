@@ -15,5 +15,7 @@ class VerifyCsrfToken extends Middleware
         // Anda bisa exclude routes tertentu di sini jika perlu
         // '/stripe/webhook',
         // '/change-language', // JANGAN exclude ini, kita mau CSRF protection
+        '/doku/notification', // DOKU server-to-server webhook, verified by HMAC signature instead of CSRF
+        '/api/internal/game-sso/exchange', // hometutor-games server-to-server call, verified by client_id/secret instead of CSRF
     ];
 }

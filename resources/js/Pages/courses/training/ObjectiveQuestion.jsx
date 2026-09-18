@@ -118,16 +118,21 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
     if (isIncorrect) {
       return 'bg-red-100 border-red-500 text-red-800 cursor-default animate-shake';
     }
-    // Selected but not yet checked (blue)
+    // Selected but not yet checked (slate) — deliberately not a
+    // sky/blue/indigo class: app.css force-recolors any button whose class
+    // attribute *contains* those substrings to the active dashboard theme's
+    // accent color (it also catches modifier-prefixed classes like
+    // "hover:bg-blue-50"), which made every answer option pick up the
+    // theme color instead of staying white/neutral.
     if (isSelected) {
-      return 'bg-blue-100 border-blue-500 text-blue-800';
+      return 'bg-slate-200 border-slate-500 text-slate-800';
     }
     // Disabled state (gray)
     if (isDisabled) {
       return 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed';
     }
     // Default/unselected state
-    return 'bg-white border-gray-300 text-gray-800 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-all duration-200';
+    return 'bg-white border-gray-300 text-gray-800 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all duration-200';
   };
 
   /**
@@ -254,6 +259,11 @@ export default function ObjectiveQuestion() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isCheckAgainDisabled, setIsCheckAgainDisabled] = useState(false);
+  // Drives the auto-dismissing correct/incorrect toast: bumped on every
+  // check so the toast re-shows even if the result is the same as before
+  // (e.g. wrong answer twice in a row).
+  const [feedbackNonce, setFeedbackNonce] = useState(0);
+  const [showFeedbackToast, setShowFeedbackToast] = useState(false);
 
   // Timer State
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -952,6 +962,7 @@ const savePracticeSession = async () => {
 
     // Update answer correctness state
     setIsAnswerCorrect(isCorrect);
+    setFeedbackNonce((n) => n + 1);
 
     // Handle correct answer
     if (isCorrect) {
@@ -996,6 +1007,20 @@ const savePracticeSession = async () => {
       }
     }
   };
+
+  // Show the correct/incorrect toast briefly after every check, then
+  // auto-dismiss it — the underlying answer state (highlighted wrong
+  // option, explanation, etc.) stays put; only the floating toast fades.
+  useEffect(() => {
+    if (isAnswerCorrect === null) {
+      setShowFeedbackToast(false);
+      return;
+    }
+    setShowFeedbackToast(true);
+    const timer = setTimeout(() => setShowFeedbackToast(false), 2500);
+    return () => clearTimeout(timer);
+  }, [isAnswerCorrect, feedbackNonce]);
+
   /**
    * Triggers celebration animation for first-time correct answer
    * Shows confetti and auto-hides after 2 seconds
@@ -1245,7 +1270,7 @@ const savePracticeSession = async () => {
   /**
    * FooterContent Component
    * Contains the quiz control buttons (Tools, Check Answer, Next)
-   * 
+   *
    * @returns {JSX.Element} - Footer toolbar
    */
   const FooterContent = () => (
@@ -1387,7 +1412,6 @@ const savePracticeSession = async () => {
         )}
 
         {/* Check Again button (after incorrect first attempt) */}
-        {/* Check Again button (after incorrect first attempt) */}
         {hasCheckedFirstTry &&
           firstTryResults[currentQuestionIndex]?.isCorrect === false &&
           !answeredQuestions.has(currentQuestionIndex) && (
@@ -1408,20 +1432,18 @@ const savePracticeSession = async () => {
             </div>
           )}
 
-          {/* Right side: Next/Finish button */}
-      {(isAnswerCorrect === true || answeredQuestions.has(currentQuestionIndex)) && (
-        <button
-          onClick={handleNextQuestion}
-          className="order-3 min-h-12 w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:order-none sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base"
-        >
-          {currentQuestionIndex < questions.length - 1
-            ? "Next Question"
-            : "Finish Quiz"}
-        </button>
-      )}
+        {/* Right side: Next/Finish button */}
+        {(isAnswerCorrect === true || answeredQuestions.has(currentQuestionIndex)) && (
+          <button
+            onClick={handleNextQuestion}
+            className="order-3 min-h-12 w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:order-none sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base"
+          >
+            {currentQuestionIndex < questions.length - 1
+              ? "Next Question"
+              : "Finish Quiz"}
+          </button>
+        )}
       </div>
-
-      
     </div>
   );
 
@@ -1699,116 +1721,44 @@ const savePracticeSession = async () => {
 
       >
         <div className="relative p-0">
-          {/* Desktop Feedback Messages (Correct Answer) */}
-          {isAnswerCorrect === true && (
-            <>
-              <div className="hidden lg:block absolute lg:right-4 lg:top-3/4 lg:transform lg:-translate-y-1/2 z-10">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-xl p-3 shadow-sm w-[260px] mx-auto flex items-center gap-3 hover:shadow-md transition-all duration-300">
-                  <div className="flex items-center justify-center bg-white rounded-lg p-2 shadow-sm">
-                    <svg
-                      className="w-6 h-6 text-yellow-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.383 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.383-2.46a1 1 0 00-1.176 0l-3.383 2.46c-.785.57-1.84-.197-1.54-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.045 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.288-3.973z" />
+          {/* Correct/incorrect toast — modern "sweet alert" style, same
+              position on every screen size, auto-dismisses on its own after
+              a couple of seconds. No skip option: students keep trying
+              until they get it right. */}
+          {isAnswerCorrect !== null && (
+            <div
+              className={`pointer-events-none fixed inset-x-4 bottom-6 z-50 transition-all duration-300 sm:inset-x-auto sm:right-6 sm:w-[340px] ${
+                showFeedbackToast ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+              }`}
+            >
+              {isAnswerCorrect ? (
+                <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-emerald-100">
+                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-emerald-500 text-white shadow-md shadow-emerald-200">
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
                     </svg>
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-gray-800 font-semibold text-sm tracking-wide">
-                      Correct!
-                    </span>
-                    <span className="text-gray-600 text-[11px]">
-                      {firstTryResults[currentQuestionIndex]?.isCorrect
-                        ? "Perfect on first try! 🎉"
-                        : "Next question..."}
-                    </span>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-emerald-700">Correct!</p>
+                    <p className="text-sm text-slate-500">
+                      {firstTryResults[currentQuestionIndex]?.isCorrect ? 'Perfect on first try!' : 'Well done.'}
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Mobile Feedback Messages (Correct Answer) */}
-              <div className="lg:hidden absolute bottom-4 right-4 z-10">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-xl p-3 shadow-sm w-[260px] mx-auto flex items-center gap-3 hover:shadow-md transition-all duration-300">
-                  <div className="flex items-center justify-center bg-white rounded-lg p-2 shadow-sm">
-                    <svg
-                      className="w-6 h-6 text-yellow-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.383 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.383-2.46a1 1 0 00-1.176 0l-3.383 2.46c-.785.57-1.84-.197-1.54-1.118l1.286-3.974a1 1 0 00-.364-1.118L2.045 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.288-3.973z" />
+              ) : (
+                <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-rose-100">
+                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-rose-500 text-white shadow-md shadow-rose-200">
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-gray-800 font-semibold text-sm tracking-wide">
-                      Correct!
-                    </span>
-                    <span className="text-gray-600 text-[11px]">
-                      {firstTryResults[currentQuestionIndex]?.isCorrect
-                        ? "Perfect on first try! 🎉"
-                        : "Next question..."}
-                    </span>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-rose-700">Not quite!</p>
+                    <p className="text-sm text-slate-500">Give it another try.</p>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* Desktop Feedback Messages (Incorrect Answer) */}
-          {isAnswerCorrect === false && (
-            <>
-              <div className="hidden lg:block absolute lg:right-4 lg:top-3/4 lg:transform lg:-translate-y-1/2 z-10">
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 shadow-lg w-[320px] animate-shake">
-                  <div className="flex flex-col space-y-3">
-                    <div className="flex items-start">
-                      <svg className="w-6 h-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      <span className="text-red-800 font-medium text-sm">
-                        {firstTryResults[currentQuestionIndex]?.isCorrect === false && !answeredQuestions.has(currentQuestionIndex)
-                          ? "Incorrect. Try another answer!"
-                          : "First attempt incorrect. Try again!"}
-                      </span>
-                    </div>
-                    <div className="text-center">
-                      <button
-                        onClick={handleNextQuestion}
-                        className="text-gray-600 hover:text-gray-800 underline text-sm font-medium transition-colors hover:scale-105 transform duration-200"
-                      >
-                        Skip this question
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Feedback Messages (Incorrect Answer) */}
-              <div className="lg:hidden absolute bottom-4 right-4 z-10">
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-1.5 shadow-lg w-[250px] animate-shake">
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-start">
-                      <svg className="w-3 h-3 text-red-600 mr-1.5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      <span className="text-red-800 font-medium text-xs leading-tight">
-                        {firstTryResults[currentQuestionIndex]?.isCorrect === false && !answeredQuestions.has(currentQuestionIndex)
-                          ? "Incorrect. Try another answer!"
-                          : "First attempt incorrect. Try again!"}
-                      </span>
-                    </div>
-                    <div className="text-center pt-0.5">
-                      <button
-                        onClick={handleNextQuestion}
-                        className="text-gray-600 hover:text-gray-800 underline text-xs font-medium transition-colors hover:scale-105 transform duration-200"
-                      >
-                        Skip this question
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
+              )}
+            </div>
           )}
 
           {/* Main Quiz Content Area */}

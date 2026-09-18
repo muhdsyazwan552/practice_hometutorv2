@@ -3,6 +3,7 @@ import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { Head, usePage, router } from '@inertiajs/react'; // Added router import
 import QuestionReportButton from '@/Components/QuestionReportButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const pageProps = usePage().props;
@@ -266,7 +267,7 @@ const processHtmlContent = (html) => {
   // Handle the ndash entity
   processedHtml = processedHtml.replace(/&ndash;/g, '–');
   
-  return processedHtml;
+  return addImagePathLabels(processedHtml);
 };
 
   // In SubjectiveQuestion.jsx, update the handleCheckAnswer function:
@@ -657,7 +658,7 @@ const processHtmlContent = (html) => {
               <div className="text-green-700">
                 <div 
                   className="prose max-w-none prose-sm md:prose-base"
-                  dangerouslySetInnerHTML={{ __html: schema }}
+                  dangerouslySetInnerHTML={{ __html: addImagePathLabels(schema) }}
                 />
               </div>
             );
@@ -667,7 +668,7 @@ const processHtmlContent = (html) => {
           else if (isHtmlContent(schema)) {
             return (
               <div className="text-green-700 text-base md:text-lg prose max-w-none prose-sm md:prose-base">
-                <div dangerouslySetInnerHTML={{ __html: schema }} />
+                <div dangerouslySetInnerHTML={{ __html: addImagePathLabels(schema) }} />
               </div>
             );
           }
@@ -694,6 +695,7 @@ const processHtmlContent = (html) => {
                     console.log('✅ Schema image loaded successfully');
                   }}
                 />
+                <ImagePathLabel path={schema} />
               </div>
             );
           }

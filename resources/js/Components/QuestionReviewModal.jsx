@@ -415,37 +415,34 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/50 p-2 sm:p-4">
       <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 ">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-gray-800 sm:text-2xl">
                 Question Review
               </h2>
               {session && (
-                <p className="text-gray-600 mt-1">
+                <p className="mt-1 truncate text-sm text-gray-600 sm:text-base">
                   Session: {session.topic_name} • {session.created_at}
                 </p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+              className="flex-none rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-
-
-
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {error ? (
             <div className="text-center py-8">
               <div className="text-red-600 mb-4">{error}</div>

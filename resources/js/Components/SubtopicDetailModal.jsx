@@ -97,28 +97,27 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                 sessionId={selectedSessionId}
             />
 
-            {/* Subtopic Detail Modal */}
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40">
-                <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Subtopic Detail Modal — z-[200] clears the sticky subject
+                navbar (z-[110]) so it's always fully on top. */}
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-2 sm:p-4">
+                <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-lg bg-white">
                     {/* Header */}
-                    <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                        <h2 className="text-xl font-bold text-gray-800">
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-200 p-4 sm:p-6">
+                        <h2 className="text-lg font-bold text-gray-800 sm:text-xl">
                             {subtopicData?.name || 'Subtopic'}
                         </h2>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            className="flex-none text-gray-400 hover:text-gray-600 transition-colors"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
-                                                
-                    
                     </div>
 
                     {/* Content */}
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                         {error ? (
                             <div className="text-center py-8">
                                 <div className="text-red-600 mb-4">{error}</div>
@@ -257,39 +256,36 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                     </div>
 
                     {/* Footer */}
-                    <div className="flex justify-end p-6 border-t border-gray-200 gap-2">
-                        <div className="flex items-center space-x-3">
-                            {sessions.length > 0 && (
-                                <button
-                                    onClick={handleExportToPdf}
-                                    disabled={exporting}
-                                    className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                                        exporting 
-                                            ? 'bg-gray-400 cursor-not-allowed' 
-                                            : 'bg-green-600 hover:bg-green-700'
-                                    } text-white`}
-                                >
-                                    {exporting ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                            Exporting...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            Export PDF
-                                        </>
-                                    )}
-                                </button>
-                            )}
-                            
-                        </div>
+                    <div className="flex flex-col-reverse gap-2 border-t border-gray-200 p-4 sm:flex-row sm:justify-end sm:p-6">
+                        {sessions.length > 0 && (
+                            <button
+                                onClick={handleExportToPdf}
+                                disabled={exporting}
+                                className={`flex items-center justify-center gap-2 rounded-md px-4 py-2 transition-colors ${
+                                    exporting
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-green-600 hover:bg-green-700'
+                                } text-white`}
+                            >
+                                {exporting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Exporting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Export PDF
+                                    </>
+                                )}
+                            </button>
+                        )}
 
                         <button
                             onClick={onClose}
-                            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                            className="rounded-md bg-gray-500 px-6 py-2 text-white transition-colors hover:bg-gray-600"
                         >
                             Close
                         </button>

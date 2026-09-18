@@ -339,6 +339,7 @@ class SubjectContentController extends Controller
                     question_type_id,
                     score,
                     total_correct,
+                    total_questions,
                     total_skipped,
                     total_time_seconds,
                     created_at
@@ -401,7 +402,7 @@ class SubjectContentController extends Controller
      */
     private function formatPracticeData($session)
     {
-        $totalQuestions = $session->total_correct + $session->total_skipped;
+        $totalQuestions = (int) ($session->total_questions ?: ($session->total_correct + $session->total_skipped));
         $averageTime = $totalQuestions > 0 ? $session->total_time_seconds / $totalQuestions : 0;
         
         return [

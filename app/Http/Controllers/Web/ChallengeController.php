@@ -559,7 +559,10 @@ public function startPractice(Request $request)
         // Still proceed, but log the mismatch
     }
 
-    $questionCount = 5;
+    // Mission's per-topic sessions match the same 10-question count as the
+    // subject-wide mastery challenge (startChallenge()) — this modal is only
+    // ever opened from the Mission page, so it should feel consistent with it.
+    $questionCount = 10;
 
     // A parent-topic session includes questions from each of its subtopics.
     $questionIds = $this->generatePracticeQuestions($topicId, $questionCount);

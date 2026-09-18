@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -11,6 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(function (Schedule $schedule) {
+        // Requires a real server cron entry running `php artisan schedule:run`
+        // every minute — see the Quiz Arena plan notes for local testing via
+        // `php artisan quiz-arena:settle` directly.
+        $schedule->command('quiz-arena:settle')->sundays()->at('23:59');
+    })
     ->withMiddleware(function (Middleware $middleware) {
 
         // 🌍 Global

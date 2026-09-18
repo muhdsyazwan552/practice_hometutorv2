@@ -12,10 +12,12 @@ use App\Models\PackageDurationOption;
 use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Models\UsernameReservation;
+use App\Services\CartCheckoutService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -23,6 +25,8 @@ use Tests\TestCase;
 class CartCheckoutTest extends TestCase
 {
     use RefreshDatabase;
+
+    private const FAKE_CHECKOUT_URL = 'https://checkout.doku.com/session/test-1';
 
     protected function setUp(): void
     {
@@ -42,6 +46,7 @@ class CartCheckoutTest extends TestCase
     public function test_parent_can_add_multiple_child_packages_and_pay_once(): void
     {
         Mail::fake();
+        $this->fakeDokuCheckout();
         $parent = User::factory()->create(['role_id' => User::ROLE_PARENT]);
         [$lowerPackage, $lowerSix] = $this->package('Standard 1–3', 'STD-1-3', 'standard_1_3', 1, 500);
         [$upperPackage, , $upperTwelve] = $this->package('Standard 4–6', 'STD-4-6', 'standard_4_6', 4, 500);
@@ -100,7 +105,19 @@ class CartCheckoutTest extends TestCase
         $this->assertDatabaseHas('order_items', ['id' => $firstItem->id, 'new_child_name' => 'Updated First Child', 'new_child_username' => 'updated_first_child', 'new_child_class_name' => '1 Bestari']);
 
         $this->actingAs($parent)->post(route('parent.cart.checkout'))
-            ->assertRedirect(route('parent.children.index'));
+            ->assertRedirect(self::FAKE_CHECKOUT_URL);
+
+        $order = $order->fresh();
+        $transaction = $order->paymentTransactions()->firstOrFail();
+        $this->assertSame(Order::STATUS_PENDING_PAYMENT, $order->status);
+        $this->assertSame(PaymentTransaction::STATUS_PENDING, $transaction->status);
+        // No child accounts or subscriptions exist until payment is confirmed.
+        $this->assertDatabaseMissing('users', ['username' => 'updated_first_child']);
+        $this->assertDatabaseMissing('users', ['username' => 'second_cart_child']);
+        $this->assertDatabaseCount('child_subscriptions', 0);
+
+        // Simulates DOKU confirming payment succeeded (via the return page or webhook).
+        app(CartCheckoutService::class)->fulfill($order, $transaction);
 
         $this->assertSame(Order::STATUS_FULFILLED, $order->fresh()->status);
         $this->assertDatabaseCount('payment_transactions', 1);
@@ -120,6 +137,31 @@ class CartCheckoutTest extends TestCase
             && str_contains($mail->render(), 'Updated First Child')
             && str_contains($mail->render(), 'Second Cart Child')
             && str_contains($mail->render(), 'MYR 1,200.00'));
+    }
+
+    /**
+     * Points the DOKU config at fake credentials and intercepts every call to
+     * doku.com so tests never touch the real (possibly production) gateway.
+     */
+    private function fakeDokuCheckout(): void
+    {
+        config([
+            'services.doku.client_id' => 'test-client',
+            'services.doku.secret_key' => 'test-secret',
+            'services.doku.api_key' => 'test-api-key',
+            'services.doku.environment' => 'sandbox',
+        ]);
+
+        Http::fake([
+            '*doku.com/*' => Http::response([
+                'id' => 'DOKU-CHECKOUT-TEST-1',
+                'payment' => [
+                    'checkout_url' => self::FAKE_CHECKOUT_URL,
+                    'status' => 'PENDING',
+                    'state' => 'INITIATE',
+                ],
+            ], 200),
+        ]);
     }
 
     private function package(string $name, string $code, string $group, int $levelId, int $sixMonthPrice): array

@@ -6,6 +6,7 @@ import { useLanguage } from '@/Contexts/LanguageContext';
 import { Link, usePage } from '@inertiajs/react';
 import { HomeIcon, Squares2X2Icon, TrophyIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 
 const appMenuItems = [
     { name: 'Quiz Arena', href: '/quiz-page', icon: '/images/logo_award.png' },
@@ -23,10 +24,11 @@ export default function SubjectNavbar({ title }) {
         : (student?.level?.name || student?.level?.name_my);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAppMenuOpen, setIsAppMenuOpen] = useState(false);
+    const palette = resolveDashboardTheme(pageProps.studentTheme);
     const closeMenus = () => { setIsMenuOpen(false); setIsAppMenuOpen(false); };
 
     return (
-        <nav className="sticky top-0 z-[110] border-b border-sky-400/30 bg-gradient-to-r from-[#087fbd] via-[#129dd6] to-[#78d5eb] shadow-[0_8px_26px_rgba(8,123,184,.2)]">
+        <nav className="sticky top-0 z-[110] border-b shadow-[0_8px_26px_rgba(8,123,184,.2)]" style={{ background: palette.hero, borderColor: `${palette.accent}99` }}>
             <div className="relative mx-auto max-w-[1600px] px-3 py-2 sm:px-5 lg:px-8">
                 <div className="flex h-12 items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2 sm:gap-3">

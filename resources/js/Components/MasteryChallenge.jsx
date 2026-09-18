@@ -190,6 +190,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
             
             setIsCorrect(data.is_correct);
             setShowResult(true);
+            // Auto-reveal the explanation on a correct answer — no extra
+            // click needed, so the student reads it immediately.
+            if (data.is_correct) {
+                setShowExplanation(true);
+            }
 
             // Add to history
             setAnswerHistory(prev => [...prev, {
@@ -199,6 +204,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
 
             if (data.challenge_complete) {
                 setTimeout(() => loadSummary(sessionId), 2000);
+            } else if (!data.is_correct) {
+                // Wrong answers skip the explanation and move straight to
+                // the next question — staying focused on getting it right
+                // beats dwelling on why, per the intended flow.
+                setTimeout(() => loadNextQuestion(sessionId), 1200);
             }
         } catch (error) {
             console.error('Error submitting answer:', error);
@@ -277,7 +287,7 @@ const getCorrectAnswerInfo = () => {
     });
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                 {loading && !currentQuestion ? (
                     <div className="p-12 text-center">
@@ -287,7 +297,7 @@ const getCorrectAnswerInfo = () => {
                 ) : summary ? (
                     // Summary View
                     <div className="relative">
-                        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-8 relative overflow-hidden">
+                        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-6 relative overflow-hidden sm:p-8">
                             <div className="absolute inset-0 opacity-20">
                                 <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                 <div className="absolute top-20 right-20 w-1 h-1 bg-white rounded-full animate-pulse delay-100"></div>
@@ -295,39 +305,37 @@ const getCorrectAnswerInfo = () => {
                             </div>
                             <button
                                 onClick={handleClose}
-                                className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl"
+                                className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
                             </button>
                             <div className="text-center relative z-10">
-                                <h2 className="text-3xl font-bold mb-2">You've completed the mastery challenge</h2>
-                                <p className="text-xl text-blue-100">GREAT JOB!</p>
+                                <h2 className="text-xl font-bold mb-2 sm:text-3xl">You've completed the mastery challenge</h2>
+                                <p className="text-lg text-blue-100 sm:text-xl">GREAT JOB!</p>
                             </div>
                         </div>
 
-                        <div className="p-8">
-                            <h3 className="text-xl font-bold text-gray-800 mb-6">PROGRESS MADE</h3>
+                        <div className="p-4 sm:p-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 sm:text-xl sm:mb-6">PROGRESS MADE</h3>
                             <div className="space-y-4">
                                 {summary.progress && summary.progress.length > 0 ? (
                                     summary.progress.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center justify-between p-4 bg-blue-50 rounded-lg"
+                                            className="flex flex-col gap-2 p-4 bg-blue-50 rounded-lg sm:flex-row sm:items-center sm:justify-between"
                                         >
                                             <span className="text-sky-600 font-medium">{item.topic}</span>
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-2">
-                                                    <div className="px-3 py-1 bg-gray-200 rounded text-sm capitalize">
-                                                        {item.previous_mastery?.replace('_', ' ') || 'Not started'}
-                                                    </div>
-                                                    <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                    </svg>
-                                                    <div className={`px-3 py-1 rounded text-sm capitalize ${
-                                                        item.mastery_changed ? 'bg-sky-500 text-white' : 'bg-gray-200'
-                                                    }`}>
-                                                        {item.new_mastery?.replace('_', ' ')}
-                                                    </div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="px-3 py-1 bg-gray-200 rounded text-sm capitalize">
+                                                    {item.previous_mastery?.replace('_', ' ') || 'Not started'}
+                                                </div>
+                                                <svg className="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
+                                                <div className={`px-3 py-1 rounded text-sm capitalize ${
+                                                    item.mastery_changed ? 'bg-sky-500 text-white' : 'bg-gray-200'
+                                                }`}>
+                                                    {item.new_mastery?.replace('_', ' ')}
                                                 </div>
                                             </div>
                                         </div>
@@ -337,17 +345,17 @@ const getCorrectAnswerInfo = () => {
                                 )}
                             </div>
 
-                            <div className="mt-8 p-6 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg">
-                                <div className="flex items-center justify-between">
+                            <div className="mt-6 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg sm:mt-8 sm:p-6">
+                                <div className="flex items-center justify-between gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Your Score</p>
-                                        <p className="text-3xl font-bold text-teal-600">
+                                        <p className="text-2xl font-bold text-teal-600 sm:text-3xl">
                                             {summary.correct_answers}/{summary.total_questions}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm text-gray-600">Accuracy</p>
-                                        <p className="text-3xl font-bold text-cyan-600">
+                                        <p className="text-2xl font-bold text-cyan-600 sm:text-3xl">
                                             {summary.score_percentage}%
                                         </p>
                                     </div>
@@ -369,36 +377,33 @@ const getCorrectAnswerInfo = () => {
                     // Question View
                     <div>
                         {/* Header with Progress Circles */}
-                        <div className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white p-6 relative">
+                        <div className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white p-4 relative sm:p-6">
                             {/* Close button - positioned absolutely */}
                             <button
                                 onClick={handleClose}
-                                className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl"
+                                className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
                             </button>
-                            
-                            <div className="flex items-start justify-between pr-8">
+
+                            <div className="flex flex-col gap-3 pr-8 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                    <h3 className="text-lg font-semibold">Mastery Challenge</h3>
-                                    <p className="text-sm text-sky-100 mt-1">
+                                    <h3 className="text-base font-semibold sm:text-lg">Mastery Challenge</h3>
+                                    <p className="text-xs text-sky-100 mt-1 sm:text-sm">
                                         Question {questionNumber} of {totalQuestions}
                                     </p>
                                 </div>
-                                
-                                <div className="text-right">
-                                    <p className="text-sm font-medium mb-2">
-                                        Solve {remainingProblems} more problem{remainingProblems !== 1 ? 's' : ''}
-                                    </p>
-                                    <div className="flex items-center justify-end space-x-2">
+
+                                <div className="sm:text-right">
+                                    <div className="flex flex-wrap items-center gap-1.5 sm:justify-end sm:gap-2">
                                         {Array.from({ length: totalQuestions }).map((_, index) => {
                                             const answered = answerHistory.find(h => h.questionNumber === index + 1);
                                             const isCurrent = index + 1 === questionNumber && !showResult;
-                                            
+
                                             return (
                                                 <div
                                                     key={index}
-                                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                                                    className={`h-6 w-6 rounded-full flex items-center justify-center transition-all sm:h-8 sm:w-8 ${
                                                         answered?.isCorrect
                                                             ? 'bg-green-500'
                                                             : answered && !answered.isCorrect
@@ -409,12 +414,12 @@ const getCorrectAnswerInfo = () => {
                                                     }`}
                                                 >
                                                     {answered?.isCorrect && (
-                                                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <svg className="h-3.5 w-3.5 text-white sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                         </svg>
                                                     )}
                                                     {answered && !answered.isCorrect && (
-                                                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <svg className="h-3.5 w-3.5 text-white sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                                         </svg>
                                                     )}
@@ -435,7 +440,7 @@ const getCorrectAnswerInfo = () => {
                         </div>
 
                         {/* Question Content */}
-                        <div className="p-8">
+                        <div className="p-4 sm:p-6 md:p-8">
                             <div className="mb-3 flex justify-end">
                                 <ReportQuestionButton questionId={currentQuestion.id} context="mastery_challenge" />
                             </div>
@@ -465,7 +470,7 @@ const getCorrectAnswerInfo = () => {
                             {/* Answer Options */}
                             <div className="space-y-3">
                                 {currentQuestion.answers && currentQuestion.answers.length > 0 ? (
-                                    currentQuestion.answers.map((answer) => {
+                                    currentQuestion.answers.map((answer, index) => {
                                         const isSelected = selectedAnswer === answer.id;
                                         const showCorrect = showResult && answer.is_correct_answer === "1";
                                         const showWrong = showResult && isSelected && answer.is_correct_answer === "0";
@@ -485,24 +490,29 @@ const getCorrectAnswerInfo = () => {
                                                         : 'border-gray-200 hover:border-sky-300 hover:bg-gray-50'
                                                 } ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                             >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        {answer.answer_text ? (
-                                                            <div className="prose prose-sm max-w-none">
-                                                                {renderContent(answer.answer_text)}
-                                                            </div>
-                                                        ) : answer.answer_option_file ? (
-                                                            <div className="inline-block max-w-full">
-                                                                <img 
-                                                                    src={answer.answer_option_file} 
-                                                                    alt="Answer option" 
-                                                                    className="max-w-xs h-auto rounded"
-                                                                />
-                                                                <ImagePathLabel path={answer.answer_option_file} />
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-gray-800">{answer.answer_option}</span>
-                                                        )}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex flex-1 items-start gap-2">
+                                                        <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                                                            {String.fromCharCode(65 + index)}
+                                                        </span>
+                                                        <div className="flex-1">
+                                                            {answer.answer_text ? (
+                                                                <div className="prose prose-sm max-w-none">
+                                                                    {renderContent(answer.answer_text)}
+                                                                </div>
+                                                            ) : answer.answer_option_file ? (
+                                                                <div className="inline-block max-w-full">
+                                                                    <img
+                                                                        src={answer.answer_option_file}
+                                                                        alt="Answer option"
+                                                                        className="max-w-xs h-auto rounded"
+                                                                    />
+                                                                    <ImagePathLabel path={answer.answer_option_file} />
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-gray-800">{answer.answer_option}</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="ml-3 flex-shrink-0">
                                                         {showCorrect && (
@@ -551,33 +561,21 @@ const getCorrectAnswerInfo = () => {
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold text-red-800">Incorrect</p>
-                                                        <p className="text-sm text-red-700">Review the correct answer above</p>
+                                                        <p className="text-sm text-red-700">Moving to the next question…</p>
                                                     </div>
                                                 </>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Show "Answer Description" button ONLY if correct */}
+                                    {/* Explanation shows automatically on a correct answer — no click needed */}
                                     {isCorrect && (() => {
                                         const correctAnswer = getCorrectAnswerInfo();
                                         const hasExplanation = correctAnswer && (correctAnswer.reason || correctAnswer.reason2 || correctAnswer.reason_file);
-                                        
+
                                         if (hasExplanation) {
                                             return (
                                                 <>
-                                                    {!showExplanation && (
-                                                        <button
-                                                            onClick={() => setShowExplanation(true)}
-                                                            className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
-                                                        >
-                                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                                            </svg>
-                                                            <span>Answer Description</span>
-                                                        </button>
-                                                    )}
-                                                    
                                                     {showExplanation && (
                                                         <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
                                                             <div className="flex items-start space-x-2">
@@ -621,29 +619,28 @@ const getCorrectAnswerInfo = () => {
                             )}
 
                             {/* Action Buttons */}
-                            <div className="mt-8 flex justify-between items-center">
-                                <div className="text-sm text-gray-600">
-                                    {questionNumber} of {totalQuestions}
-                                </div>
-                                <div className="flex space-x-3">
+                            <div className="mt-6 flex justify-end sm:mt-8">
+                                <div className="flex w-full space-x-3 sm:w-auto">
                                     {!showResult ? (
                                         <button
                                             onClick={handleSubmit}
                                             disabled={!selectedAnswer || isSubmitting}
-                                            className="px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                                            className="w-full px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors sm:w-auto"
                                         >
                                             {isSubmitting ? 'Submitting...' : 'Submit Answer'}
                                         </button>
-                                    ) : (
+                                    ) : isCorrect ? (
                                         <button
                                             onClick={handleNext}
-                                            className="px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors flex items-center space-x-2"
+                                            className="w-full px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                                         >
                                             <span>Next question</span>
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                             </svg>
                                         </button>
+                                    ) : (
+                                        <p className="text-sm italic text-gray-500">Moving on…</p>
                                     )}
                                 </div>
                             </div>

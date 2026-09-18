@@ -3,14 +3,13 @@ import { Link, router, usePage } from '@inertiajs/react';
 import SubjectNavbar from './SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
 import { useLanguage } from '@/Contexts/LanguageContext';
+import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 import {
   AcademicCapIcon,
   ChartBarIcon,
   CheckIcon,
   ChevronDownIcon,
-  FireIcon,
   SparklesIcon,
-  TrophyIcon,
 } from '@heroicons/react/24/outline';
 
 const formatTitle = (value = '') => value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -21,24 +20,18 @@ export default function SubjectLayout({
   onStandardChange,
   selectedStandard: propSelectedStandard,
   isLoading = false,
-  studentData = null,
 }) {
   const { props } = usePage();
-  const { form, level_id, subject_id } = props;
+  const { form, level_id, subject_id, studentTheme, availableForms } = props;
+  const palette = resolveDashboardTheme(studentTheme);
   const { t, locale } = useLanguage();
   const [internalLoading, setInternalLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [internalStandard, setInternalStandard] = useState(propSelectedStandard || form || 'Form 4');
   const selectedStandard = propSelectedStandard ?? internalStandard;
-
-  const stats = {
-    level: studentData?.level || 5,
-    xp: studentData?.xp || 1840,
-    xpToNextLevel: studentData?.xpToNextLevel || 2000,
-    streak: studentData?.streak || 12,
-    badges: studentData?.badges || 4,
-  };
-  const xpPercentage = Math.min(100, Math.round((stats.xp / stats.xpToNextLevel) * 100));
+  const standardOptions = Array.isArray(availableForms) && availableForms.length
+    ? availableForms
+    : ['Form 4', 'Form 5'];
 
   const tabs = useMemo(() => [
     { key: 'practice', label: t('practice', 'Learn'), icon: AcademicCapIcon, routeName: 'subject-page' },
@@ -62,7 +55,7 @@ export default function SubjectLayout({
   const showLoading = isLoading || internalLoading;
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] text-slate-900">
+    <div className="student-theme-shell min-h-screen text-slate-900" style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
       {showLoading && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/20 backdrop-blur-sm">
           <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-2xl">
@@ -74,9 +67,14 @@ export default function SubjectLayout({
 
       <SubjectNavbar title={title} />
 
-      <header className="relative overflow-hidden bg-slate-950 text-white">
-        <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" />
-        <div className="absolute bottom-[-7rem] left-1/3 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl" />
+      <header className="student-theme-course-header relative text-white" style={{ background: palette.hero }}>
+        {/* Decorative glow — clipped to its own layer so it doesn't bleed
+            past the header, without clipping the standard dropdown below
+            (which needs to escape the header's box to stay unclipped). */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" />
+          <div className="absolute bottom-[-7rem] left-1/3 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl" />
+        </div>
         <div className="relative mx-auto max-w-[1440px] px-4 py-7 sm:px-6 lg:px-8 lg:py-9">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div>
@@ -91,8 +89,8 @@ export default function SubjectLayout({
                 <span>{selectedStandard}</span><ChevronDownIcon className={`h-4 w-4 transition ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isDropdownOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl">
-                  {['Form 4', 'Form 5'].map((standard) => (
+                <div className="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl">
+                  {standardOptions.map((standard) => (
                     <button key={standard} onClick={() => selectStandard(standard)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm ${selectedStandard === standard ? 'bg-indigo-50 font-semibold text-indigo-700' : 'hover:bg-slate-50'}`}>
                       {standard}{selectedStandard === standard && <CheckIcon className="h-4 w-4" />}
                     </button>
@@ -101,32 +99,16 @@ export default function SubjectLayout({
               )}
             </div>
           </div>
-
-          <div className="mt-7 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between text-xs text-slate-300"><span>Level {stats.level}</span><TrophyIcon className="h-4 w-4 text-amber-300" /></div>
-              <p className="mt-2 text-xl font-semibold">Silver Scholar</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between text-xs text-slate-300"><span>XP progress</span><span>{stats.xp}/{stats.xpToNextLevel}</span></div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-cyan-400" style={{ width: `${xpPercentage}%` }} /></div>
-              <p className="mt-2 text-xs font-medium text-indigo-200">{xpPercentage}% to the next level</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between text-xs text-slate-300"><span>Study streak</span><FireIcon className="h-4 w-4 text-orange-300" /></div>
-              <p className="mt-2 text-xl font-semibold">{stats.streak} days</p>
-            </div>
-          </div>
         </div>
       </header>
 
-      <div className="sticky top-[72px] z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
+      <div className="sticky top-[72px] z-40 border-b bg-white/90 backdrop-blur-xl" style={{ borderColor: `${palette.accent}55` }}>
         <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8" aria-label="Course sections">
           {tabs.map((tab) => {
             const active = route().current(tab.routeName);
             const TabIcon = tab.icon;
             return (
-              <Link key={tab.key} href={route(tab.routeName, { subject, form, level_id, subject_id })} preserveScroll className={`flex items-center gap-2 border-b-2 px-4 py-4 text-sm font-semibold transition ${active ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-900'}`}>
+              <Link key={tab.key} href={route(tab.routeName, { subject, form, level_id, subject_id })} preserveScroll className={`flex items-center gap-2 border-b-2 px-4 py-4 text-sm font-semibold transition ${active ? 'student-theme-tab-active' : 'border-transparent text-slate-500 hover:text-slate-900'}`}>
                 <TabIcon className="h-4 w-4" />{tab.label}
               </Link>
             );
@@ -134,7 +116,7 @@ export default function SubjectLayout({
         </nav>
       </div>
 
-      <main className="py-7 sm:py-9">{children}</main>
+      <main className="student-theme-content py-7 sm:py-9">{children}</main>
       <StandardFooter />
     </div>
   );

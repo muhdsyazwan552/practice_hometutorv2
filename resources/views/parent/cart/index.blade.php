@@ -31,7 +31,7 @@
         <div class="border-t border-slate-200 bg-slate-50 p-6">
             <div class="ml-auto max-w-sm">
                 <div class="flex items-end justify-between"><span class="font-bold text-slate-600">{{ $order->items->count() }} child {{ Str::plural('package', $order->items->count()) }}</span><span class="text-3xl font-extrabold text-[#082c58]">{{ $order->currency }} {{ number_format($order->total, 2) }}</span></div>
-                <p class="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Temporary payment mode: one click records one successful payment for this complete order.</p>
+                <p class="mt-4 rounded-xl bg-sky-50 p-3 text-xs leading-5 text-sky-900">You'll be redirected to our secure payment gateway. Child accounts are created only after payment is confirmed.</p>
                 <form method="POST" action="{{ route('parent.cart.checkout') }}" class="mt-4">@csrf<button class="w-full rounded-xl bg-[#f2c237] px-5 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">Pay once for all packages</button></form>
             </div>
         </div>

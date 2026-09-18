@@ -1,7 +1,9 @@
 // Layouts/QuestionLayout.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { usePage } from '@inertiajs/react';
 import QuestionNavbar from './QuestionNavbar';
 import Calculator from '../Components/Calculator'; // Import kalkulator
+import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 
 const QuizLayout = ({ 
   children, 
@@ -10,6 +12,8 @@ const QuizLayout = ({
   bgColor = "bg-white",
   footer = null 
 }) => {
+  const { studentTheme } = usePage().props;
+  const palette = resolveDashboardTheme(studentTheme);
   const [navbarVisible, setNavbarVisible] = useState(true);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
   const [calculatorPosition, setCalculatorPosition] = useState({ x: 20, y: 20 });
@@ -134,7 +138,7 @@ const QuizLayout = ({
   );
 
   return (
-    <div className={`min-h-screen ${bgColor}`}>
+    <div className={`student-theme-shell min-h-screen ${bgColor}`} style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
       {/* Pass navbarVisible prop to QuestionNavbar */}
       {/* <QuestionNavbar title={title} visible={navbarVisible} /> */}
       
@@ -209,7 +213,7 @@ const QuizLayout = ({
       
       <QuizBanner />
       
-      <main className="mx-auto">
+      <main className="student-theme-content mx-auto">
         {children}
       </main>
       

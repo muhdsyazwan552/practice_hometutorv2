@@ -75,20 +75,6 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // Format time for display (more readable)
-    const formatTimeDisplay = (seconds) => {
-        const hours = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-
-        if (hours > 0) {
-            return `${hours}h ${mins}m ${secs}s`;
-        } else if (mins > 0) {
-            return `${mins}m ${secs}s`;
-        }
-        return `${secs}s`;
-    };
-
     // Start session timer
     const startSessionTimer = () => {
         // Clear any existing timer
@@ -460,8 +446,6 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
     if (!isOpen) return null;
 
-    const remainingProblems = totalQuestions - answerHistory.length;
-
     // console.log('Render state:', {
     //     answerHistory,
     //     remainingProblems,
@@ -476,7 +460,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     // If result modal is shown, don't render the practice modal
     if (showResultModal) {
   return (
-    <div className="fixed inset-0 bg-black/70 z-[60] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 z-[200] overflow-y-auto">
       {/* Centering container - this is the key change */}
       <div className="min-h-full flex items-center justify-center p-4">
         {/* Modal container with max width */}
@@ -499,7 +483,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                 {loading && !currentQuestion ? (
                     <div className="p-12 text-center">
@@ -514,42 +498,38 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                 ) : currentQuestion ? (
                     <div>
                         {/* Header with Progress Circles */}
-                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 relative">
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 relative sm:p-6">
                             {/* Close button - positioned absolutely */}
                             <button
                                 onClick={handleClose}
-                                className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl"
+                                className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
                             </button>
 
-                            <div className="flex flex-col md:flex-row items-start justify-between pr-8 space-y-4 md:space-y-0">
+                            <div className="flex flex-col gap-3 pr-8 md:flex-row md:items-start md:justify-between">
                                 <div>
-                                    <h3 className="text-lg font-semibold">Practice Session: {topicName}</h3>
-                                    <p className="text-sm text-green-100 mt-1">
+                                    <h3 className="text-base font-semibold sm:text-lg">Mission: {topicName}</h3>
+                                    <p className="text-xs text-green-100 mt-1 sm:text-sm">
                                         Question {questionNumber} of {totalQuestions}
                                     </p>
                                 </div>
 
-                                {/* Session Timer Display */}
-                                <div className="flex flex-col items-end space-y-2">
-                                    <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                                {/* Session Timer + Progress Circles */}
+                                <div className="flex flex-col gap-2 sm:items-end">
+                                    <div className="inline-flex self-start bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg sm:self-auto sm:px-4 sm:py-2">
                                         <div className="flex items-center space-x-2">
-                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 text-white sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            <span className="font-mono font-bold text-lg">
+                                            <span className="font-mono font-bold text-base sm:text-lg">
                                                 {formatTime(elapsedTime)}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-green-100 mt-1">Session Time</p>
                                     </div>
 
-                                    <div className="text-right">
-                                        <p className="text-sm font-medium mb-2">
-                                            Solve {remainingProblems} more problem{remainingProblems !== 1 ? 's' : ''}
-                                        </p>
-                                        <div className="flex items-center justify-end space-x-2">
+                                    <div className="sm:text-right">
+                                        <div className="flex flex-wrap items-center gap-1.5 sm:justify-end sm:gap-2">
                                             {Array.from({ length: totalQuestions }).map((_, index) => {
                                                 const answered = answerHistory.find(h => h.questionNumber === index + 1);
                                                 const isCurrent = index + 1 === questionNumber && !showResult;
@@ -557,7 +537,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                 return (
                                                     <div
                                                         key={index}
-                                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${answered?.isCorrect
+                                                        className={`h-6 w-6 rounded-full flex items-center justify-center transition-all sm:h-8 sm:w-8 ${answered?.isCorrect
                                                                 ? 'bg-green-500'
                                                                 : answered && !answered.isCorrect
                                                                     ? 'bg-gray-400'
@@ -567,12 +547,12 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                             }`}
                                                     >
                                                         {answered?.isCorrect && (
-                                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <svg className="h-3.5 w-3.5 text-white sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                             </svg>
                                                         )}
                                                         {answered && !answered.isCorrect && (
-                                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <svg className="h-3.5 w-3.5 text-white sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                                             </svg>
                                                         )}
@@ -585,20 +565,16 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                             </div>
                         </div>
 
-                        {/* Progress Bar with Time Indicator */}
-                        <div className="h-2 bg-gray-200 relative">
+                        {/* Progress Bar */}
+                        <div className="h-2 bg-gray-200">
                             <div
                                 className="h-full bg-green-500 transition-all duration-300"
                                 style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
                             ></div>
-                            {/* Time Indicator */}
-                            <div className="absolute top-3 right-4 text-xs text-gray-500">
-                                Time: {formatTimeDisplay(elapsedTime)}
-                            </div>
                         </div>
 
                         {/* Question Content */}
-                        <div className="p-8">
+                        <div className="p-4 sm:p-6 md:p-8">
                             <div className="mb-3 flex justify-end">
                                 <ReportQuestionButton questionId={currentQuestion.id} context="mission_practice" />
                             </div>
@@ -628,7 +604,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                             {/* Answer Options */}
                             <div className="space-y-3">
                                 {currentQuestion.answers && currentQuestion.answers.length > 0 ? (
-                                    currentQuestion.answers.map((answer) => {
+                                    currentQuestion.answers.map((answer, index) => {
                                         const isSelected = selectedAnswer === answer.id;
                                         const showCorrect = showResult && answer.is_correct_answer === "1";
                                         const showWrong = showResult && isSelected && answer.is_correct_answer === "0";
@@ -647,24 +623,29 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                 : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
                                                     } ${showResult ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                             >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        {answer.answer_text ? (
-                                                            <div className="prose prose-sm max-w-none">
-                                                                {renderContent(answer.answer_text)}
-                                                            </div>
-                                                        ) : answer.answer_option_file ? (
-                                                            <div className="inline-block max-w-full">
-                                                                <img 
-                                                                    src={answer.answer_option_file} 
-                                                                    alt="Answer option"
-                                                                    className="max-w-xs h-auto rounded"
-                                                                />
-                                                                <ImagePathLabel path={answer.answer_option_file} />
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-gray-800">{answer.answer_option}</span>
-                                                        )}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex flex-1 items-start gap-2">
+                                                        <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                                                            {String.fromCharCode(65 + index)}
+                                                        </span>
+                                                        <div className="flex-1">
+                                                            {answer.answer_text ? (
+                                                                <div className="prose prose-sm max-w-none">
+                                                                    {renderContent(answer.answer_text)}
+                                                                </div>
+                                                            ) : answer.answer_option_file ? (
+                                                                <div className="inline-block max-w-full">
+                                                                    <img
+                                                                        src={answer.answer_option_file}
+                                                                        alt="Answer option"
+                                                                        className="max-w-xs h-auto rounded"
+                                                                    />
+                                                                    <ImagePathLabel path={answer.answer_option_file} />
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-gray-800">{answer.answer_option}</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="ml-3 flex-shrink-0">
                                                         {showCorrect && (
@@ -701,9 +682,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                     </div>
                                                     <div className="flex-1">
                                                         <p className="font-semibold text-green-800">Good work!</p>
-                                                        <p className="text-sm text-green-700">
-                                                            That's the right answer. Session time: {formatTimeDisplay(elapsedTime)}
-                                                        </p>
+                                                        <p className="text-sm text-green-700">That's the right answer.</p>
                                                     </div>
                                                 </>
                                             ) : (
@@ -715,9 +694,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold text-red-800">Incorrect</p>
-                                                        <p className="text-sm text-red-700">
-                                                            Review the correct answer above. Session time: {formatTimeDisplay(elapsedTime)}
-                                                        </p>
+                                                        <p className="text-sm text-red-700">Review the correct answer above.</p>
                                                     </div>
                                                 </>
                                             )}
@@ -788,24 +765,13 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
                             {/* Action Buttons */}
                             {/* Action Buttons */}
-<div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-    <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <div className="text-sm text-gray-600">
-            {questionNumber} of {totalQuestions}
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{formatTimeDisplay(elapsedTime)} elapsed</span>
-        </div>
-    </div>
-    <div className="flex space-x-3">
+<div className="mt-8 flex justify-end">
+    <div className="flex w-full space-x-3 sm:w-auto">
         {!showResult ? (
             <button
                 onClick={handleSubmit}
                 disabled={!selectedAnswer || isSubmitting}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 sm:w-auto"
             >
                 {isSubmitting ? (
                     <>
@@ -826,7 +792,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
             questionNumber < totalQuestions ? (
                 <button
                     onClick={handleNext}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                 >
                     <span>Next Question</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -839,7 +805,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                         stopSessionTimer();
                         loadSummary(sessionId);
                     }}
-                    className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                    className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                 >
                     <span>See Results</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -5,13 +5,30 @@
 @tailwind utilities;
 
 .student-theme-dashboard {
-  background: var(--theme-page);
-  border-radius: 2rem;
   transition: background .25s ease, color .25s ease;
 }
 
 .student-theme-dashboard .student-theme-hero {
   box-shadow: 0 18px 42px color-mix(in srgb, var(--theme-accent) 38%, transparent), inset 0 1px rgba(255,255,255,.28);
+}
+
+/* Soft diagonal light sweep across the hero, purely decorative. */
+.student-theme-dashboard .hero-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 45%, transparent 60%);
+  background-size: 220% 100%;
+  animation: hero-shimmer-sweep 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hero-shimmer-sweep {
+  0% { background-position: 140% 0; }
+  60%, 100% { background-position: -60% 0; }
+}
+
+.student-theme-dashboard.has-theme-bg .student-theme-hero {
+  border: 1px solid rgba(255,255,255,.35);
 }
 
 .student-theme-dashboard .theme-surface {
@@ -20,13 +37,95 @@
   box-shadow: 0 9px 24px color-mix(in srgb, var(--theme-accent) 13%, transparent);
 }
 
+/* Frosted-glass cards over the theme's photo background: light enough that
+   the picture stays visible around/behind the card, with a crisp white edge
+   and soft shadow so the card still reads clearly on busy artwork. */
+.student-theme-dashboard.has-theme-bg .theme-surface {
+  background: color-mix(in srgb, var(--theme-card) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-color: rgba(255,255,255,.55);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .18);
+}
+
+.student-theme-dashboard .theme-glass-card {
+  background: color-mix(in srgb, white 18%, transparent);
+  border-color: color-mix(in srgb, white 55%, var(--theme-accent) 12%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
 .student-theme-dashboard .theme-subject-card {
   background: color-mix(in srgb, var(--theme-card) 86%, var(--theme-page));
   border-color: color-mix(in srgb, var(--theme-accent) 20%, white);
 }
 
+.student-theme-dashboard.has-theme-bg .theme-subject-card {
+  background: color-mix(in srgb, var(--theme-card) 68%, transparent);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  border-color: rgba(255,255,255,.5);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, .14);
+}
+
 .student-theme-dashboard .theme-subject-card:hover {
   border-color: var(--theme-accent);
+}
+
+.student-theme-dashboard.has-theme-bg .theme-subject-card:hover {
+  border-color: rgba(255,255,255,.85);
+}
+
+/* Shared theme layer for every student learning screen. */
+.student-theme-shell {
+  background: var(--theme-page);
+  transition: background .25s ease, color .25s ease;
+}
+
+.student-theme-shell .student-theme-course-header,
+.student-theme-shell .student-theme-compact-header {
+  background: var(--theme-hero) !important;
+}
+
+.student-theme-shell .student-theme-question-header,
+.student-theme-shell .student-theme-footer {
+  background: var(--theme-card) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 26%, white) !important;
+}
+
+.student-theme-shell .student-theme-tab-active {
+  border-color: var(--theme-accent) !important;
+  color: var(--theme-accent) !important;
+}
+
+.student-theme-shell .student-theme-content [class~="bg-white"],
+.student-theme-shell .student-theme-footer,
+.student-theme-shell [class~="bg-gray-50"],
+.student-theme-shell [class~="bg-slate-50"] {
+  background-color: var(--theme-card) !important;
+}
+
+.student-theme-shell .student-theme-content [class*="border-sky-"],
+.student-theme-shell .student-theme-content [class*="border-blue-"],
+.student-theme-shell .student-theme-content [class*="border-indigo-"] {
+  border-color: color-mix(in srgb, var(--theme-accent) 30%, white) !important;
+}
+
+.student-theme-shell .student-theme-content button[class*="bg-sky-"],
+.student-theme-shell .student-theme-content button[class*="bg-blue-"],
+.student-theme-shell .student-theme-content button[class*="bg-indigo-"],
+.student-theme-shell .student-theme-content a[class*="bg-sky-"],
+.student-theme-shell .student-theme-content a[class*="bg-blue-"],
+.student-theme-shell .student-theme-content a[class*="bg-indigo-"] {
+  background-color: var(--theme-accent) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+.student-theme-shell .student-theme-content [class*="text-sky-"],
+.student-theme-shell .student-theme-content [class*="text-blue-"],
+.student-theme-shell .student-theme-content [class*="text-indigo-"] {
+  color: var(--theme-accent) !important;
 }
 
 html.lenis,
@@ -54,4 +153,19 @@ html.lenis body {
 ::-webkit-scrollbar-thumb {
   background-color: #3a3a3a;
   border-radius: 10px;
+}
+
+.course-scroll {
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+}
+.course-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.course-scroll::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--theme-accent, #6366f1) 45%, transparent);
+  border-radius: 10px;
+}
+.course-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }

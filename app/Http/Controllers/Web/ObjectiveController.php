@@ -303,7 +303,7 @@ class ObjectiveController extends Controller
             // Handle image URL construction
             $fileUrl = null;
             if ($hasFile) {
-                $fileUrl = $this->getAnswerFileUrl($answer->answer_option_file);
+                $fileUrl = QuestionContentNormalizer::answerFileUrl($answer->answer_option_file);
                 Log::debug("Answer file URL constructed:", [
                     'original' => $answer->answer_option_file,
                     'url' => $fileUrl
@@ -312,7 +312,7 @@ class ObjectiveController extends Controller
 
             return [
                 'id' => $answer->id,
-                'text' => $answer->answer_text,
+                'text' => QuestionContentNormalizer::normalizeHtml($answer->answer_text),
                 'file' => $fileUrl,
                 'type' => $type,
                 'has_html' => $hasHtmlContent,
@@ -428,28 +428,31 @@ class ObjectiveController extends Controller
         if (isset($question->answers) && !empty($question->answers)) {
             foreach ($question->answers as $answer) {
                 if (!empty($answer->reason)) {
+                    $reason = QuestionContentNormalizer::normalizeHtml($answer->reason);
+
                     // Check if reason contains HTML
-                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $answer->reason);
+                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $reason);
 
                     if ($hasHtml) {
                         // Process HTML explanation
-                        return $this->processExplanationHtml($answer->reason);
+                        return $this->processExplanationHtml($reason);
                     }
 
-                    return $answer->reason;
+                    return $reason;
                 }
             }
         }
 
         // Fallback: check question explanation field if it exists
         if (!empty($question->explanation)) {
-            $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $question->explanation);
+            $explanation = QuestionContentNormalizer::normalizeHtml($question->explanation);
+            $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $explanation);
 
             if ($hasHtml) {
-                return $this->processExplanationHtml($question->explanation);
+                return $this->processExplanationHtml($explanation);
             }
 
-            return $question->explanation;
+            return $explanation;
         }
 
         return "Explanation not available.";
@@ -460,6 +463,8 @@ class ObjectiveController extends Controller
      */
     private function processExplanationHtml($html)
     {
+        $html = QuestionContentNormalizer::normalizeHtml($html);
+
         // Add Tailwind classes to paragraphs and clean up HTML
         $processedHtml = preg_replace('/<p([^>]*)>/', '<p$1 class="mb-3 text-gray-700 leading-relaxed">', $html);
 

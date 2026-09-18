@@ -37,8 +37,8 @@
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-200">Order summary</p><h2 class="mt-2 text-xl font-extrabold">{{ $package->name }}</h2>
             <div class="mt-5 border-y border-white/20 py-4"><div class="flex justify-between text-sm"><span>One child licence</span><span id="summary-duration">—</span></div></div>
             <div class="mt-5 flex items-end justify-between"><span class="font-bold">Total</span><span id="summary-total" class="text-2xl font-extrabold text-[#f2c237]">—</span></div>
-            <p class="mt-5 rounded-xl bg-white/10 p-3 text-xs leading-5 text-sky-100">{{ $cartMode ? 'Child details are saved as pending. The account is created only after the combined cart payment.' : 'This buys one package, creates the child account, activates the subscription, and emails the receipt.' }}</p>
-            <button id="submit-button" data-mode="{{ $cartMode ? 'cart' : 'buy' }}" class="mt-5 w-full rounded-xl bg-[#f2c237] px-4 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">{{ $cartMode ? 'Add to cart' : 'Buy package' }}</button>
+            <p class="mt-5 rounded-xl bg-white/10 p-3 text-xs leading-5 text-sky-100">{{ $cartMode ? 'Child details are saved as pending. The account is created only after the combined cart payment.' : 'You\'ll be redirected to our secure payment gateway. The child account and subscription are created only after payment is confirmed.' }}</p>
+            <button id="submit-button" data-mode="{{ $cartMode ? 'cart' : 'buy' }}" class="mt-5 w-full rounded-xl bg-[#f2c237] px-4 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">{{ $cartMode ? 'Add to cart' : 'Proceed to payment' }}</button>
         </aside>
     </form>
 </div>
@@ -59,7 +59,7 @@
         if (!selected) return;
         duration.textContent = selected.closest('label').querySelector('.text-xl').textContent;
         total.textContent = `${selected.dataset.currency} ${Number(selected.dataset.price).toFixed(2)}`;
-        submit.textContent = `${submit.dataset.mode === 'cart' ? 'Add to cart' : 'Buy package'} · ${total.textContent}`;
+        submit.textContent = `${submit.dataset.mode === 'cart' ? 'Add to cart' : 'Proceed to payment'} · ${total.textContent}`;
     }
 
     async function checkUsername() {

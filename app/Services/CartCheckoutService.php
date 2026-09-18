@@ -8,55 +8,51 @@ use App\Models\OrderItem;
 use App\Models\PaymentTransaction;
 use App\Models\Student;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class CartCheckoutService
 {
     public function __construct(private readonly ActivationCodeService $activationCodes) {}
 
-    public function checkout(Request $request, Order $order): array
+    /**
+     * Create the child accounts and activation codes for every pending item on
+     * an order, once a payment gateway has confirmed the order was paid.
+     * Safe to call more than once for the same order (webhook retries and the
+     * gateway return page can both land here) — a non-pending order is a no-op.
+     */
+    public function fulfill(Order $order, PaymentTransaction $transaction): array
     {
-        $result = DB::transaction(function () use ($request, $order): array {
-            $parent = $request->user();
-            $order = Order::query()
-                ->whereKey($order->id)
-                ->where('parent_id', $parent->id)
-                ->where('status', Order::STATUS_DRAFT)
-                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-                ->lockForUpdate()
-                ->firstOrFail();
-            $items = $order->items()->with(['package', 'durationOption'])->lockForUpdate()->get();
+        $result = DB::transaction(function () use ($order, $transaction): array {
+            $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            if ($items->isEmpty()) {
-                throw ValidationException::withMessages(['cart' => 'Your cart is empty.']);
+            if (in_array($order->status, [Order::STATUS_PAID, Order::STATUS_FULFILLED], true)) {
+                return ['order' => $order, 'transaction' => $transaction, 'already_fulfilled' => true];
             }
 
-            $transaction = PaymentTransaction::create([
-                'order_id' => $order->id,
-                'provider' => 'internal_submit',
-                'provider_order_reference' => $order->order_number,
-                'provider_transaction_reference' => 'HT-CART-'.now()->format('Ymd').'-'.Str::upper(Str::random(10)),
-                'status' => PaymentTransaction::STATUS_PAID,
-                'amount' => $order->total,
-                'currency' => $order->currency,
-                'payment_channel' => 'submit_only',
-                'message' => 'Temporary internal cart payment.',
-                'paid_at' => now(),
-                'metadata' => ['payment_mode' => 'submit_only', 'item_count' => $items->count()],
-            ]);
+            $parent = $order->parent;
+            $items = $order->items()
+                ->with(['package', 'durationOption', 'child.student'])
+                ->where('fulfillment_status', OrderItem::FULFILLMENT_PENDING)
+                ->lockForUpdate()
+                ->get();
 
             foreach ($items as $item) {
-                if ($item->item_type !== OrderItem::TYPE_NEW || $item->fulfillment_status !== OrderItem::FULFILLMENT_PENDING) {
-                    throw ValidationException::withMessages(['cart' => 'One cart item cannot be fulfilled.']);
+                if ($item->item_type === OrderItem::TYPE_RENEWAL) {
+                    $this->fulfillRenewalItem($item, $order, $parent, $transaction);
+
+                    continue;
                 }
 
                 if (User::query()->where('username', $item->new_child_username)->exists()) {
-                    throw ValidationException::withMessages(['cart' => "Username {$item->new_child_username} is no longer available."]);
+                    $item->update([
+                        'fulfillment_status' => OrderItem::FULFILLMENT_FAILED,
+                        'failure_reason' => "Username {$item->new_child_username} was taken before payment completed.",
+                    ]);
+
+                    continue;
                 }
 
                 $child = User::create([
@@ -101,7 +97,7 @@ class CartCheckoutService
                     $parent,
                     $child,
                     (int) $item->new_child_level_id,
-                    $request,
+                    null,
                     'new',
                     $item,
                     $transaction,
@@ -115,25 +111,81 @@ class CartCheckoutService
                 $item->usernameReservation?->update(['released_at' => now()]);
             }
 
-            $order->update([
-                'status' => Order::STATUS_FULFILLED,
-                'provider' => 'internal_submit',
+            $transaction->update([
+                'status' => PaymentTransaction::STATUS_PAID,
                 'paid_at' => now(),
             ]);
 
-            return compact('order', 'transaction');
+            $order->update([
+                'status' => Order::STATUS_FULFILLED,
+                'paid_at' => now(),
+            ]);
+
+            return ['order' => $order->fresh(), 'transaction' => $transaction->fresh(), 'already_fulfilled' => false];
         });
 
         $result['receipt_sent'] = false;
 
-        try {
-            $result['order']->load(['items.package', 'items.durationOption', 'items.fulfilledChild.student.level']);
-            Mail::to($request->user()->email)->send(new CartCheckoutReceipt($result['order'], $result['transaction']));
-            $result['receipt_sent'] = true;
-        } catch (Throwable $exception) {
-            report($exception);
+        if (! $result['already_fulfilled']) {
+            try {
+                $order = $result['order']->load(['items.package', 'items.durationOption', 'items.fulfilledChild.student.level', 'parent']);
+                Mail::to($order->parent->email)->send(new CartCheckoutReceipt($order, $result['transaction']));
+                $result['receipt_sent'] = true;
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $result;
+    }
+
+    private function fulfillRenewalItem(OrderItem $item, Order $order, User $parent, PaymentTransaction $transaction): void
+    {
+        $child = $item->child;
+
+        if (! $child || ! $child->student) {
+            $item->update([
+                'fulfillment_status' => OrderItem::FULFILLMENT_FAILED,
+                'failure_reason' => 'The child for this renewal no longer exists.',
+            ]);
+
+            return;
+        }
+
+        $code = $this->activationCodes->issue(
+            package: $item->package,
+            parent: $parent,
+            source: 'renewal_checkout',
+            generatedBy: $parent,
+            reason: "Automatically generated for {$order->order_number}.",
+            email: $parent->email,
+            intendedUse: 'renewal',
+            renewalChild: $child,
+            durationDays: $item->duration_days,
+            purchaseAmount: $item->total,
+            sendEmail: false,
+        );
+        $code->update(['metadata' => [
+            'order_id' => $order->id,
+            'order_item_id' => $item->id,
+            'payment_transaction_id' => $transaction->id,
+        ]]);
+
+        $this->activationCodes->redeem(
+            $code->code_value,
+            $parent,
+            $child,
+            (int) $child->student->level_id,
+            null,
+            'renewal',
+            $item,
+            $transaction,
+        );
+
+        $item->update([
+            'fulfillment_status' => OrderItem::FULFILLMENT_FULFILLED,
+            'fulfilled_child_user_id' => $child->id,
+            'fulfilled_at' => now(),
+        ]);
     }
 }

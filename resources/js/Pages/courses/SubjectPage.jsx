@@ -8,9 +8,7 @@ import {
   ClockIcon,
   DocumentTextIcon,
   PencilSquareIcon,
-  PlayIcon,
   SparklesIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 export default function SubjectPage({ selectedStandard }) {
@@ -28,7 +26,6 @@ export default function SubjectPage({ selectedStandard }) {
 
   const [currentStandard, setCurrentStandard] = useState(selectedStandard || form || 'Form 4');
   const [activeSection, setActiveSection] = useState('');
-  const [selectedVideo, setSelectedVideo] = useState(null);
   const sectionRefs = useRef({});
   const currentContent = content || { id: 0, sections: [] };
   const sections = currentContent.sections || [];
@@ -60,16 +57,6 @@ export default function SubjectPage({ selectedStandard }) {
     setActiveSection(title);
     const element = document.getElementById(title);
     if (element) window.scrollTo({ top: element.getBoundingClientRect().top + window.scrollY - 145, behavior: 'smooth' });
-  };
-
-  const getVideoInfo = (url) => {
-    if (!url) return { platform: 'video', thumbnail: null, embedUrl: null };
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-      const videoId = match?.[2]?.length === 11 ? match[2] : null;
-      return { platform: 'youtube', thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null, embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}` : url };
-    }
-    return { platform: 'video', thumbnail: null, embedUrl: url };
   };
 
   const startPractice = (routeName, section, subSection) => {
@@ -156,39 +143,78 @@ export default function SubjectPage({ selectedStandard }) {
                           {completed && <span className="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Completed</span>}
                         </div>
 
-                        <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                          <div>
-                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Practice</p>
-                            <div className="space-y-3">
-                              {subSection.questionCounts?.objective > 0 && (
-                                <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition hover:border-indigo-200 hover:bg-white hover:shadow-sm">
-                                  <div className="flex gap-3"><span className="h-fit rounded-lg bg-indigo-50 p-2 text-indigo-600"><DocumentTextIcon className="h-5 w-5" /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold text-slate-800">Objective practice</p><span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-600">{subSection.questionCounts.objective} questions</span></div><p className="mt-1 text-xs text-slate-500">{subSection.practiceTitle || 'Test your understanding of this topic.'}</p><div className="mt-3 flex items-center justify-between"><button onClick={() => startPractice('objective-page', section, subSection)} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700">{objectiveCompleted ? 'Try again' : 'Start practice'}<ArrowRightIcon className="h-3.5 w-3.5" /></button>{subSection.lastPractice?.objective && <span className="text-xs font-semibold text-slate-500">Last: {subSection.lastPractice.objective.score}%</span>}</div></div></div>
-                                </div>
-                              )}
-                              {subSection.questionCounts?.subjective > 0 && (
-                                <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition hover:border-violet-200 hover:bg-white hover:shadow-sm">
-                                  <div className="flex gap-3"><span className="h-fit rounded-lg bg-violet-50 p-2 text-violet-600"><PencilSquareIcon className="h-5 w-5" /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold text-slate-800">Written practice</p><span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600">{subSection.questionCounts.subjective} questions</span></div><p className="mt-1 text-xs text-slate-500">Build a stronger written response.</p><button onClick={() => startPractice('subjective-page', section, subSection)} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-violet-700">{subjectiveCompleted ? 'Try again' : 'Start writing'}<ArrowRightIcon className="h-3.5 w-3.5" /></button></div></div>
-                                </div>
-                              )}
-                              {!subSection.questionCounts?.objective && !subSection.questionCounts?.subjective && <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">Practice content is coming soon.</div>}
+                        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                          {subSection.questionCounts?.objective > 0 && (
+                            <div className="group/card relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-white p-5 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-100">
+                              <div className="flex items-start justify-between">
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-400 text-white shadow-sm shadow-indigo-200">
+                                  <DocumentTextIcon className="h-6 w-6" />
+                                </span>
+                                <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-700">{subSection.questionCounts.objective} questions</span>
+                              </div>
+                              <h4 className="mt-4 text-base font-bold text-slate-900">Objective practice</h4>
+                              <p className="mt-1 text-xs text-slate-500">{subSection.practiceTitle || 'Test your understanding of this topic.'}</p>
+                              <div className="mt-4 space-y-1.5">
+                                {subSection.lastPractice?.objective ? (
+                                  <>
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${objectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                      {objectiveCompleted && <CheckCircleIcon className="h-3.5 w-3.5" />}
+                                      {subSection.lastPractice.objective.total_correct}/{subSection.lastPractice.objective.total_questions} correct
+                                    </span>
+                                    <p className="flex items-center gap-1 text-[11px] text-slate-400">
+                                      <ClockIcon className="h-3.5 w-3.5" /> Last practice: {subSection.lastPractice.objective.last_practice_at}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <span className="text-[11px] font-semibold text-slate-400">Not attempted yet</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => startPractice('objective-page', section, subSection)}
+                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                              >
+                                {objectiveCompleted ? 'Try again' : 'Start practice'}
+                                <ArrowRightIcon className="h-4 w-4 transition group-hover/card:translate-x-0.5" />
+                              </button>
                             </div>
-                          </div>
-
-                          <div>
-                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Video lessons</p>
-                            <div className="space-y-2">
-                              {(subSection.videos || []).map((video, index) => {
-                                const videoInfo = getVideoInfo(video.url);
-                                return (
-                                  <button key={index} onClick={() => setSelectedVideo({ ...video, ...videoInfo })} className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-2.5 text-left transition hover:border-cyan-200 hover:bg-cyan-50/30">
-                                    <span className="relative flex h-14 w-20 flex-none items-center justify-center overflow-hidden rounded-lg bg-slate-100">{videoInfo.thumbnail ? <img src={videoInfo.thumbnail} alt="" className="h-full w-full object-cover transition group-hover:scale-105" /> : <PlayIcon className="h-5 w-5 text-slate-400" />}<span className="absolute inset-0 flex items-center justify-center bg-slate-950/0 transition group-hover:bg-slate-950/20"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition group-hover:opacity-100"><PlayIcon className="ml-0.5 h-3.5 w-3.5 text-slate-900" /></span></span></span>
-                                    <span className="min-w-0 flex-1"><span className="line-clamp-2 text-sm font-semibold text-slate-700">{video.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-400"><ClockIcon className="h-3 w-3" /> Video lesson</span></span><ArrowRightIcon className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-cyan-600" />
-                                  </button>
-                                );
-                              })}
-                              {!subSection.videos?.length && <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center"><PlayIcon className="mx-auto h-5 w-5 text-slate-300" /><p className="mt-2 text-xs text-slate-400">No video lessons yet.</p></div>}
+                          )}
+                          {subSection.questionCounts?.subjective > 0 && (
+                            <div className="group/card relative overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/70 via-white to-white p-5 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-100">
+                              <div className="flex items-start justify-between">
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-400 text-white shadow-sm shadow-violet-200">
+                                  <PencilSquareIcon className="h-6 w-6" />
+                                </span>
+                                <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold text-violet-700">{subSection.questionCounts.subjective} questions</span>
+                              </div>
+                              <h4 className="mt-4 text-base font-bold text-slate-900">Written practice</h4>
+                              <p className="mt-1 text-xs text-slate-500">Build a stronger written response.</p>
+                              <div className="mt-4 space-y-1.5">
+                                {subSection.lastPractice?.subjective ? (
+                                  <>
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${subjectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                      {subjectiveCompleted && <CheckCircleIcon className="h-3.5 w-3.5" />}
+                                      {subSection.lastPractice.subjective.total_correct}/{subSection.lastPractice.subjective.total_questions} correct
+                                    </span>
+                                    <p className="flex items-center gap-1 text-[11px] text-slate-400">
+                                      <ClockIcon className="h-3.5 w-3.5" /> Last practice: {subSection.lastPractice.subjective.last_practice_at}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <span className="text-[11px] font-semibold text-slate-400">Not attempted yet</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => startPractice('subjective-page', section, subSection)}
+                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                              >
+                                {subjectiveCompleted ? 'Try again' : 'Start writing'}
+                                <ArrowRightIcon className="h-4 w-4 transition group-hover/card:translate-x-0.5" />
+                              </button>
                             </div>
-                          </div>
+                          )}
+                          {!subSection.questionCounts?.objective && !subSection.questionCounts?.subjective && (
+                            <div className="col-span-full rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">Practice content is coming soon.</div>
+                          )}
                         </div>
                       </article>
                     );
@@ -200,15 +226,6 @@ export default function SubjectPage({ selectedStandard }) {
           </div>
         </div>
       </div>
-
-      {selectedVideo && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm" onClick={() => setSelectedVideo(null)}>
-          <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><p className="font-semibold text-slate-900">{selectedVideo.title}</p><p className="mt-0.5 text-xs text-slate-400">Video lesson</p></div><button onClick={() => setSelectedVideo(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><XMarkIcon className="h-5 w-5" /></button></div>
-            <div className="relative bg-slate-950 pt-[56.25%]">{selectedVideo.platform === 'youtube' ? <iframe src={`${selectedVideo.embedUrl}?autoplay=1&rel=0`} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={selectedVideo.title} /> : <video controls autoPlay className="absolute inset-0 h-full w-full"><source src={selectedVideo.embedUrl} type="video/mp4" /></video>}</div>
-          </div>
-        </div>
-      )}
     </SubjectLayout>
   );
 }

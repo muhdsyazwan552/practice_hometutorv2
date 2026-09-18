@@ -141,11 +141,16 @@ class MasteryService
     }
 
     /**
-     * Calculate and cache overall progress
+     * Calculate and cache overall progress.
+     *
+     * Accepts an optional pre-computed $topics collection (from
+     * getTopicsWithMastery) so callers that already built it — e.g.
+     * SubjectController::progress() — don't pay for the same topic/mastery
+     * query set twice in one request.
      */
-    public function updateProgressCache($userId, $subjectId, $levelId)
+    public function updateProgressCache($userId, $subjectId, $levelId, $topics = null)
     {
-        $topics = $this->getTopicsWithMastery($userId, $subjectId, $levelId);
+        $topics = $topics ?? $this->getTopicsWithMastery($userId, $subjectId, $levelId);
         $totalTopics = $topics->count();
         $rankCounts = $topics->countBy('rank');
 

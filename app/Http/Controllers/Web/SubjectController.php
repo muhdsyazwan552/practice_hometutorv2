@@ -33,14 +33,18 @@ class SubjectController extends Controller
             return response()->json(['error' => 'Missing required parameters'], 400);
         }
 
+        // Build the topic/mastery tree once and reuse it for both the cache
+        // rebuild and the sidebar list — this used to call
+        // getTopicsWithMastery() twice per request (once inside
+        // updateProgressCache, once here), which was half of why this
+        // endpoint felt slow.
+        $topics = $this->masteryService->getTopicsWithMastery($userId, $subjectId, $levelId);
+
         // Rebuild from the current topic/subtopic tree so old flat caches do not leak into Mission.
-        $this->masteryService->updateProgressCache($userId, $subjectId, $levelId);
+        $this->masteryService->updateProgressCache($userId, $subjectId, $levelId, $topics);
 
         // Get overall progress
         $progress = $this->masteryService->getUserProgress($userId, $subjectId, $levelId);
-
-        // Get topics with mastery status for the sidebar
-        $topics = $this->masteryService->getTopicsWithMastery($userId, $subjectId, $levelId);
 
         $topicsFormatted = $topics->map(function ($topic) {
             return [

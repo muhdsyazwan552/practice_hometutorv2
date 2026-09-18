@@ -9,12 +9,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('question_reports', function (Blueprint $table) {
-            $table->string('question_code', 100)
-                ->nullable()
-                ->after('question_id')
-                ->index();
-        });
+        if (! Schema::hasColumn('question_reports', 'question_code')) {
+            Schema::table('question_reports', function (Blueprint $table) {
+                $table->string('question_code', 100)
+                    ->nullable()
+                    ->after('question_id')
+                    ->index();
+            });
+        }
 
         // Populate the code for reports submitted before this column existed.
         DB::table('question_reports')
@@ -37,9 +39,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('question_reports', function (Blueprint $table) {
-            $table->dropIndex(['question_code']);
-            $table->dropColumn('question_code');
-        });
+        if (Schema::hasColumn('question_reports', 'question_code')) {
+            Schema::table('question_reports', function (Blueprint $table) {
+                $table->dropIndex(['question_code']);
+                $table->dropColumn('question_code');
+            });
+        }
     }
 };

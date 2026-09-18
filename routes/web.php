@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\LicenseAdjustmentController as AdminLicenseAdjustmentController;
 use App\Http\Controllers\Admin\LicenseManagementController as AdminLicenseManagementController;
+use App\Http\Controllers\Api\GameSsoController;
 use App\Http\Controllers\CodeManager\ActivationCodeController as CodeManagerActivationCodeController;
 use App\Http\Controllers\CodeManager\AssistedChildController as CodeManagerAssistedChildController;
 use App\Http\Controllers\Parent\ActivationCodeController as ParentActivationCodeController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Parent\DashboardController as ParentDashboardController
 use App\Http\Controllers\Parent\LearningDashboardController as ParentLearningDashboardController;
 use App\Http\Controllers\Parent\PackageCheckoutController as ParentPackageCheckoutController;
 use App\Http\Controllers\Parent\PaymentCompletionController as ParentPaymentCompletionController;
+use App\Http\Controllers\Parent\PaymentGatewayController as ParentPaymentGatewayController;
 use App\Http\Controllers\Parent\PaymentLogController as ParentPaymentLogController;
 use App\Http\Controllers\Parent\ProfileController as ParentProfileController;
 use App\Http\Controllers\Parent\SubscriptionController as ParentSubscriptionController;
@@ -29,6 +31,7 @@ use App\Http\Controllers\Web\MissionController;
 use App\Http\Controllers\Web\ObjectiveController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\QuestionReportController;
+use App\Http\Controllers\Web\QuizArenaController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SubjectContentController;
 use App\Http\Controllers\Web\SubjectController;
@@ -56,6 +59,19 @@ Route::get('/demo/literasi-huruf', function () {
     return Inertia::render('Demos/AlphabetTraceGame/Index');
 })->name('demo.literasi-huruf');
 
+// Public DOKU server-to-server webhook — no session, protected by HMAC signature instead of auth.
+Route::post('/doku/notification', [ParentPaymentGatewayController::class, 'notification'])->name('doku.notification');
+
+// Game SSO: browser-facing authorize step needs the caller's own hometutorV2 session.
+Route::get('/api/games/sso', [GameSsoController::class, 'authorize'])
+    ->middleware(['auth', 'verified', 'throttle:20,1'])
+    ->name('games.sso.authorize');
+
+// Game SSO: public server-to-server code exchange, protected by client_id/secret instead of auth.
+Route::post('/api/internal/game-sso/exchange', [GameSsoController::class, 'exchange'])
+    ->middleware('throttle:30,1')
+    ->name('games.sso.exchange');
+
 Route::middleware(['auth', 'verified', 'role:parent'])
     ->prefix('parent')
     ->name('parent.')
@@ -73,6 +89,7 @@ Route::middleware(['auth', 'verified', 'role:parent'])
         Route::patch('/cart/items/{itemUuid}', [ParentCartController::class, 'update'])->whereUuid('itemUuid')->middleware('throttle:20,1')->name('cart.items.update');
         Route::delete('/cart/items/{itemUuid}', [ParentCartController::class, 'destroy'])->whereUuid('itemUuid')->name('cart.items.destroy');
         Route::post('/cart/checkout', [ParentCartController::class, 'checkout'])->middleware('throttle:5,1')->name('cart.checkout');
+        Route::get('/orders/{order:uuid}/payment-return', [ParentPaymentGatewayController::class, 'return'])->name('orders.payment-return');
         Route::post('/children/username-availability', [ParentPackageCheckoutController::class, 'usernameAvailability'])->middleware('throttle:20,1')->name('children.username-availability');
         Route::post('/activation-codes/validate', [ParentActivationCodeController::class, 'validateCode'])->middleware('throttle:10,1')->name('activation-codes.validate');
         Route::post('/activation-codes/{codeUuid}/resend', [ParentSubscriptionController::class, 'resend'])->whereUuid('codeUuid')->middleware('throttle:3,1')->name('activation-codes.resend');
@@ -194,6 +211,16 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
     Route::get('/question-section', function () {
         return Inertia::render('games/QuizInterface');
     })->name('question-section');
+
+    Route::prefix('quiz-arena')->name('quiz-arena.')->group(function () {
+        Route::get('/', [QuizArenaController::class, 'show'])->name('index');
+        Route::post('/start', [QuizArenaController::class, 'start'])->middleware('throttle:5,1')->name('start');
+        Route::get('/question', [QuizArenaController::class, 'getQuestion'])->name('question');
+        Route::post('/answer', [QuizArenaController::class, 'submitAnswer'])->name('answer');
+        Route::get('/summary', [QuizArenaController::class, 'getSummary'])->name('summary');
+        Route::get('/wallet', [QuizArenaController::class, 'wallet'])->name('wallet');
+        Route::post('/rewards/{reward}/claim', [QuizArenaController::class, 'claimReward'])->middleware('throttle:10,1')->name('rewards.claim');
+    });
 
     Route::get('/chat', [ChatController::class, 'lobby'])->name('chat.lobby');
     Route::get('/chat/conversations', [ChatController::class, 'getConversations']);

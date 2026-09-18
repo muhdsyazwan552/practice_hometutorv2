@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Question;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -297,7 +298,7 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->sample_answer)) {
                     Log::info("✅ PRIORITY 1: Found sample_answer for question {$question->id}");
-                    return $answer->sample_answer;
+                    return QuestionContentNormalizer::normalizeHtml($answer->sample_answer);
                 }
             }
 
@@ -325,19 +326,24 @@ class SubjectiveController extends Controller
                             'contentLength' => strlen($fileContent)
                         ]);
 
-                        return $fileContent; // Return the HTML as-is
+                        return QuestionContentNormalizer::normalizeHtml($fileContent);
                     }
 
                     // Check if it contains "Schema Answer:" text (might be HTML with text)
                     if (is_string($fileContent) && strpos($fileContent, 'Schema Answer:') !== false) {
                         Log::info("📝 sample_answer_file contains text with 'Schema Answer:'");
-                        return $fileContent;
+                        return QuestionContentNormalizer::normalizeHtml($fileContent);
+                    }
+
+                    if ($imageUrl = QuestionContentNormalizer::imageFileUrl($fileContent, 'sample-answers')) {
+                        Log::info("🖼️ sample_answer_file is an image file reference");
+                        return $imageUrl;
                     }
 
                     // Check if it's plain text (not a URL)
                     if (is_string($fileContent) && !$this->isUrl($fileContent)) {
                         Log::info("📝 sample_answer_file is plain text");
-                        return $fileContent;
+                        return QuestionContentNormalizer::normalizeHtml($fileContent);
                     }
 
                     // If it's a URL, check the file extension to determine if it's an image
@@ -359,7 +365,7 @@ class SubjectiveController extends Controller
                     }
 
                     Log::info("📝 Returning raw sample_answer_file content");
-                    return $fileContent;
+                    return QuestionContentNormalizer::normalizeHtml($fileContent);
                 }
             }
 
@@ -368,7 +374,7 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->reason)) {
                     Log::info("✅ PRIORITY 3: Found reason for question {$question->id}");
-                    return $answer->reason;
+                    return QuestionContentNormalizer::normalizeHtml($answer->reason);
                 }
             }
 
@@ -378,7 +384,7 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->reason2)) {
                     Log::info("✅ PRIORITY 4: Found reason2 for question {$question->id}");
-                    return $answer->reason2;
+                    return QuestionContentNormalizer::normalizeHtml($answer->reason2);
                 }
             }
 
@@ -390,10 +396,15 @@ class SubjectiveController extends Controller
                     $reasonFileContent = $answer->reason_file;
                     Log::info("✅ PRIORITY 5: Found reason_file for question {$question->id}: " . $reasonFileContent);
 
+                    if ($imageUrl = QuestionContentNormalizer::imageFileUrl($reasonFileContent, 'answers')) {
+                        Log::info("🖼️ reason_file is an image file reference");
+                        return $imageUrl;
+                    }
+
                     // Check if this is text content
                     if (is_string($reasonFileContent) && !$this->isUrl($reasonFileContent)) {
                         Log::info("📝 reason_file contains text");
-                        return $reasonFileContent;
+                        return QuestionContentNormalizer::normalizeHtml($reasonFileContent);
                     }
 
                     // If it's a URL
@@ -414,7 +425,7 @@ class SubjectiveController extends Controller
                         }
                     }
 
-                    return $reasonFileContent;
+                    return QuestionContentNormalizer::normalizeHtml($reasonFileContent);
                 }
             }
 
@@ -424,7 +435,7 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if ($answer->iscorrectanswer && !empty($answer->answer_text)) {
                     Log::info("✅ FALLBACK 1: Found correct answer text for question {$question->id}");
-                    return $answer->answer_text;
+                    return QuestionContentNormalizer::normalizeHtml($answer->answer_text);
                 }
             }
 
@@ -434,7 +445,7 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->answer_text)) {
                     Log::info("✅ FALLBACK 2: Found any answer text for question {$question->id}");
-                    return $answer->answer_text;
+                    return QuestionContentNormalizer::normalizeHtml($answer->answer_text);
                 }
             }
 
@@ -553,11 +564,12 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->reason)) {
                     Log::info("✅ Found reason for explanation");
-                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $answer->reason);
+                    $reason = QuestionContentNormalizer::normalizeHtml($answer->reason);
+                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $reason);
                     if ($hasHtml) {
-                        return $this->processExplanationHtml($answer->reason);
+                        return $this->processExplanationHtml($reason);
                     }
-                    return $answer->reason;
+                    return $reason;
                 }
             }
 
@@ -565,11 +577,12 @@ class SubjectiveController extends Controller
             foreach ($question->answers as $answer) {
                 if (!empty($answer->reason2)) {
                     Log::info("✅ Found reason2 for explanation");
-                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $answer->reason2);
+                    $reason = QuestionContentNormalizer::normalizeHtml($answer->reason2);
+                    $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $reason);
                     if ($hasHtml) {
-                        return $this->processExplanationHtml($answer->reason2);
+                        return $this->processExplanationHtml($reason);
                     }
-                    return $answer->reason2;
+                    return $reason;
                 }
             }
 
@@ -599,11 +612,12 @@ class SubjectiveController extends Controller
         // Fallback: check question explanation field if it exists
         if (!empty($question->explanation)) {
             Log::info("✅ Found explanation in question field");
-            $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $question->explanation);
+            $explanation = QuestionContentNormalizer::normalizeHtml($question->explanation);
+            $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $explanation);
             if ($hasHtml) {
-                return $this->processExplanationHtml($question->explanation);
+                return $this->processExplanationHtml($explanation);
             }
-            return $question->explanation;
+            return $explanation;
         }
 
         Log::info("❌ No explanation available");
@@ -615,6 +629,8 @@ class SubjectiveController extends Controller
      */
     private function processExplanationHtml($html)
     {
+        $html = QuestionContentNormalizer::normalizeHtml($html);
+
         $processedHtml = preg_replace('/<p([^>]*)>/', '<p$1 class="mb-3 text-gray-700 leading-relaxed">', $html);
         $processedHtml = preg_replace('/\s+data-[^=]+="[^"]*"/', '', $processedHtml);
         return $processedHtml;

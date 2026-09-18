@@ -52,6 +52,30 @@ class HandleInertiaRequests extends Middleware
 
             'schoolSubjects' => fn() => (new MenuController())->getSchoolSubjects(),
 
+            // The active student theme is shared with every Inertia page so
+            // practice, mission, report and question screens stay in sync.
+            'studentTheme' => function () use ($request) {
+                $user = $request->user();
+
+                if (!$user?->isChild()) {
+                    return null;
+                }
+
+                $themes = $user->unlockedDashboardThemes()
+                    ->where('dashboard_themes.is_active', true)
+                    ->orderBy('dashboard_themes.sort_order')
+                    ->get();
+                $theme = $themes->firstWhere('id', $user->active_dashboard_theme_id)
+                    ?? $themes->first();
+
+                return $theme ? [
+                    'id' => $theme->id,
+                    'slug' => $theme->slug,
+                    'name' => $theme->name,
+                    'config' => $theme->config ?? [],
+                ] : null;
+            },
+
             'flash' => [
                 'message' => fn() => $request->session()->get('message'),
                 'success' => fn() => $request->session()->get('success'),
@@ -65,6 +89,7 @@ class HandleInertiaRequests extends Middleware
 
             'appName' => config('app.name'),
             'appUrl' => config('app.url'),
+            'gamesUrl' => config('services.game_sso.games_url'),
         ]);
     }
 

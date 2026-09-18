@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\PackageDurationOption;
 use App\Models\User;
-use App\Services\PackageCheckoutService;
+use App\Services\GatewayCheckoutService;
 use App\Services\SubscriptionOrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -47,7 +47,7 @@ class PackageCheckoutController extends Controller
         ]);
     }
 
-    public function store(Request $request, Package $package, PackageCheckoutService $checkout): RedirectResponse
+    public function store(Request $request, Package $package, SubscriptionOrderService $orders, GatewayCheckoutService $gateway): RedirectResponse
     {
         abort_unless($package->is_active && $package->curriculum_group, 404);
         $request->merge(['username' => strtolower(trim((string) $request->input('username')))]);
@@ -60,16 +60,15 @@ class PackageCheckoutController extends Controller
         ]);
 
         $option = PackageDurationOption::query()->where('package_id', $package->id)->where('is_active', true)->whereIn('months', [6, 12])->findOrFail($validated['duration_option_id']);
-        $result = $checkout->purchase($request, $package, $option, $validated);
 
-        $redirect = redirect()->route('parent.children.index');
+        $order = $orders->createDraft($request->user());
+        $orders->addNewChildItem($order, $package, $validated, $option);
+        $checkoutUrl = $gateway->initiate($order, $request->user());
 
-        return $result['receipt_sent']
-            ? $redirect->with('success', 'Payment submitted. The child account and subscription were created, and the receipt was sent by email.')
-            : $redirect->with('error', 'The child account is ready, but the receipt email could not be sent. Please contact support for the receipt.');
+        return redirect()->away($checkoutUrl);
     }
 
-    public function storeRenewal(Request $request, string $childUuid, Package $package, PackageCheckoutService $checkout): RedirectResponse
+    public function storeRenewal(Request $request, string $childUuid, Package $package, SubscriptionOrderService $orders, GatewayCheckoutService $gateway): RedirectResponse
     {
         abort_unless($package->is_active && $package->curriculum_group, 404);
         $student = $request->user()->children()->with(['user', 'level'])->where('uuid', $childUuid)->firstOrFail();
@@ -91,16 +90,12 @@ class PackageCheckoutController extends Controller
             ->where('is_active', true)
             ->whereIn('months', [6, 12])
             ->findOrFail($validated['duration_option_id']);
-        $result = $checkout->purchaseRenewal($request, $student, $package, $option);
 
-        $redirect = redirect()->route('parent.children.renew', [
-            'childUuid' => $student->uuid,
-            'activation' => $result['code']->uuid,
-        ]);
+        $order = $orders->createDraft($request->user());
+        $orders->addRenewalItem($order, $student->user, $package, $option);
+        $checkoutUrl = $gateway->initiate($order, $request->user());
 
-        return $result['receipt_sent']
-            ? $redirect->with('success', 'Payment recorded. Your renewal code and receipt were sent by email. Enter the included code below to renew the child subscription.')
-            : $redirect->with('error', 'Payment and renewal code were created, but the receipt email could not be sent. You can still use the code shown below.');
+        return redirect()->away($checkoutUrl);
     }
 
     public function addToCart(Request $request, Package $package, SubscriptionOrderService $orders): RedirectResponse

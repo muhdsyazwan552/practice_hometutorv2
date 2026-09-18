@@ -85,15 +85,15 @@ export default function ResultChallenge({
           
           <div className="text-center">
             <h1 className="text-xl font-bold text-white mb-1">
-              {topic || 'Practice Results'}
+              {topic ? `Mission: ${topic}` : 'Mission Results'}
             </h1>
-            <p className="text-sm text-blue-100">Practice Completed</p>
+            <p className="text-sm text-blue-100">Mission Completed</p>
           </div>
-          
+
           <div className="text-center mt-4">
             <div className="inline-flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <p className="text-lg font-semibold text-white">Great Practice!</p>
+              <p className="text-lg font-semibold text-white">Great work!</p>
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             </div>
           </div>
@@ -245,9 +245,9 @@ export default function ResultChallenge({
             <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-full mb-3">
               <span className="text-2xl">🎯</span>
             </div>
-            <h2 className="text-lg font-bold text-gray-800 mb-1">Practice Complete!</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-1">Mission Complete!</h2>
             <p className="text-sm text-gray-600">
-              You've completed this practice session. Keep practicing to improve your skills!
+              You've completed this mission. Keep going to master every topic!
             </p>
           </div>
 

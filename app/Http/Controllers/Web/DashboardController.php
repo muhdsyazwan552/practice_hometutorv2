@@ -14,12 +14,16 @@ use App\Models\Friend;
 use App\Models\FriendRequest;
 use App\Models\ZoomMeeting;
 use App\Models\Subject;
+use App\Models\Topic;
 use App\Models\DashboardTheme;
+use App\Helpers\LevelHelper;
 use App\Services\StreakService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -82,6 +86,18 @@ public function index()
 
         $streaks = app(StreakService::class)->summary($user->id);
 
+        $quizAgg = QuizSession::where('user_id', $user->id)
+            ->selectRaw('COUNT(*) as attempts, AVG(total_correct) as avg_correct, MAX(total_correct) as best_correct')
+            ->first();
+        $quizStats = [
+            'attempts' => (int) ($quizAgg->attempts ?? 0),
+            'averageScore' => $quizAgg && $quizAgg->attempts ? (int) round($quizAgg->avg_correct * 20) : 0,
+            'bestScore' => $quizAgg->best_correct !== null ? (int) $quizAgg->best_correct : null,
+        ];
+
+        $friendsCount = Friend::where('user_id', $user->id)->orWhere('friend_id', $user->id)->count();
+        $pendingRequestsCount = FriendRequest::where('receiver_id', $user->id)->where('status', 'pending')->count();
+
         // Prepare profile data from student information
         $profileData = [
             'name' => $student ? $student->name : $user->name,
@@ -91,9 +107,9 @@ public function index()
             'display_name' => $student ? $student->display_name : $user->display_name,
             'profile_picture' => $user->profile_picture ?? null,
         ];
-        
+
         $authData = ['user' => $user];
-        
+
     } else {
         // For non-authenticated users
         $profileData = [
@@ -103,7 +119,7 @@ public function index()
             'grade' => 'Form 5',
             'display_name' => 'Guest'
         ];
-        
+
         $streaks = [
             'login' => 0,
             'questions' => 0,
@@ -113,29 +129,32 @@ public function index()
             'lastLoginDate' => null,
             'lastAnswerDate' => null,
         ];
+        $quizStats = ['attempts' => 0, 'averageScore' => 0, 'bestScore' => null];
+        $friendsCount = 0;
+        $pendingRequestsCount = 0;
         $student = null;
         $authData = null;
     }
 
-    $subjectLevelId = $student?->level_id ?? 7;
-    $courses = Subject::query()
+    $activityCalendar = $this->buildActivityCalendar(Auth::check() ? Auth::id() : null);
+
+    // Same "display level" collapsing used by MenuController::getSchoolSubjects()
+    // (e.g. Form 4/5 both practice under the level_id=10 subject set) — using
+    // the raw student level_id here would look up a subject list the student
+    // never actually practices against, so progress always showed as 0.
+    $subjectLevelId = LevelHelper::getStandardLevelId($student?->level_id ?? 7);
+    $subjectRows = Subject::query()
         ->where('level_id', $subjectLevelId)
         ->where('is_active', true)
         ->orderBy('seq')
-        ->limit(4)
-        ->get(['id', 'name', 'abbr'])
-        ->map(fn (Subject $subject) => [
-            'id' => $subject->id,
-            'title' => $subject->name,
-            'abbr' => $subject->abbr,
-            'topic' => 'Ready for today’s practice',
-        ])
-        ->values();
+        ->get(['id', 'name', 'abbr', 'level_id']);
+
+    $courses = $this->buildCourseProgress($subjectRows, Auth::check() ? Auth::id() : null);
 
     $teachers = [[
         'name' => 'Cikgu Aina',
         'image' => '/images/cikgu-aina.png',
-        'subjects' => $courses->pluck('title')->take(2)->values()->all() ?: ['Mathematics', 'Science'],
+        'subjects' => collect($courses)->pluck('title')->take(2)->values()->all() ?: ['Mathematics', 'Science'],
         'message' => 'Let’s learn one small step at a time!',
         'available' => 'Ready to guide you',
     ]];
@@ -186,7 +205,117 @@ public function index()
             'availableLocales' => ['en', 'ms'],
             'dashboardTheme' => $this->themePayload($dashboardTheme),
             'learningSpaceCardTheme' => $this->themePayload($learningSpaceCardTheme),
+            'activityCalendar' => $activityCalendar,
+            'quizStats' => $quizStats,
+            'friendsCount' => $friendsCount,
+            'pendingRequestsCount' => $pendingRequestsCount,
         ]);
+}
+
+/**
+ * Attach real practice progress to each subject: how many main topics the
+ * student has completed at least one practice session for, out of how
+ * many main topics exist for that subject/level.
+ */
+private function buildCourseProgress($subjectRows, ?int $userId): array
+{
+    if ($subjectRows->isEmpty()) {
+        return [];
+    }
+
+    $subjectIds = $subjectRows->pluck('id');
+
+    $totalTopicsBySubject = Topic::query()
+        ->whereIn('subject_id', $subjectIds)
+        ->where('parent_id', 0)
+        ->where('is_active', true)
+        ->selectRaw('subject_id, COUNT(*) as total')
+        ->groupBy('subject_id')
+        ->pluck('total', 'subject_id');
+
+    $answeredTopicsBySubject = $userId
+        ? DB::table('practice_session')
+            ->where('user_id', $userId)
+            ->whereIn('subject_id', $subjectIds)
+            ->whereNotNull('topic_id')
+            ->selectRaw('subject_id, COUNT(DISTINCT topic_id) as answered')
+            ->groupBy('subject_id')
+            ->pluck('answered', 'subject_id')
+        : collect();
+
+    return $subjectRows->map(function (Subject $subject) use ($totalTopicsBySubject, $answeredTopicsBySubject) {
+        $total = (int) ($totalTopicsBySubject[$subject->id] ?? 0);
+        $answered = min((int) ($answeredTopicsBySubject[$subject->id] ?? 0), $total);
+        $percentage = $total > 0 ? (int) round(($answered / $total) * 100) : 0;
+
+        return [
+            'id' => $subject->id,
+            'title' => $subject->name,
+            'name' => $subject->name,
+            'abbr' => $subject->abbr,
+            'level_id' => $subject->level_id,
+            'topicsAnswered' => $answered,
+            'topicsTotal' => $total,
+            'progressPercentage' => $percentage,
+        ];
+    })->values()->all();
+}
+
+/**
+ * Build the 3-month (current month + previous 2 months) activity calendar
+ * payload: which months to render, and which dates the user logged in /
+ * completed a practice session on, so the dashboard can highlight them.
+ */
+private function buildActivityCalendar(?int $userId): array
+{
+    $rangeStart = now()->subMonths(2)->startOfMonth();
+    $rangeEnd = now()->endOfMonth();
+
+    $months = collect(range(2, 0))
+        ->map(fn ($monthsAgo) => now()->subMonths($monthsAgo))
+        ->map(fn (Carbon $date) => [
+            'year' => $date->year,
+            'month' => $date->month,
+            'label' => $date->translatedFormat('F Y'),
+            'daysInMonth' => $date->daysInMonth,
+            // 0 (Sunday) - 6 (Saturday) weekday of the 1st, used by the frontend to pad the grid
+            'firstWeekday' => (int) $date->copy()->startOfMonth()->format('w'),
+        ])
+        ->values()
+        ->all();
+
+    if (! $userId) {
+        return [
+            'months' => $months,
+            'loginDates' => [],
+            'practiceDates' => [],
+        ];
+    }
+
+    $loginDates = DB::table('login_activity_logs')
+        ->where('user_id', $userId)
+        ->whereBetween('logged_in_at', [$rangeStart, $rangeEnd])
+        ->selectRaw('DISTINCT DATE(logged_in_at) as d')
+        ->pluck('d')
+        ->map(fn ($d) => (string) $d)
+        ->values()
+        ->all();
+
+    $practiceDates = DB::table('practice_session')
+        ->where('user_id', $userId)
+        ->whereBetween('start_at', [$rangeStart, $rangeEnd])
+        ->whereNotNull('start_at')
+        ->selectRaw('DISTINCT DATE(start_at) as d')
+        ->pluck('d')
+        ->map(fn ($d) => (string) $d)
+        ->values()
+        ->all();
+
+    return [
+        'months' => $months,
+        'loginDates' => $loginDates,
+        'practiceDates' => $practiceDates,
+    ];
 }
 
 private function themePayload(?DashboardTheme $theme): ?array

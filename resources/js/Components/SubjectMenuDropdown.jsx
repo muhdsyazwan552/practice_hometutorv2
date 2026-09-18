@@ -34,7 +34,13 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, title, onToggle
                 <ChevronDownIcon className={`hidden h-4 w-4 shrink-0 transition sm:block ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            <div className={`absolute left-0 top-[calc(100%+0.75rem)] z-[60] w-[min(34rem,calc(100vw-1.5rem))] origin-top-left rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/15 transition duration-200 ${isOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'}`}>
+            {/* Fixed + viewport-clamped on mobile: the toggle button sits near
+                the left edge of the navbar, so anchoring this panel with
+                `left-0` and a width based on 100vw made it spill off the
+                right edge of narrow screens (and contributed to horizontal
+                page overflow even while closed). From `sm:` up there's
+                enough room for the normal button-anchored dropdown. */}
+            <div className={`fixed inset-x-3 top-16 z-[60] max-h-[70vh] origin-top overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/15 transition duration-200 sm:absolute sm:inset-x-auto sm:left-0 sm:top-[calc(100%+0.75rem)] sm:max-h-none sm:w-[min(34rem,calc(100vw-1.5rem))] sm:origin-top-left ${isOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'}`}>
                 <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#082c58] to-[#087bb8] px-4 py-3 text-white">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15"><BookOpenIcon className="h-5 w-5" /></span>
                     <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-sky-100">{t('school_subject', 'School subjects')}</p><p className="mt-0.5 text-sm font-medium">Switch subjects whenever you are ready.</p></div>

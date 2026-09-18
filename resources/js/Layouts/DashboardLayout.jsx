@@ -9,6 +9,7 @@ import {
   BellIcon,
   ChevronDownIcon,
   HomeIcon,
+  PuzzlePieceIcon,
   Squares2X2Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -17,9 +18,9 @@ import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 
 export default function DashboardLayout({ header, children }) {
   const { t } = useLanguage();
-  const { auth, schoolSubjects = [], dashboardTheme } = usePage().props;
+  const { auth, schoolSubjects = [], dashboardTheme, studentTheme, gamesUrl } = usePage().props;
   const user = auth?.user;
-  const palette = resolveDashboardTheme(dashboardTheme);
+  const palette = resolveDashboardTheme(dashboardTheme || studentTheme);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const coursesRef = useRef(null);
@@ -32,15 +33,34 @@ export default function DashboardLayout({ header, children }) {
     return () => document.removeEventListener('mousedown', closeOnOutsideClick);
   }, []);
 
+  // Send the nav "Courses" dropdown to the subject's Practice tab, same
+  // destination as the dashboard's course cards.
   const subjectUrl = (subject) => {
     const slug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
-    const levelId = subject.level_id || 10;
-    return `/subject/${slug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(levelId === 10 ? 'Form 4' : 'Form 5')}`;
+    return route('subject-page', {
+      subject: slug,
+      subject_id: subject.id,
+      level_id: subject.level_id,
+    });
   };
 
+  // Single source of truth for the theme background: the full image, kept
+  // vivid (no dark fade layered on top) so it actually reads as the "sky"
+  // behind translucent cards, matching the reference look.
+  const shellStyle = palette.background
+    ? {
+        backgroundImage: `url(${palette.background})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        backgroundColor: palette.page,
+      }
+    : { backgroundColor: palette.page };
+
   return (
-    <div className="min-h-screen font-sans text-slate-900" style={{ backgroundColor: palette.page }}>
-      <nav className="sticky top-0 z-50 border-b-4 bg-white/90 backdrop-blur-xl" style={{ borderColor: palette.accent }}>
+    <div className="min-h-screen font-sans text-slate-900" style={shellStyle}>
+      <nav className="sticky top-0 z-50 border-b-4  backdrop-blur-xl" style={{ borderColor: palette.accent }}>
         <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
             <Link href={route('dashboard')} className="flex items-center gap-2.5">
@@ -76,9 +96,14 @@ export default function DashboardLayout({ header, children }) {
                   </div>
                 )}
               </div>
-              <Link href={route('quiz-page')} className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
+              <Link href={route('quiz-arena.index')} className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
                 <Squares2X2Icon className="h-4 w-4" /> Quiz arena
               </Link>
+              {gamesUrl && (
+                <a href={`${gamesUrl}/sso/authorize`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
+                  <PuzzlePieceIcon className="h-4 w-4" /> HomeTutor Play
+                </a>
+              )}
             </div>
           </div>
 
@@ -100,7 +125,12 @@ export default function DashboardLayout({ header, children }) {
           <div className="border-t border-slate-100 bg-white px-4 py-4 shadow-lg lg:hidden">
             <div className="mx-auto grid max-w-[1440px] gap-1">
               <Link href={route('dashboard')} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700"><HomeIcon className="h-5 w-5" /> Dashboard</Link>
-              <Link href={route('quiz-page')} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"><Squares2X2Icon className="h-5 w-5" /> Quiz arena</Link>
+              <Link href={route('quiz-arena.index')} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"><Squares2X2Icon className="h-5 w-5" /> Quiz arena</Link>
+              {gamesUrl && (
+                <a href={`${gamesUrl}/sso/authorize`} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  <PuzzlePieceIcon className="h-5 w-5" /> HomeTutor Play
+                </a>
+              )}
               <div className="mt-2 border-t border-slate-100 pt-2">
                 <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Courses</p>
                 {schoolSubjects.slice(0, 6).map((subject) => <Link key={subject.id} href={subjectUrl(subject)} onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50">{subject.name}</Link>)}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
+import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 import StandardFooter from '@/components/StandardFooter';
 
 const SubjectiveQuestionLayout = ({
@@ -12,6 +14,8 @@ const SubjectiveQuestionLayout = ({
   formatTime,
   footerContent
 }) => {
+  const { studentTheme } = usePage().props;
+  const palette = resolveDashboardTheme(studentTheme);
   const [showNavbar, setShowNavbar] = useState(true);
   const [showBlueHeader, setShowBlueHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -50,7 +54,7 @@ const SubjectiveQuestionLayout = ({
   }, [lastScrollY]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="student-theme-shell flex min-h-screen flex-col" style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
       {/* ✅ Navbar - hides on scroll down */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
@@ -61,7 +65,7 @@ const SubjectiveQuestionLayout = ({
 
       {/* ✅ White Header Section - hides on scroll down */}
       <div
-        className={`bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-0 transition-transform duration-300 ${
+        className={`student-theme-question-header bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-0 transition-transform duration-300 ${
           showNavbar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -100,7 +104,7 @@ const SubjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ purple compact header (appears when scrolling up after hiding) */}
-      <div className={`bg-slate-950 text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+      <div className={`student-theme-compact-header text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
           showBlueHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -138,7 +142,7 @@ const SubjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ Main content - add top padding to account for fixed headers */}
-      <div className="relative pb-0 pt-0">
+      <div className="student-theme-content relative pb-0 pt-0">
         {children}
 
         {/* Floating Timer - Desktop */}
@@ -171,7 +175,7 @@ const SubjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ Footer */}
-      <footer className=" bg-white border-t border-gray-200 shadow-lg p-2 z-30">
+      <footer className="student-theme-footer bg-white border-t border-gray-200 shadow-lg p-2 z-30">
         {footerContent}
       </footer>
 

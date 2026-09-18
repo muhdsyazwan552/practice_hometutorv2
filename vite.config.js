@@ -13,5 +13,11 @@ export default defineConfig({
         }),
         react(),
     ],
-    
+    server: {
+        // Force IPv4 loopback: on this Windows setup Node resolves
+        // "localhost" to the IPv6 "::1" first, which Laravel then writes
+        // into public/hot as http://[::1]:5173 — a host browsers/proxies
+        // here can't reach, causing ERR_CONNECTION_REFUSED / blocked assets.
+        host: '127.0.0.1',
+    },
 });
