@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 
-import StandardFooter from '@/components/StandardFooter';
+import StandardFooter from '@/Components/StandardFooter';
 
 const ObjectiveQuestionLayout = ({
   children,
