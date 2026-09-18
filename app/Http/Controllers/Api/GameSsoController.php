@@ -25,7 +25,12 @@ class GameSsoController extends Controller
             return back()->with('error', 'HomeTutor Play is not available for this account.');
         }
 
-        return redirect()->away($gamesUrl.'/sso/authorize');
+        // The hint lets games skip the SSO round-trip when this same student is
+        // already signed in there. It is only a hint: a mismatch (or a forged
+        // value) just makes games run the full, verified SSO flow.
+        return redirect()->away($gamesUrl.'/sso/authorize?'.http_build_query([
+            'login_hint' => $sso->subjectFor($request->user()),
+        ]));
     }
 
     /**

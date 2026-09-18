@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Order;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +26,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Plain "throttle:N,1" shares one counter per user/IP across every
+        // throttled route, so game SSO gets its own keys. The exchange is called
+        // server-to-server by hometutor-games (one IP for every student), so it
+        // is keyed by client and sized for a whole school logging in at once.
+        RateLimiter::for('game-sso', fn (Request $request) => Limit::perMinute(30)
+            ->by('game-sso|'.$request->route()?->getName().'|'.($request->user()?->id ?: $request->ip())));
+        RateLimiter::for('game-sso-exchange', fn (Request $request) => Limit::perMinute(600)
+            ->by('game-sso-exchange|'.(string) $request->input('client_id')));
 
         View::composer('layouts.parent', function ($view): void {
             $cartItemCount = 0;

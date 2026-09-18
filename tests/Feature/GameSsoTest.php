@@ -32,7 +32,28 @@ class GameSsoTest extends TestCase
         $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
 
         $this->actingAs($child)->get('/games/play')
-            ->assertRedirect('https://games.example.test/sso/authorize');
+            ->assertRedirect('https://games.example.test/sso/authorize?login_hint='.urlencode('v2:'.$child->id));
+    }
+
+    public function test_sso_routes_are_not_starved_by_other_throttled_routes(): void
+    {
+        $child = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        // Burn the shared per-user counter that plain "throttle:N,1" routes use.
+        foreach (range(1, 30) as $_) {
+            \Illuminate\Support\Facades\RateLimiter::hit(sha1((string) $child->id), 60);
+        }
+
+        $this->actingAs($child)->get('/api/games/sso?state=abc123state')->assertRedirect();
+    }
+
+    public function test_exchange_limit_is_keyed_by_client_not_the_games_server_ip(): void
+    {
+        foreach (range(1, 40) as $_) {
+            $this->postJson('/api/internal/game-sso/exchange', [
+                'code' => 'nope', 'state' => 'x', 'client_id' => 'hometutor-games', 'client_secret' => 'test-shared-secret',
+            ])->assertStatus(422);
+        }
     }
 
     public function test_play_sends_a_disallowed_user_back_with_an_error(): void
