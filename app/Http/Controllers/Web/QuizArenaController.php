@@ -30,27 +30,15 @@ class QuizArenaController extends Controller
             ->where('weekend_date', $weekendDate->toDateString())
             ->first() : null;
 
-        $leaderboard = collect();
-        if ($levelId) {
-            $leaderboard = QuizArenaSession::query()
-                ->where('level_id', $levelId)
-                ->where('weekend_date', $weekendDate->toDateString())
-                ->where('status', QuizArenaSession::STATUS_COMPLETED)
-                ->with('user:id,name,display_name')
-                ->orderByDesc('correct_answers')
-                ->orderBy('total_time_seconds')
-                ->get()
-                ->values()
-                ->map(fn (QuizArenaSession $row, int $index) => [
-                    'rank' => $row->rank ?? $index + 1,
-                    'name' => $row->user?->display_name ?: $row->user?->name ?: 'Player',
-                    'correct_answers' => $row->correct_answers,
-                    'total_questions' => $row->total_questions,
-                    'total_time_seconds' => $row->total_time_seconds,
-                    'points_awarded' => $row->points_awarded,
-                    'is_me' => $row->user_id === $user->id,
-                ]);
-        }
+        // Only students at the same level compete together. The rank is
+        // computed live from completed attempts: most correct answers first,
+        // then the lowest actual answer time.
+        $leaderboard = $levelId
+            ? $this->leaderboardFor($user->id, (int) $levelId, $weekendDate->toDateString())
+            : collect();
+        $liveRank = $session?->status === QuizArenaSession::STATUS_COMPLETED
+            ? data_get($leaderboard->firstWhere('is_me', true), 'rank')
+            : null;
 
         return Inertia::render('games/QuizArena', [
             'hasLevel' => (bool) $levelId,
@@ -64,7 +52,7 @@ class QuizArenaController extends Controller
                 'total_questions' => $session->total_questions,
                 'correct_answers' => $session->correct_answers,
                 'total_time_seconds' => $session->total_time_seconds,
-                'rank' => $session->rank,
+                'rank' => $liveRank,
                 'points_awarded' => $session->points_awarded,
             ] : null,
             'leaderboard' => $leaderboard,
@@ -127,8 +115,9 @@ class QuizArenaController extends Controller
         ]);
     }
 
-    public function getQuestion(Request $request): JsonResponse
+    public function getQuestion(Request $request, QuizArenaService $arena): JsonResponse
     {
+        abort_unless($arena->isOpen(), 403, 'Quiz Arena is closed. Your answer time only counts while a question is active.');
         $session = $this->ownedSession($request, $request->query('session_uuid'));
 
         if ($session->status !== QuizArenaSession::STATUS_IN_PROGRESS) {
@@ -175,7 +164,7 @@ class QuizArenaController extends Controller
         ]);
     }
 
-    public function submitAnswer(Request $request): JsonResponse
+    public function submitAnswer(Request $request, QuizArenaService $arena): JsonResponse
     {
         $validated = $request->validate([
             'session_uuid' => ['required', 'string'],
@@ -183,6 +172,8 @@ class QuizArenaController extends Controller
             'answer_id' => ['required', 'integer'],
             'time_taken' => ['required', 'integer', 'min:0'],
         ]);
+
+        abort_unless($arena->isOpen(), 403, 'Quiz Arena is closed. Your answer was not recorded.');
 
         $session = $this->ownedSession($request, $validated['session_uuid']);
         abort_unless($session->status === QuizArenaSession::STATUS_IN_PROGRESS, 400, 'This session is not active.');
@@ -232,14 +223,19 @@ class QuizArenaController extends Controller
     public function getSummary(Request $request): JsonResponse
     {
         $session = $this->ownedSession($request, $request->query('session_uuid'));
+        $leaderboard = $session->status === QuizArenaSession::STATUS_COMPLETED
+            ? $this->leaderboardFor($request->user()->id, (int) $session->level_id, $session->weekend_date->toDateString())
+            : collect();
+        $liveRank = data_get($leaderboard->firstWhere('is_me', true), 'rank');
 
         return response()->json([
             'total_questions' => $session->total_questions,
             'correct_answers' => $session->correct_answers,
             'total_time_seconds' => $session->total_time_seconds,
             'status' => $session->status,
-            'rank' => $session->rank,
+            'rank' => $liveRank,
             'points_awarded' => $session->points_awarded,
+            'leaderboard' => $leaderboard,
         ]);
     }
 
@@ -258,6 +254,22 @@ class QuizArenaController extends Controller
         ]);
     }
 
+    public function shop(Request $request, QuizArenaWalletService $wallet): InertiaResponse
+    {
+        return Inertia::render('games/QuizArenaRewards', [
+            'section' => 'shop',
+            ...$this->walletPageData($request, $wallet),
+        ]);
+    }
+
+    public function rewards(Request $request, QuizArenaWalletService $wallet): InertiaResponse
+    {
+        return Inertia::render('games/QuizArenaRewards', [
+            'section' => 'rewards',
+            ...$this->walletPageData($request, $wallet),
+        ]);
+    }
+
     public function claimReward(Request $request, QuizArenaReward $reward, QuizArenaWalletService $wallet): JsonResponse
     {
         try {
@@ -269,7 +281,49 @@ class QuizArenaController extends Controller
         return response()->json([
             'balance' => $wallet->balance($request->user()->id),
             'rewards' => $wallet->rewardsCatalog($request->user()->id),
+            'log' => $wallet->log($request->user()->id)->map(fn ($entry) => [
+                'points' => $entry->points,
+                'description' => $entry->description,
+                'created_at' => $entry->created_at?->toIso8601String(),
+            ]),
         ]);
+    }
+
+    private function walletPageData(Request $request, QuizArenaWalletService $wallet): array
+    {
+        $userId = $request->user()->id;
+
+        return [
+            'pointBalance' => $wallet->balance($userId),
+            'rewards' => $wallet->rewardsCatalog($userId),
+            'pointLog' => $wallet->log($userId)->map(fn ($entry) => [
+                'points' => $entry->points,
+                'description' => $entry->description,
+                'created_at' => $entry->created_at?->toIso8601String(),
+            ])->values(),
+        ];
+    }
+
+    private function leaderboardFor(int $currentUserId, int $levelId, string $weekendDate)
+    {
+        return QuizArenaSession::query()
+            ->where('level_id', $levelId)
+            ->where('weekend_date', $weekendDate)
+            ->where('status', QuizArenaSession::STATUS_COMPLETED)
+            ->with('user:id,name,display_name')
+            ->orderByDesc('correct_answers')
+            ->orderBy('total_time_seconds')
+            ->get()
+            ->values()
+            ->map(fn (QuizArenaSession $row, int $index) => [
+                'rank' => $index + 1,
+                'name' => $row->user?->display_name ?: $row->user?->name ?: 'Player',
+                'correct_answers' => $row->correct_answers,
+                'total_questions' => $row->total_questions,
+                'total_time_seconds' => $row->total_time_seconds,
+                'points_awarded' => $row->points_awarded,
+                'is_me' => $row->user_id === $currentUserId,
+            ]);
     }
 
     private function ownedSession(Request $request, ?string $uuid): QuizArenaSession

@@ -22,7 +22,19 @@ export default function SubjectPage({ selectedStandard }) {
     level_id,
     availableLevels,
     availableSubjects,
+    studentTheme,
   } = props;
+
+  const themeSlug = studentTheme?.slug || 'ocean-blue';
+  const themeCardRadius = themeSlug === 'brick-builders' ? 'rounded-xl' : themeSlug === 'robo-lab' ? 'rounded-2xl' : themeSlug === 'cat-club' || themeSlug === 'candy-garden' ? 'rounded-[2rem]' : 'rounded-3xl';
+  const themeSurface = {
+    background: 'color-mix(in srgb, var(--theme-card) 92%, var(--theme-accent) 8%)',
+    borderColor: 'color-mix(in srgb, var(--theme-accent) 22%, white)',
+  };
+  const themeSoftSurface = {
+    background: 'color-mix(in srgb, var(--theme-card) 84%, var(--theme-accent) 16%)',
+    borderColor: 'color-mix(in srgb, var(--theme-accent) 28%, white)',
+  };
 
   const [currentStandard, setCurrentStandard] = useState(selectedStandard || form || 'Form 4');
   const [activeSection, setActiveSection] = useState('');
@@ -86,28 +98,28 @@ export default function SubjectPage({ selectedStandard }) {
       <Head title={`${subject} Course`} />
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3"><span className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600"><BookOpenIcon className="h-5 w-5" /></span><div><p className="text-xs font-medium text-slate-400">Course sections</p><p className="mt-0.5 text-lg font-semibold text-slate-900">{sections.length}</p></div></div>
+          <div className={`${themeCardRadius} border p-5 shadow-sm`} style={themeSurface}>
+            <div className="flex items-center gap-3"><span className="rounded-2xl p-3 text-white shadow-md" style={{ background: 'var(--theme-accent)' }}><BookOpenIcon className="h-5 w-5" /></span><div><p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--theme-accent)' }}>Bab pembelajaran</p><p className="mt-1 text-2xl font-extrabold text-slate-900">{sections.length}</p><p className="text-xs text-slate-500">Ikut langkah demi langkah</p></div></div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3"><span className="rounded-xl bg-cyan-50 p-2.5 text-cyan-600"><DocumentTextIcon className="h-5 w-5" /></span><div><p className="text-xs font-medium text-slate-400">Learning modules</p><p className="mt-0.5 text-lg font-semibold text-slate-900">{totalLessons}</p></div></div>
+          <div className={`${themeCardRadius} border p-5 shadow-sm`} style={themeSurface}>
+            <div className="flex items-center gap-3"><span className="rounded-2xl p-3 text-white shadow-md" style={{ background: 'var(--theme-hero)' }}><DocumentTextIcon className="h-5 w-5" /></span><div><p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--theme-accent)' }}>Topik latihan</p><p className="mt-1 text-2xl font-extrabold text-slate-900">{totalLessons}</p><p className="text-xs text-slate-500">Objektif & jawapan bertulis</p></div></div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600"><CheckCircleIcon className="h-5 w-5" /></span><div><p className="text-xs font-medium text-slate-400">Course progress</p><p className="mt-0.5 text-lg font-semibold text-slate-900">{progress}%</p></div></div><div className="h-10 w-10 rounded-full border-4 border-emerald-100 border-t-emerald-500" /></div>
+          <div className={`${themeCardRadius} border p-5 shadow-sm`} style={themeSurface}>
+            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><span className="rounded-2xl p-3 text-white shadow-md" style={{ background: 'var(--theme-accent)' }}><CheckCircleIcon className="h-5 w-5" /></span><div><p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--theme-accent)' }}>Kemajuan anda</p><p className="mt-1 text-2xl font-extrabold text-slate-900">{progress}%</p><p className="text-xs text-slate-500">{completedLessons}/{totalLessons} topik dikuasai</p></div></div><div className="grid h-14 w-14 place-items-center rounded-full p-1.5" style={{ background: `conic-gradient(var(--theme-accent) ${progress * 3.6}deg, color-mix(in srgb, var(--theme-accent) 16%, white) 0deg)` }}><div className="grid h-full w-full place-items-center rounded-full bg-white text-xs font-extrabold" style={{ color: 'var(--theme-accent)' }}>{progress}%</div></div></div>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
           <aside className="h-fit lg:sticky lg:top-[145px]">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className={`overflow-hidden border shadow-sm ${themeCardRadius}`} style={themeSurface}>
               <div className="border-b border-slate-100 px-5 py-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Course contents</p>
                 <p className="mt-1 text-sm text-slate-500">Jump to a section</p>
               </div>
               <nav className="max-h-[520px] space-y-1 overflow-y-auto p-2">
                 {sections.map((section, index) => (
-                  <button key={section.id} onClick={() => scrollToSection(section.title)} className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left text-sm transition ${activeSection === section.title ? 'bg-indigo-50 font-semibold text-indigo-700' : 'font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}>
-                    <span className={`flex h-6 w-6 flex-none items-center justify-center rounded-lg text-[10px] font-bold ${activeSection === section.title ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{String(index + 1).padStart(2, '0')}</span>
+                  <button key={section.id} onClick={() => scrollToSection(section.title)} className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left text-sm transition ${activeSection === section.title ? 'font-semibold' : 'font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`} style={activeSection === section.title ? { background: 'color-mix(in srgb, var(--theme-accent) 12%, white)', color: 'var(--theme-accent)' } : undefined}>
+                    <span className={`flex h-6 w-6 flex-none items-center justify-center rounded-lg text-[10px] font-bold ${activeSection === section.title ? 'text-white' : 'bg-slate-100 text-slate-500'}`} style={activeSection === section.title ? { background: 'var(--theme-accent)' } : undefined}>{String(index + 1).padStart(2, '0')}</span>
                     <span className="line-clamp-2 leading-6">{section.title}</span>
                   </button>
                 ))}
@@ -118,14 +130,19 @@ export default function SubjectPage({ selectedStandard }) {
           <div className="space-y-6">
             {!sections.length ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><BookOpenIcon className="mx-auto h-9 w-9 text-slate-300" /><p className="mt-3 text-sm font-medium text-slate-600">No course modules are available yet.</p></div>
-            ) : sections.map((section, sectionIndex) => (
-              <section key={section.id} id={section.title} ref={(element) => { sectionRefs.current[section.title] = element; }} className="scroll-mt-40 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <header className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
+            ) : sections.map((section, sectionIndex) => {
+              const sectionModules = section.subSections || [];
+              const sectionCompleted = sectionModules.filter((item) => item.lastPractice?.objective?.score >= 70 || item.lastPractice?.subjective?.score >= 70).length;
+              const sectionProgress = sectionModules.length ? Math.round((sectionCompleted / sectionModules.length) * 100) : 0;
+
+              return (
+              <section key={section.id} id={section.title} ref={(element) => { sectionRefs.current[section.title] = element; }} className={`scroll-mt-40 overflow-hidden border shadow-sm ${themeCardRadius}`} style={themeSurface}>
+                <header className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-5 sm:flex-row sm:items-center sm:px-6">
                   <div className="flex items-center gap-4">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-sm font-bold text-white">{String(sectionIndex + 1).padStart(2, '0')}</span>
-                    <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-500">Section {sectionIndex + 1}</p><h2 className="mt-1 text-lg font-semibold text-slate-900">{section.title}</h2></div>
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ background: 'var(--theme-hero)' }}>{String(sectionIndex + 1).padStart(2, '0')}</span>
+                    <div><p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--theme-accent)' }}>Bab {sectionIndex + 1}</p><h2 className="mt-1 text-lg font-extrabold tracking-tight text-slate-900">{section.title}</h2></div>
                   </div>
-                  <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">{section.subSections?.length || 0} modules</span>
+                  <span className="w-fit rounded-full px-3 py-1.5 text-xs font-bold" style={{ background: 'color-mix(in srgb, var(--theme-accent) 12%, white)', color: 'var(--theme-accent)' }}>{section.subSections?.length || 0} topik latihan</span>
                 </header>
 
                 <div className="divide-y divide-slate-100">
@@ -138,76 +155,80 @@ export default function SubjectPage({ selectedStandard }) {
                         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                           <div className="flex items-start gap-3">
                             <span className={`mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg ${completed ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>{completed ? <CheckCircleIcon className="h-5 w-5" /> : <span className="text-xs font-bold">{moduleIndex + 1}</span>}</span>
-                            <div><h3 className="font-semibold text-slate-900">{subSection.title}</h3><p className="mt-1 text-xs text-slate-400">{subSection.questionCounts?.objective || 0} objective · {subSection.questionCounts?.subjective || 0} written questions</p></div>
+                            <div><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Topik {moduleIndex + 1}</p><h3 className="mt-0.5 font-extrabold text-slate-900">{subSection.title}</h3><p className="mt-1 text-xs text-slate-500">{subSection.questionCounts?.objective || 0} soalan objektif · {subSection.questionCounts?.subjective || 0} soalan bertulis</p></div>
                           </div>
-                          {completed && <span className="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Completed</span>}
+                          {completed && <span className="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">✓ Sudah dikuasai</span>}
                         </div>
 
                         <div className="mt-5 grid gap-4 sm:grid-cols-2">
                           {subSection.questionCounts?.objective > 0 && (
-                            <div className="group/card relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-white p-5 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-100">
+                            <div className={`group/card relative overflow-hidden border p-5 transition hover:-translate-y-1 hover:shadow-lg ${themeCardRadius}`} style={themeSoftSurface}>
+                              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl" style={{ background: 'color-mix(in srgb, var(--theme-accent) 25%, transparent)' }} />
                               <div className="flex items-start justify-between">
-                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-400 text-white shadow-sm shadow-indigo-200">
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm" style={{ background: 'var(--theme-hero)' }}>
                                   <DocumentTextIcon className="h-6 w-6" />
                                 </span>
-                                <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-700">{subSection.questionCounts.objective} questions</span>
+                                <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: 'color-mix(in srgb, var(--theme-accent) 14%, white)', color: 'var(--theme-accent)' }}>{subSection.questionCounts.objective} soalan</span>
                               </div>
-                              <h4 className="mt-4 text-base font-bold text-slate-900">Objective practice</h4>
-                              <p className="mt-1 text-xs text-slate-500">{subSection.practiceTitle || 'Test your understanding of this topic.'}</p>
-                              <div className="mt-4 space-y-1.5">
+                              <h4 className="mt-4 text-base font-extrabold text-slate-900">Latihan Objektif</h4>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">Pilih jawapan terbaik dan dapatkan semakan serta-merta untuk {subSection.practiceTitle || 'topik ini'}.</p>
+                              <div className="mt-4 rounded-2xl bg-white/80 p-3 ring-1" style={{ borderColor: 'color-mix(in srgb, var(--theme-accent) 18%, white)' }}>
                                 {subSection.lastPractice?.objective ? (
-                                  <>
-                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${objectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between gap-2"><span className="text-[11px] font-bold text-slate-500">Skor latihan terakhir</span><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${objectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                       {objectiveCompleted && <CheckCircleIcon className="h-3.5 w-3.5" />}
-                                      {subSection.lastPractice.objective.total_correct}/{subSection.lastPractice.objective.total_questions} correct
-                                    </span>
+                                      {subSection.lastPractice.objective.score}% · {subSection.lastPractice.objective.total_correct}/{subSection.lastPractice.objective.total_questions} betul
+                                    </span></div>
                                     <p className="flex items-center gap-1 text-[11px] text-slate-400">
-                                      <ClockIcon className="h-3.5 w-3.5" /> Last practice: {subSection.lastPractice.objective.last_practice_at}
+                                      <ClockIcon className="h-3.5 w-3.5" /> Kali terakhir: {subSection.lastPractice.objective.last_practice_at}
                                     </p>
-                                  </>
+                                  </div>
                                 ) : (
-                                  <span className="text-[11px] font-semibold text-slate-400">Not attempted yet</span>
+                                  <p className="text-[11px] font-semibold text-slate-500">Belum cuba lagi — mulakan untuk lihat skor anda.</p>
                                 )}
                               </div>
                               <button
                                 onClick={() => startPractice('objective-page', section, subSection)}
-                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                                style={{ background: 'var(--theme-hero)' }}
                               >
-                                {objectiveCompleted ? 'Try again' : 'Start practice'}
+                                {objectiveCompleted ? 'Cuba semula' : 'Mula latihan'}
                                 <ArrowRightIcon className="h-4 w-4 transition group-hover/card:translate-x-0.5" />
                               </button>
                             </div>
                           )}
                           {subSection.questionCounts?.subjective > 0 && (
-                            <div className="group/card relative overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/70 via-white to-white p-5 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-100">
+                            <div className={`group/card relative overflow-hidden border p-5 transition hover:-translate-y-1 hover:shadow-lg ${themeCardRadius}`} style={themeSoftSurface}>
+                              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl" style={{ background: 'color-mix(in srgb, var(--theme-accent) 25%, transparent)' }} />
                               <div className="flex items-start justify-between">
-                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-400 text-white shadow-sm shadow-violet-200">
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm" style={{ background: 'var(--theme-accent)' }}>
                                   <PencilSquareIcon className="h-6 w-6" />
                                 </span>
-                                <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold text-violet-700">{subSection.questionCounts.subjective} questions</span>
+                                <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: 'color-mix(in srgb, var(--theme-accent) 14%, white)', color: 'var(--theme-accent)' }}>{subSection.questionCounts.subjective} soalan</span>
                               </div>
-                              <h4 className="mt-4 text-base font-bold text-slate-900">Written practice</h4>
-                              <p className="mt-1 text-xs text-slate-500">Build a stronger written response.</p>
-                              <div className="mt-4 space-y-1.5">
+                              <h4 className="mt-4 text-base font-extrabold text-slate-900">Latihan Bertulis</h4>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">Tulis jawapan dengan langkah yang jelas untuk mengukuhkan pemahaman anda.</p>
+                              <div className="mt-4 rounded-2xl bg-white/80 p-3 ring-1" style={{ borderColor: 'color-mix(in srgb, var(--theme-accent) 18%, white)' }}>
                                 {subSection.lastPractice?.subjective ? (
-                                  <>
-                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${subjectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between gap-2"><span className="text-[11px] font-bold text-slate-500">Skor latihan terakhir</span><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${subjectiveCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                       {subjectiveCompleted && <CheckCircleIcon className="h-3.5 w-3.5" />}
-                                      {subSection.lastPractice.subjective.total_correct}/{subSection.lastPractice.subjective.total_questions} correct
-                                    </span>
+                                      {subSection.lastPractice.subjective.score}% · {subSection.lastPractice.subjective.total_correct}/{subSection.lastPractice.subjective.total_questions} betul
+                                    </span></div>
                                     <p className="flex items-center gap-1 text-[11px] text-slate-400">
-                                      <ClockIcon className="h-3.5 w-3.5" /> Last practice: {subSection.lastPractice.subjective.last_practice_at}
+                                      <ClockIcon className="h-3.5 w-3.5" /> Kali terakhir: {subSection.lastPractice.subjective.last_practice_at}
                                     </p>
-                                  </>
+                                  </div>
                                 ) : (
-                                  <span className="text-[11px] font-semibold text-slate-400">Not attempted yet</span>
+                                  <p className="text-[11px] font-semibold text-slate-500">Belum cuba lagi — tulis jawapan pertama anda.</p>
                                 )}
                               </div>
                               <button
                                 onClick={() => startPractice('subjective-page', section, subSection)}
-                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 group-hover/card:shadow-md"
+                                style={{ background: 'var(--theme-accent)' }}
                               >
-                                {subjectiveCompleted ? 'Try again' : 'Start writing'}
+                                {subjectiveCompleted ? 'Cuba semula' : 'Mula menulis'}
                                 <ArrowRightIcon className="h-4 w-4 transition group-hover/card:translate-x-0.5" />
                               </button>
                             </div>
@@ -220,9 +241,13 @@ export default function SubjectPage({ selectedStandard }) {
                     );
                   })}
                 </div>
-                <footer className="flex items-center justify-between border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:px-6"><span className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><SparklesIcon className="h-4 w-4 text-indigo-500" /> Section progress</span><div className="flex items-center gap-3"><div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-200"><div className="h-full w-3/5 rounded-full bg-indigo-500" /></div><span className="text-xs font-semibold text-slate-600">60%</span></div></footer>
+                <footer className="flex flex-wrap items-center justify-between gap-3 border-t bg-slate-50/70 px-5 py-3.5 sm:px-6" style={{ borderColor: 'color-mix(in srgb, var(--theme-accent) 15%, white)' }}>
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><SparklesIcon className="h-4 w-4" style={{ color: 'var(--theme-accent)' }} /> {sectionCompleted} daripada {sectionModules.length} topik telah dikuasai</span>
+                  <div className="flex items-center gap-3"><div className="h-2 w-28 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full" style={{ width: `${sectionProgress}%`, background: 'var(--theme-hero)' }} /></div><span className="text-xs font-extrabold" style={{ color: 'var(--theme-accent)' }}>{sectionProgress}%</span></div>
+                </footer>
               </section>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

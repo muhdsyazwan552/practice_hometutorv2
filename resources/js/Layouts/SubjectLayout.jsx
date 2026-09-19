@@ -23,7 +23,7 @@ export default function SubjectLayout({
 }) {
   const { props } = usePage();
   const { form, level_id, subject_id, studentTheme, availableForms } = props;
-  const palette = resolveDashboardTheme(studentTheme);
+  const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
   const { t, locale } = useLanguage();
   const [internalLoading, setInternalLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -102,7 +102,7 @@ export default function SubjectLayout({
         </div>
       </header>
 
-      <div className="sticky top-[72px] z-40 border-b bg-white/90 backdrop-blur-xl" style={{ borderColor: `${palette.accent}55` }}>
+      <div className="sticky top-[68px] z-40 border-b sm:top-[76px] bg-white/90 backdrop-blur-xl" style={{ borderColor: `${palette.accent}55` }}>
         <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8" aria-label="Course sections">
           {tabs.map((tab) => {
             const active = route().current(tab.routeName);

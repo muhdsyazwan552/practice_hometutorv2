@@ -202,6 +202,29 @@ class QuizArenaTest extends TestCase
         $this->assertDatabaseHas('quiz_arena_attempts', ['question_id' => $questionId, 'is_correct' => false]);
     }
 
+    public function test_only_answer_time_is_recorded_and_a_closed_arena_cannot_resume_a_session(): void
+    {
+        Carbon::setTestNow(CarbonImmutable::parse('2026-09-19 10:00:00', QuizArenaService::TIMEZONE));
+        $child = $this->childWithLevel();
+        $sessionUuid = $this->actingAs($child)->postJson(route('quiz-arena.start'))->json('session_uuid');
+        $question = $this->actingAs($child)->getJson(route('quiz-arena.question', ['session_uuid' => $sessionUuid]))->json('question');
+        $answerId = DB::table('answers')->where('question_id', $question['id'])->where('iscorrectanswer', true)->value('id');
+
+        // Moving the clock to the following day must not add elapsed arena
+        // time. Only the explicit duration spent on this question is scored.
+        Carbon::setTestNow(CarbonImmutable::parse('2026-09-20 22:00:00', QuizArenaService::TIMEZONE));
+        $this->actingAs($child)->postJson(route('quiz-arena.answer'), [
+            'session_uuid' => $sessionUuid,
+            'question_id' => $question['id'],
+            'answer_id' => $answerId,
+            'time_taken' => 7,
+        ])->assertOk();
+        $this->assertSame(7, QuizArenaSession::firstOrFail()->total_time_seconds);
+
+        Carbon::setTestNow(CarbonImmutable::parse('2026-09-21 09:00:00', QuizArenaService::TIMEZONE));
+        $this->actingAs($child)->getJson(route('quiz-arena.question', ['session_uuid' => $sessionUuid]))->assertStatus(403);
+    }
+
     public function test_second_start_after_completion_is_rejected(): void
     {
         Carbon::setTestNow(CarbonImmutable::parse('2026-09-19 10:00:00', QuizArenaService::TIMEZONE));
@@ -300,6 +323,51 @@ class QuizArenaTest extends TestCase
         $this->assertSame(QuizArenaWalletService::STARTER_BONUS_POINTS, $response->json('balance'));
         $this->assertCount(1, $response->json('rewards'));
         $this->assertCount(1, $response->json('log'));
+    }
+
+    public function test_shop_and_rewards_are_separate_pages(): void
+    {
+        $child = $this->childWithLevel();
+
+        $this->actingAs($child)->get(route('quiz-arena.shop'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('games/QuizArenaRewards')->where('section', 'shop'));
+        $this->actingAs($child)->get(route('quiz-arena.rewards'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('games/QuizArenaRewards')->where('section', 'rewards'));
+    }
+
+    public function test_summary_returns_live_same_level_leaderboard_and_rank(): void
+    {
+        Carbon::setTestNow(CarbonImmutable::parse('2026-09-19 10:00:00', QuizArenaService::TIMEZONE));
+        $first = $this->childWithLevel(1);
+        $second = $this->childWithLevel(1);
+        $otherLevel = $this->childWithLevel(2);
+
+        $createSession = fn (User $user, int $correct, int $seconds) => QuizArenaSession::create([
+            'user_id' => $user->id,
+            'level_id' => $user->student->level_id,
+            'weekend_date' => '2026-09-19',
+            'question_ids' => range(1001, 1010),
+            'status' => QuizArenaSession::STATUS_COMPLETED,
+            'total_questions' => 10,
+            'correct_answers' => $correct,
+            'total_time_seconds' => $seconds,
+            'started_at' => now(),
+            'completed_at' => now(),
+        ]);
+
+        $top = $createSession($first, 8, 40);
+        $mine = $createSession($second, 8, 55);
+        $createSession($otherLevel, 10, 10);
+
+        $response = $this->actingAs($second)->getJson(route('quiz-arena.summary', ['session_uuid' => $mine->uuid]))->assertOk();
+
+        $this->assertSame(2, $response->json('rank'));
+        $this->assertCount(2, $response->json('leaderboard'));
+        $this->assertSame($first->name, $response->json('leaderboard.0.name'));
+        $this->assertSame($second->name, $response->json('leaderboard.1.name'));
+        $this->assertTrue($response->json('leaderboard.1.is_me'));
     }
 
     public function test_claiming_a_reward_deducts_points_and_unlocks_the_theme(): void

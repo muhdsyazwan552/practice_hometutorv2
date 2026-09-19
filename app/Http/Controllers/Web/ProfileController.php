@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\ThemeSettingsUpdateRequest;
 use App\Models\DashboardTheme;
+use App\Support\ThemeCustomization;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,6 +89,7 @@ class ProfileController extends Controller
         $user->update([
             'active_dashboard_theme_id' => $request->integer('dashboard_theme_id'),
             'learning_space_card_theme_id' => $request->integer('learning_space_card_theme_id'),
+            'theme_customization' => ThemeCustomization::normalize($request->validated('customization')),
         ]);
 
         return Redirect::route('profile.edit')->with('status', 'theme-updated');
@@ -118,6 +120,8 @@ class ProfileController extends Controller
             ])->values(),
             'active_dashboard_theme_id' => $activeThemeId,
             'learning_space_card_theme_id' => $cardThemeId,
+            'customization' => ThemeCustomization::normalize($user->theme_customization),
+            'characters' => array_values(array_intersect(ThemeCustomization::CHARACTERS, $themes->pluck('slug')->all())),
         ];
     }
 

@@ -93,6 +93,7 @@ class QuizArenaWalletService
             'type' => $reward->type,
             'points_cost' => $reward->points_cost,
             'icon' => $reward->icon,
+            'theme_slug' => $reward->theme_slug,
             'owned' => (bool) ($reward->theme_slug && $ownedThemeSlugs->contains($reward->theme_slug)),
         ])->all();
     }

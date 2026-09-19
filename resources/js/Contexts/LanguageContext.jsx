@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const LanguageContext = createContext();
 
@@ -20,6 +20,17 @@ export const LanguageProvider = ({ children, pageProps = {} }) => {
         availableLocales: pageProps.availableLocales || ['en', 'ms'],
     });
     const [isChangingLanguage, setIsChangingLanguage] = useState(false);
+
+    // The provider sits outside <App>, so follow the locale each Inertia page is served with.
+    useEffect(() => router.on('navigate', (event) => {
+        const props = event.detail.page.props;
+        if (!props.locale) return;
+        setLanguage((current) => current.locale === props.locale && current.translations === props.translations ? current : {
+            locale: props.locale,
+            translations: props.translations || {},
+            availableLocales: props.availableLocales || ['en', 'ms'],
+        });
+    }), []);
 
     const changeLanguage = (newLocale) => {
         if (newLocale === language.locale || isChangingLanguage) {

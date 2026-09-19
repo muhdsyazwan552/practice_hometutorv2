@@ -42,6 +42,7 @@ class User extends Authenticatable
         'registered_at',
         'active_dashboard_theme_id',
         'learning_space_card_theme_id',
+        'theme_customization',
     ];
 
     /**
@@ -65,6 +66,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'registered_at' => 'datetime',
+            'theme_customization' => 'array',
         ];
     }
 

@@ -217,6 +217,8 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
 
     Route::prefix('quiz-arena')->name('quiz-arena.')->group(function () {
         Route::get('/', [QuizArenaController::class, 'show'])->name('index');
+        Route::get('/shop', [QuizArenaController::class, 'shop'])->name('shop');
+        Route::get('/rewards', [QuizArenaController::class, 'rewards'])->name('rewards');
         Route::post('/start', [QuizArenaController::class, 'start'])->middleware('throttle:5,1')->name('start');
         Route::get('/question', [QuizArenaController::class, 'getQuestion'])->name('question');
         Route::post('/answer', [QuizArenaController::class, 'submitAnswer'])->name('answer');

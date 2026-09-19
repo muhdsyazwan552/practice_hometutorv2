@@ -9,6 +9,8 @@ use App\Models\School;
 use App\Models\Level;
 use App\Models\Student;
 use App\Models\QuizSession;
+use App\Models\QuizAttempt;
+use App\Models\QuizArenaAttempt;
 use App\Models\User;
 use App\Models\Friend;
 use App\Models\FriendRequest;
@@ -17,6 +19,7 @@ use App\Models\Topic;
 use App\Models\DashboardTheme;
 use App\Helpers\LevelHelper;
 use App\Services\StreakService;
+use App\Services\QuizArenaWalletService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
@@ -93,6 +96,9 @@ public function index()
             'averageScore' => $quizAgg && $quizAgg->attempts ? (int) round($quizAgg->avg_correct * 20) : 0,
             'bestScore' => $quizAgg->best_correct !== null ? (int) $quizAgg->best_correct : null,
         ];
+        $questionsAnswered = QuizAttempt::where('user_id', $user->id)->count()
+            + QuizArenaAttempt::where('user_id', $user->id)->count();
+        $pointBalance = app(QuizArenaWalletService::class)->balance($user->id);
 
         $friendsCount = Friend::where('user_id', $user->id)->orWhere('friend_id', $user->id)->count();
         $pendingRequestsCount = FriendRequest::where('receiver_id', $user->id)->where('status', 'pending')->count();
@@ -129,6 +135,8 @@ public function index()
             'lastAnswerDate' => null,
         ];
         $quizStats = ['attempts' => 0, 'averageScore' => 0, 'bestScore' => null];
+        $questionsAnswered = 0;
+        $pointBalance = 0;
         $friendsCount = 0;
         $pendingRequestsCount = 0;
         $student = null;
@@ -149,6 +157,13 @@ public function index()
         ->get(['id', 'name', 'abbr', 'level_id']);
 
     $courses = $this->buildCourseProgress($subjectRows, Auth::check() ? Auth::id() : null);
+    $topicsAnswered = collect($courses)->sum('topicsAnswered');
+    $topicsTotal = collect($courses)->sum('topicsTotal');
+    $learningProgress = [
+        'percentage' => $topicsTotal > 0 ? (int) round(($topicsAnswered / $topicsTotal) * 100) : 0,
+        'topicsAnswered' => $topicsAnswered,
+        'topicsTotal' => $topicsTotal,
+    ];
 
     $teachers = [[
         'name' => 'Cikgu Aina',
@@ -178,7 +193,8 @@ public function index()
         'title' => 'Dashboard',
         'profileData' => $profileData,
         'student' => $student,
-        'courses' => $courses,
+            'courses' => $courses,
+            'learningProgress' => $learningProgress,
         'assignments' => $assignments,
         'streaks' => $streaks,
         'teachers' => $teachers,
@@ -190,6 +206,8 @@ public function index()
             'learningSpaceCardTheme' => $this->themePayload($learningSpaceCardTheme),
             'activityCalendar' => $activityCalendar,
             'quizStats' => $quizStats,
+            'questionsAnswered' => $questionsAnswered,
+            'pointBalance' => $pointBalance,
             'friendsCount' => $friendsCount,
             'pendingRequestsCount' => $pendingRequestsCount,
         ]);

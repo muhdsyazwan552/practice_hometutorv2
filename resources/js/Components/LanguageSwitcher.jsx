@@ -1,7 +1,8 @@
 import { useLanguage } from '@/Contexts/LanguageContext';
 
-const LanguageSwitcher = ({ type = 'buttons' }) => {
+const LanguageSwitcher = ({ type = 'buttons', variant = 'default' }) => {
     const { locale, changeLanguage, isChangingLanguage } = useLanguage();
+    const compact = variant === 'compact';
 
     if (type === 'dropdown') {
         return (
@@ -11,7 +12,7 @@ const LanguageSwitcher = ({ type = 'buttons' }) => {
                     value={locale}
                     onChange={(event) => changeLanguage(event.target.value)}
                     disabled={isChangingLanguage}
-                    className="h-10 max-w-24 appearance-none rounded-xl border border-slate-200 bg-white px-3 pr-7 text-xs font-bold text-slate-600 outline-none transition focus:border-sky-300 focus:ring-2 focus:ring-sky-200 disabled:cursor-wait disabled:opacity-70"
+                    className={`h-10 max-w-24 appearance-none rounded-xl border px-3 pr-7 text-xs font-bold outline-none transition disabled:cursor-wait disabled:opacity-70 ${compact ? 'border-slate-600 bg-slate-800 text-white focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30' : 'border-slate-200 bg-white text-slate-600 focus:border-sky-300 focus:ring-2 focus:ring-sky-200'}`}
                 >
                     <option value="en">EN</option>
                     <option value="ms">BM</option>
@@ -22,7 +23,7 @@ const LanguageSwitcher = ({ type = 'buttons' }) => {
     }
 
     return (
-        <div className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 p-1 shadow-sm" aria-label="Choose language">
+        <div className={`inline-flex h-10 items-center rounded-xl border p-1 shadow-sm ${compact ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-slate-50'}`} aria-label="Choose language">
             {[
                 { value: 'en', label: 'EN', name: 'English' },
                 { value: 'ms', label: 'BM', name: 'Bahasa Melayu' },
@@ -37,13 +38,13 @@ const LanguageSwitcher = ({ type = 'buttons' }) => {
                         disabled={isChangingLanguage || isActive}
                         aria-pressed={isActive}
                         title={language.name}
-                        className={`relative min-w-10 rounded-lg px-2.5 py-1.5 text-xs font-extrabold tracking-wide transition-all duration-200 disabled:cursor-default ${isActive ? 'bg-[#087bb8] text-white shadow-[0_3px_8px_rgba(8,123,184,.28)]' : 'text-slate-500 hover:bg-white hover:text-[#087bb8] disabled:opacity-100'}`}
+                        className={`relative min-w-10 rounded-lg px-2.5 py-1.5 text-xs font-extrabold tracking-wide transition-all duration-200 disabled:cursor-default ${isActive ? 'bg-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,.35)]' : compact ? 'text-slate-300 hover:bg-white/10 hover:text-white disabled:opacity-100' : 'text-slate-500 hover:bg-white hover:text-[#087bb8] disabled:opacity-100'}`}
                     >
                         {language.label}
                     </button>
                 );
             })}
-            {isChangingLanguage && <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-sky-200 border-t-[#087bb8]" aria-label="Changing language" />}
+            {isChangingLanguage && <span className={`mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 ${compact ? 'border-slate-500 border-t-cyan-300' : 'border-sky-200 border-t-[#087bb8]'}`} aria-label="Changing language" />}
         </div>
     );
 };

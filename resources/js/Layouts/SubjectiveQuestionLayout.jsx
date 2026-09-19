@@ -15,7 +15,7 @@ const SubjectiveQuestionLayout = ({
   footerContent
 }) => {
   const { studentTheme } = usePage().props;
-  const palette = resolveDashboardTheme(studentTheme);
+  const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
   const [showNavbar, setShowNavbar] = useState(true);
   const [showBlueHeader, setShowBlueHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);

@@ -3,6 +3,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\ThemeCustomization;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Student;
@@ -74,6 +75,7 @@ class HandleInertiaRequests extends Middleware
                     'slug' => $theme->slug,
                     'name' => $theme->name,
                     'config' => $theme->config ?? [],
+                    'custom' => ThemeCustomization::normalize($user->theme_customization),
                 ] : null;
             },
 

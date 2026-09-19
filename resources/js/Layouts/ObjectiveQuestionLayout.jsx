@@ -22,7 +22,7 @@ const ObjectiveQuestionLayout = ({
   onExitWithResults
 }) => {
   const { studentTheme } = usePage().props;
-  const palette = resolveDashboardTheme(studentTheme);
+  const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
   const [showNavbar, setShowNavbar] = useState(true);
   const [showColoredHeader, setShowColoredHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
