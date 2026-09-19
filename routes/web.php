@@ -38,7 +38,6 @@ use App\Http\Controllers\Web\SubjectController;
 use App\Http\Controllers\Web\SubjectiveController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 
@@ -202,7 +201,7 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
     Route::get('/interactive-games/{game}/play', [InteractiveController::class, 'play'])->name('interactive-games.play');
 
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
-    Route::post('/friends/send-request', [FriendController::class, 'sendRequest'])->name('friends.send-request');
+    Route::post('/friends/send-request', [FriendController::class, 'sendRequest'])->middleware('throttle:social')->name('friends.send-request');
     Route::post('/friends/accept-request/{requestId}', [FriendController::class, 'acceptRequest'])->name('friends.accept-request');
     Route::post('/friends/reject-request/{requestId}', [FriendController::class, 'rejectRequest'])->name('friends.reject-request');
     Route::delete('/friends/remove/{friendId}', [FriendController::class, 'removeFriend'])->name('friends.remove');
@@ -229,9 +228,9 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
     Route::get('/chat', [ChatController::class, 'lobby'])->name('chat.lobby');
     Route::get('/chat/conversations', [ChatController::class, 'getConversations']);
     Route::get('/chat/conversation/{conversation}/messages', [ChatController::class, 'getMessages']);
-    Route::post('/chat/send-message', [ChatController::class, 'sendMessage']);
-    Route::post('/chat/start-conversation', [ChatController::class, 'startConversation']);
-    Route::post('/chat/create-group', [ChatController::class, 'createGroup']);
+    Route::post('/chat/send-message', [ChatController::class, 'sendMessage'])->middleware('throttle:social');
+    Route::post('/chat/start-conversation', [ChatController::class, 'startConversation'])->middleware('throttle:social');
+    Route::post('/chat/create-group', [ChatController::class, 'createGroup'])->middleware('throttle:social');
 
     Route::prefix('mission')->name('mission.')->group(function () {
         Route::get('/{subject}/progress', [SubjectController::class, 'progress'])->name('progress');
@@ -252,28 +251,6 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
             Route::post('/answer', [ChallengeController::class, 'submitPracticeAnswer'])->name('answer');
             Route::get('/summary', [ChallengeController::class, 'getPracticeSummary'])->name('summary');
         });
-    });
-
-    Route::get('/test-questions/{topicId}', function ($topicId) {
-        $questions = DB::table('questions')
-            ->where('topic_id', $topicId)
-            ->get();
-
-        $questionsWithFilters = DB::table('questions')
-            ->where('topic_id', $topicId)
-            ->where('question_type_id', 1)
-            ->where('is_active', 1)
-            // ->where('is_published', 1)
-            // ->where('approval_status', 'approved')
-            ->get();
-
-        return response()->json([
-            'topic_id' => $topicId,
-            'all_questions_count' => $questions->count(),
-            'filtered_questions_count' => $questionsWithFilters->count(),
-            'all_questions' => $questions,
-            'filtered_questions' => $questionsWithFilters,
-        ]);
     });
 });
 

@@ -39,6 +39,10 @@ class FriendController extends Controller
 
         $user = Auth::user();
 
+        if ((int) $request->receiver_id === (int) $user->id) {
+            return response()->json(['message' => 'You cannot send a friend request to yourself'], 422);
+        }
+
         // Check if request already exists
         $existingRequest = FriendRequest::where(function ($query) use ($user, $request) {
             $query->where('requester_id', $user->id)

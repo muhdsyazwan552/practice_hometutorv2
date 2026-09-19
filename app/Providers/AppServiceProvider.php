@@ -41,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
         ]);
         RateLimiter::for('auth-otp', fn (Request $request) => Limit::perMinute(10)->by('auth-otp|'.$request->ip()));
 
+        // Chat and friend actions: per student and per route, so chatting never
+        // eats into the shared allowance of other throttled routes.
+        RateLimiter::for('social', fn (Request $request) => Limit::perMinute(60)
+            ->by('social|'.$request->route()?->uri().'|'.($request->user()?->id ?: $request->ip())));
+
         RateLimiter::for('game-sso-exchange', fn (Request $request) => Limit::perMinute(600)
             ->by('game-sso-exchange|'.(string) $request->input('client_id')));
 

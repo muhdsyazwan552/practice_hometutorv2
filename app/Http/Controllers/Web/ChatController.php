@@ -215,10 +215,20 @@ class ChatController extends Controller
 
         $user = Auth::user();
 
+        // Same rule as private chats: students can only add their friends to a group.
+        $participantIds = collect($request->participants)->map(fn ($id) => (int) $id)->reject(fn ($id) => $id === $user->id)->unique();
+        $friendIds = \App\Models\Friend::where('user_id', $user->id)->pluck('friend_id')
+            ->merge(\App\Models\Friend::where('friend_id', $user->id)->pluck('user_id'))
+            ->map(fn ($id) => (int) $id);
+
+        if ($participantIds->isEmpty() || $participantIds->diff($friendIds)->isNotEmpty()) {
+            return response()->json(['error' => 'You can only add friends to a group'], 403);
+        }
+
         $conversation = Conversation::createGroup(
             $request->name,
             $user->id,
-            $request->participants,
+            $participantIds->values()->all(),
             $request->description
         );
 

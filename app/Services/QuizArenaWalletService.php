@@ -104,6 +104,9 @@ class QuizArenaWalletService
         }
 
         DB::transaction(function () use ($user, $reward) {
+            // Serialise claims per student so two quick clicks cannot both pass the balance check.
+            User::query()->whereKey($user->id)->lockForUpdate()->first();
+
             if ($this->balance($user->id) < $reward->points_cost) {
                 throw ValidationException::withMessages(['reward' => 'Point anda tidak mencukupi untuk hadiah ini.']);
             }

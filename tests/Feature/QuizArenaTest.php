@@ -183,6 +183,25 @@ class QuizArenaTest extends TestCase
         $this->assertDatabaseCount('quiz_arena_attempts', 10);
     }
 
+    public function test_a_correct_answer_from_another_question_is_marked_wrong(): void
+    {
+        Carbon::setTestNow(CarbonImmutable::parse('2026-09-19 10:00:00', QuizArenaService::TIMEZONE));
+        $child = $this->childWithLevel();
+
+        $sessionUuid = $this->actingAs($child)->postJson(route('quiz-arena.start'))->assertOk()->json('session_uuid');
+        $questionId = $this->actingAs($child)->getJson(route('quiz-arena.question', ['session_uuid' => $sessionUuid]))->json('question.id');
+        $foreignCorrectAnswerId = DB::table('answers')->where('question_id', '!=', $questionId)->where('iscorrectanswer', true)->value('id');
+
+        $this->actingAs($child)->postJson(route('quiz-arena.answer'), [
+            'session_uuid' => $sessionUuid,
+            'question_id' => $questionId,
+            'answer_id' => $foreignCorrectAnswerId,
+            'time_taken' => 5,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('quiz_arena_attempts', ['question_id' => $questionId, 'is_correct' => false]);
+    }
+
     public function test_second_start_after_completion_is_rejected(): void
     {
         Carbon::setTestNow(CarbonImmutable::parse('2026-09-19 10:00:00', QuizArenaService::TIMEZONE));

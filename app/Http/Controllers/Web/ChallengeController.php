@@ -23,6 +23,17 @@ class ChallengeController extends Controller
     }
 
     /**
+     * A session the signed-in student owns; another student's id behaves like an unknown one.
+     */
+    private function ownedSession($sessionId): ?object
+    {
+        return DB::table('mastery_challenge_sessions')
+            ->where('id', $sessionId)
+            ->where('user_id', Auth::id())
+            ->first();
+    }
+
+    /**
      * Start a new mastery challenge session
      * POST /mission/challenge/start
      */
@@ -155,7 +166,7 @@ class ChallengeController extends Controller
             return response()->json(['error' => 'Session ID required'], 400);
         }
 
-        $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+        $session = $this->ownedSession($sessionId);
         
         if (!$session) {
             return response()->json(['error' => 'Session not found'], 404);
@@ -271,7 +282,7 @@ class ChallengeController extends Controller
             'session_id' => 'required|integer',
             'question_id' => 'required|integer',
             'answer_id' => 'required|integer',
-            'time_taken' => 'required|integer'
+            'time_taken' => 'required|integer|min:0|max:3600'
         ]);
 
         $sessionId = $request->session_id;
@@ -279,7 +290,7 @@ class ChallengeController extends Controller
         $answerId = $request->answer_id;
         $timeTaken = $request->time_taken;
 
-        $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+        $session = $this->ownedSession($sessionId);
         
         if (!$session || $session->status !== 'in_progress') {
             return response()->json(['error' => 'Invalid session'], 400);
@@ -306,8 +317,17 @@ class ChallengeController extends Controller
             return response()->json(['error' => 'Mastery sessions only accept objective questions'], 422);
         }
 
-        // Check if answer is correct
-        $answer = DB::table('answers')->find($answerId);
+        $inSession = DB::table('mastery_challenge_questions')
+            ->where('session_id', $sessionId)
+            ->where('question_id', $questionId)
+            ->exists();
+
+        if (!$inSession) {
+            return response()->json(['error' => 'That question is not part of this session'], 422);
+        }
+
+        // Check if answer is correct (the answer must belong to this question)
+        $answer = DB::table('answers')->where('id', $answerId)->where('question_id', $questionId)->first();
         $isCorrect = $answer && $answer->iscorrectanswer == 1;
 
         Log::info('Submitting answer', [
@@ -412,7 +432,7 @@ class ChallengeController extends Controller
             return response()->json(['error' => 'Session ID required'], 400);
         }
 
-        $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+        $session = $this->ownedSession($sessionId);
         
         if (!$session) {
             return response()->json(['error' => 'Session not found'], 404);
@@ -478,7 +498,7 @@ public function getProgress(Request $request)
         return response()->json(['error' => 'Session ID required'], 400);
     }
 
-    $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+    $session = $this->ownedSession($sessionId);
     
     if (!$session) {
         return response()->json(['error' => 'Session not found'], 404);
@@ -738,7 +758,7 @@ public function submitPracticeAnswer(Request $request)
             'session_id' => 'required|integer',
             'question_id' => 'required|integer',
             'answer_id' => 'required|integer',
-            'time_taken' => 'required|integer'
+            'time_taken' => 'required|integer|min:0|max:3600'
         ]);
 
         $sessionId = $request->session_id;
@@ -746,7 +766,7 @@ public function submitPracticeAnswer(Request $request)
         $answerId = $request->answer_id;
         $timeTaken = $request->time_taken;
 
-        $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+        $session = $this->ownedSession($sessionId);
         
         if (!$session || $session->status !== 'in_progress') {
             return response()->json(['error' => 'Invalid session'], 400);
@@ -773,8 +793,17 @@ public function submitPracticeAnswer(Request $request)
             return response()->json(['error' => 'Mastery sessions only accept objective questions'], 422);
         }
 
-        // Check if answer is correct
-        $answer = DB::table('answers')->find($answerId);
+        $inSession = DB::table('mastery_challenge_questions')
+            ->where('session_id', $sessionId)
+            ->where('question_id', $questionId)
+            ->exists();
+
+        if (!$inSession) {
+            return response()->json(['error' => 'That question is not part of this session'], 422);
+        }
+
+        // Check if answer is correct (the answer must belong to this question)
+        $answer = DB::table('answers')->where('id', $answerId)->where('question_id', $questionId)->first();
         $isCorrect = $answer && $answer->iscorrectanswer == 1;
 
         Log::info('Submitting practice answer', [
@@ -1025,7 +1054,7 @@ public function getPracticeSummary(Request $request)
         }
 
         // Get the session with basic info
-        $session = DB::table('mastery_challenge_sessions')->find($sessionId);
+        $session = $this->ownedSession($sessionId);
         
         if (!$session) {
             return response()->json(['error' => 'Session not found'], 404);

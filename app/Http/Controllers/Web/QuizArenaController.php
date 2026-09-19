@@ -195,7 +195,10 @@ class QuizArenaController extends Controller
         $question = DB::table('questions')->find($validated['question_id']);
         abort_unless($question, 404, 'Question not found.');
 
-        $answer = DB::table('answers')->find($validated['answer_id']);
+        $answer = DB::table('answers')
+            ->where('id', $validated['answer_id'])
+            ->where('question_id', $question->id)
+            ->first();
         $isCorrect = (bool) ($answer && $answer->iscorrectanswer);
         $topic = DB::table('topics')->find($question->topic_id);
 
