@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // every minute — see the Quiz Arena plan notes for local testing via
         // `php artisan quiz-arena:settle` directly.
         $schedule->command('quiz-arena:settle')->sundays()->at('23:59');
+        $schedule->command('subscriptions:sync-status')->everyFiveMinutes()->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware) {
 

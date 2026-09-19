@@ -38,9 +38,14 @@ class ChildSubscription extends Model
         static::creating(fn (ChildSubscription $subscription) => $subscription->uuid ??= (string) Str::uuid());
     }
 
+    /**
+     * Subscriptions giving access right now. A scheduled renewal counts once its
+     * start time has passed, so access never lapses while waiting for
+     * subscriptions:sync-status to flip its status.
+     */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_ACTIVE)->where('starts_at', '<=', now())->where('ends_at', '>', now());
+        return $query->whereIn('status', [self::STATUS_ACTIVE, self::STATUS_SCHEDULED])->where('starts_at', '<=', now())->where('ends_at', '>', now());
     }
 
     public function child()

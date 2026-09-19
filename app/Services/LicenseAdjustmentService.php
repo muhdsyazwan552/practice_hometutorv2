@@ -83,7 +83,7 @@ class LicenseAdjustmentService
                 ]);
             }
 
-            if ($subscription && $subscription->status === ChildSubscription::STATUS_ACTIVE) {
+            if ($subscription && in_array($subscription->status, [ChildSubscription::STATUS_ACTIVE, ChildSubscription::STATUS_SCHEDULED], true)) {
                 $subscription->update(['status' => ChildSubscription::STATUS_CANCELLED]);
             }
 
