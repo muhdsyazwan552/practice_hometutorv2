@@ -15,7 +15,7 @@
 <p><strong>Package:</strong> {{ $activationCode->package->name }}</p>
 <p><strong>Duration:</strong> {{ data_get($activationCode->metadata, 'duration_months') ?: round($activationCode->duration_days / (365 / 12)) }} months</p>
 <p><strong>Access:</strong> {{ $subscription->starts_at->format('d M Y') }} to {{ $subscription->ends_at->format('d M Y') }}</p>
-<p><strong>Activation code:</strong> {{ $activationCode->code_value }} (already redeemed)</p>
+<p><strong>Activation code:</strong> {{ $activationCode->codeOrMask('-') }} (already redeemed)</p>
 <p style="line-height:1.7;padding:12px;border-radius:10px;background:#fff7ed;color:#9a3412"><strong>Security reminder:</strong> This email contains the child password. Keep it private and ask the child to change it after signing in.</p>
 </div>
 </body>

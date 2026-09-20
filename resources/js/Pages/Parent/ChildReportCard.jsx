@@ -1,4 +1,4 @@
-import DashboardLayout from "@/Layouts/DashboardLayout";
+import ParentChildLayout from "@/Layouts/ParentChildLayout";
 import { Head, router } from "@inertiajs/react";
 import {
     BookOpenIcon,
@@ -62,7 +62,7 @@ function SectionTitle({ icon: Icon, eyebrow, title, detail }) {
                     {eyebrow}
                 </p>
             </div>
-            <h2 className="mt-3 text-xl font-extrabold tracking-tight text-[#082c58]">
+            <h2 className="mt-3 text-lg font-extrabold tracking-tight text-[#082c58] sm:text-xl">
                 {title}
             </h2>
             {detail && (
@@ -105,89 +105,10 @@ export default function ChildReportCard({
             : `${summary.score_change >= 0 ? "+" : ""}${summary.score_change} points from the earlier period`;
 
     return (
-        <DashboardLayout>
+        <ParentChildLayout>
             <Head title={`${viewedChild?.name || "Child"} Report Card`} />
-            <main className="min-h-[calc(100vh-5rem)] bg-[radial-gradient(circle_at_top_right,_#dff6ff_0,_#eff9ff_36%,_#f8fbff_70%)] px-4 py-5 sm:px-6 sm:py-8 lg:px-10">
-                <div className="mx-auto max-w-7xl space-y-5 sm:space-y-6">
-                    <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#061f42] via-[#082c58] to-[#087fbd] px-5 py-6 text-white shadow-[0_22px_45px_rgba(8,44,88,0.25)] sm:px-8 sm:py-8">
-                        <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-cyan-300/20 blur-2xl" />
-                        <div className="absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-blue-400/20 blur-2xl" />
-                        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-                            <div className="max-w-3xl">
-                                <div className="flex items-center gap-2 text-cyan-100">
-                                    <SparklesIcon className="h-4 w-4" />
-                                    <p className="text-xs font-extrabold uppercase tracking-[0.18em]">
-                                        Parent report card
-                                    </p>
-                                </div>
-                                <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                                    {viewedChild?.name}
-                                </h1>
-                                <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100">
-                                    A simple view of learning growth, the best
-                                    next focus, and the activity behind it.
-                                </p>
-                            </div>
-                            <div className="grid gap-2 sm:grid-cols-3 xl:flex xl:items-center">
-                                {/* <label className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-xs font-bold text-cyan-100 backdrop-blur-sm">
-                                    Child
-                                    <select
-                                        aria-label="Select child"
-                                        value={viewedChild?.uuid || ""}
-                                        onChange={changeChild}
-                                        className="mt-1 block w-full bg-transparent font-extrabold text-white outline-none sm:mt-0 sm:ml-2 sm:inline sm:w-auto"
-                                    >
-                                        {reportChildren.map((child) => (
-                                            <option
-                                                className="text-slate-800"
-                                                key={child.uuid}
-                                                value={child.uuid}
-                                            >
-                                                {child.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label> */}
-                                {/* <label className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-xs font-bold text-cyan-100 backdrop-blur-sm">
-                                    Period
-                                    <select
-                                        aria-label="Select report period"
-                                        value={period}
-                                        onChange={changePeriod}
-                                        className="mt-1 block w-full bg-transparent font-extrabold text-white outline-none sm:mt-0 sm:ml-2 sm:inline sm:w-auto"
-                                    >
-                                        <option
-                                            className="text-slate-800"
-                                            value="7"
-                                        >
-                                            7 days
-                                        </option>
-                                        <option
-                                            className="text-slate-800"
-                                            value="30"
-                                        >
-                                            30 days
-                                        </option>
-                                        <option
-                                            className="text-slate-800"
-                                            value="90"
-                                        >
-                                            90 days
-                                        </option>
-                                    </select>
-                                </label> */}
-                                {/* {sessionHistoryUrl && (
-                                    <a
-                                        href={sessionHistoryUrl}
-                                        className="flex items-center justify-center gap-1.5 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[#082c58] shadow-sm transition hover:bg-cyan-50"
-                                    >
-                                        Session history{" "}
-                                        <ChevronRightIcon className="h-4 w-4" />
-                                    </a>
-                                )} */}
-                            </div>
-                        </div>
-                    </section>
+            <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-10">
+                <div className="space-y-5 sm:space-y-6">
                     {consistency.needs_check_in && (
                         <section className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 shadow-sm">
                             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
@@ -237,7 +158,7 @@ export default function ChildReportCard({
                             iconStyle="bg-amber-100 text-amber-700 ring-amber-50"
                         />
                     </section>
-                    <section className="grid gap-5 lg:grid-cols-5">
+                    <section className="grid gap-4 sm:gap-5 lg:grid-cols-5">
                         <article className="rounded-3xl border border-white bg-white p-5 shadow-[0_12px_30px_rgba(8,44,88,0.07)] sm:p-7 lg:col-span-3">
                             <SectionTitle
                                 icon={ChartBarIcon}
@@ -334,14 +255,14 @@ export default function ChildReportCard({
                             </div>
                         </aside>
                     </section>
-                    <section className="rounded-3xl border border-white bg-white p-5 shadow-[0_12px_30px_rgba(8,44,88,0.07)] sm:p-7">
+                    <section className="rounded-3xl border border-white bg-white p-4 shadow-[0_12px_30px_rgba(8,44,88,0.07)] sm:p-7">
                         <SectionTitle
                             icon={ListBulletIcon}
                             eyebrow="Topic detail"
                             title="Topics to revisit"
                             detail="Shown from the lowest current average upward, so it is easy to choose the next practice area."
                         />
-                        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="mt-6 grid gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3">
                             {topics.map((topic) => (
                                 <article
                                     key={`${topic.subject}-${topic.name}`}
@@ -386,7 +307,7 @@ export default function ChildReportCard({
                                 <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">
                                     Reference
                                 </p>
-                                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#082c58]">
+                                <h2 className="mt-1 text-lg font-extrabold tracking-tight text-[#082c58] sm:text-xl">
                                     Recent session history
                                 </h2>
                                 <p className="mt-1 text-sm text-slate-500">
@@ -404,7 +325,41 @@ export default function ChildReportCard({
                                 </a>
                             )}
                         </div>
-                        <div className="overflow-x-auto">
+                        {/* Phone and tablet: one card per session instead of a four-column table. */}
+                        <div className="divide-y divide-slate-100 md:hidden">
+                            {recentSessions.map((session) => (
+                                <article
+                                    key={session.uuid}
+                                    className="flex items-start justify-between gap-3 px-5 py-4"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="font-extrabold text-[#082c58]">
+                                            {session.subject}
+                                        </p>
+                                        <p className="mt-1 text-xs font-medium text-slate-500">
+                                            {session.topic}
+                                        </p>
+                                        <p className="mt-2 text-xs text-slate-500">
+                                            {session.date} ·{" "}
+                                            {session.correct}/
+                                            {session.total_questions} correct
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-extrabold ring-1 ${scoreStyle(session.score)}`}
+                                    >
+                                        {session.score}%
+                                    </span>
+                                </article>
+                            ))}
+                            {!recentSessions.length && (
+                                <p className="px-5 py-10 text-center text-sm font-semibold text-slate-400">
+                                    No sessions in this period.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="min-w-full text-left text-sm">
                                 <thead className="bg-slate-50/80 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500">
                                     <tr>
@@ -467,6 +422,6 @@ export default function ChildReportCard({
                     </section>
                 </div>
             </main>
-        </DashboardLayout>
+        </ParentChildLayout>
     );
 }

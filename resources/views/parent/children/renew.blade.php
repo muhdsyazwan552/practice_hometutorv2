@@ -6,27 +6,29 @@
 
     <div class="mt-4">
         <p class="text-xs font-bold uppercase tracking-wide text-sky-700">Child renewal</p>
-        <h1 class="mt-2 text-3xl font-extrabold text-[#082c58]">{{ $child->full_name ?: $child->user->name }}</h1>
-        <p class="mt-2 text-sm text-slate-500">{{ '@'.$child->user->username }} · {{ $child->level?->name ?? 'Level not set' }}</p>
+        <h1 class="mt-2 break-words text-2xl font-extrabold text-[#082c58] sm:text-3xl">{{ $child->full_name ?: $child->user->name }}</h1>
+        <p class="mt-2 break-words text-sm text-slate-500">{{ '@'.$child->user->username }} · {{ $child->level?->name ?? 'Level not set' }}</p>
     </div>
 
-    <section class="mt-7 rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+    <section class="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:mt-7 sm:p-7">
         <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 font-extrabold text-sky-700">1</div>
-        <h2 class="mt-4 text-xl font-extrabold text-[#082c58]">Renew using an activation code</h2>
+        <h2 class="mt-4 text-lg font-extrabold text-[#082c58] sm:text-xl">Renew using an activation code</h2>
         <p class="mt-2 text-sm text-slate-500">Enter an unused renewal code for {{ $child->level?->name ?? 'this child level' }}. Remaining active days are preserved.</p>
 
-        @if($automaticCode)
+        @if($automaticCode && $automaticCode->code_value)
             <div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">The renewal code from your payment is included automatically. Confirm it below to activate the renewal.</div>
+        @elseif($automaticCode)
+            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">This code could not be read on this server. Enter the code from your activation email, ending {{ $automaticCode->code_last_four }}.</div>
         @endif
 
-        <form method="POST" action="{{ route('parent.children.renew.store', $child->uuid) }}" class="mt-6 grid items-end gap-4 md:grid-cols-[1fr_auto]">
+        <form method="POST" action="{{ route('parent.children.renew.store', $child->uuid) }}" class="mt-6 grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
             @csrf
             <label class="block">
                 <span class="text-sm font-bold text-slate-700">Activation code</span>
                 <input name="activation_code" value="{{ old('activation_code', $automaticCode?->code_value) }}" required autocomplete="off" class="mt-2 block w-full rounded-xl border-slate-200 font-mono uppercase focus:border-sky-500 focus:ring-sky-500" placeholder="HT-XXXX-XXXX-XXXX-XXXX-XXXX">
                 @error('activation_code')<span class="mt-1 block text-sm text-rose-600">{{ $message }}</span>@enderror
             </label>
-            <button class="rounded-xl bg-[#0788c9] px-6 py-3 font-bold text-white">Redeem and renew</button>
+            <button class="w-full rounded-xl bg-[#0788c9] px-6 py-3 font-bold text-white md:w-auto">Redeem and renew</button>
         </form>
     </section>
 
@@ -36,17 +38,17 @@
         <div class="flex items-start gap-4">
             <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 font-extrabold text-amber-800">2</div>
             <div>
-                <h2 class="text-xl font-extrabold text-[#082c58]">Get a renewal code by payment</h2>
+                <h2 class="text-lg font-extrabold text-[#082c58] sm:text-xl">Get a renewal code by payment</h2>
                 <p class="mt-1 text-sm text-slate-500">Select a package for {{ $child->level?->name ?? 'this child level' }} and choose only 6 or 12 months.</p>
             </div>
         </div>
 
-        <div class="mt-5 grid gap-6 lg:grid-cols-2">
+        <div class="mt-5 grid gap-4 sm:gap-6 xl:grid-cols-2">
             @forelse($packages as $package)
-                <form method="POST" action="{{ route('parent.children.renew.payment.store', ['childUuid' => $child->uuid, 'package' => $package]) }}" class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <form method="POST" action="{{ route('parent.children.renew.payment.store', ['childUuid' => $child->uuid, 'package' => $package]) }}" class="flex flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                     @csrf
                     <div class="flex items-start justify-between gap-4">
-                        <div><h3 class="text-xl font-extrabold text-[#082c58]">{{ $package->name }}</h3><p class="mt-2 text-sm leading-6 text-slate-600">{{ $package->description }}</p></div>
+                        <div class="min-w-0"><h3 class="text-lg font-extrabold text-[#082c58] sm:text-xl">{{ $package->name }}</h3><p class="mt-2 text-sm leading-6 text-slate-600">{{ $package->description }}</p></div>
                         <span class="shrink-0 rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">{{ $child->level?->name }}</span>
                     </div>
 
@@ -66,7 +68,7 @@
                     <button class="mt-4 w-full rounded-xl bg-[#f2c237] px-5 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">Proceed to payment</button>
                 </form>
             @empty
-                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 lg:col-span-2">No active 6 or 12 month package is configured for this child's level.</div>
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 xl:col-span-2">No active 6 or 12 month package is configured for this child's level.</div>
             @endforelse
         </div>
     </section>

@@ -3,26 +3,26 @@
 @section('content')
 <div class="mx-auto max-w-5xl">
     <a href="{{ route('parent.subscriptions.index') }}" class="text-sm font-bold text-sky-700">← Back to packages</a>
-    <div class="mt-4"><p class="text-sm font-bold uppercase tracking-[0.16em] text-sky-700">{{ $cartMode ? 'Add package to cart' : 'Package checkout' }}</p><h1 class="mt-2 text-3xl font-extrabold text-[#082c58]">{{ $package->name }}</h1><p class="mt-2 text-slate-600">Choose 6 or 12 months and enter the child details for this package.</p></div>
+    <div class="mt-4"><p class="text-sm font-bold uppercase tracking-[0.16em] text-sky-700">{{ $cartMode ? 'Add package to cart' : 'Package checkout' }}</p><h1 class="mt-2 text-2xl font-extrabold text-[#082c58] sm:text-3xl">{{ $package->name }}</h1><p class="mt-2 text-sm text-slate-600 sm:text-base">Choose 6 or 12 months and enter the child details for this package.</p></div>
 
-    <form id="checkout-form" method="POST" action="{{ $cartMode ? route('parent.packages.cart.store', $package) : route('parent.packages.checkout.store', $package) }}" class="mt-7 grid gap-6 lg:grid-cols-[1fr_340px]">
+    <form id="checkout-form" method="POST" action="{{ $cartMode ? route('parent.packages.cart.store', $package) : route('parent.packages.checkout.store', $package) }}" class="mt-6 grid gap-5 sm:mt-7 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
         @csrf
-        <div class="space-y-6">
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-extrabold text-[#082c58]">1. Select subscription duration</h2>
+        <div class="min-w-0 space-y-5 sm:space-y-6">
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                <h2 class="text-base font-extrabold text-[#082c58] sm:text-lg">1. Select subscription duration</h2>
                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                     @foreach($package->durationOptions as $option)
-                    <label class="duration-card cursor-pointer rounded-2xl border-2 p-5 transition has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50">
+                    <label class="duration-card cursor-pointer rounded-2xl border-2 p-4 transition has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50 sm:p-5">
                         <input type="radio" name="duration_option_id" value="{{ $option->id }}" data-price="{{ $option->price }}" data-currency="{{ $option->currency }}" class="sr-only" {{ (string) old('duration_option_id', $loop->first ? $option->id : '') === (string) $option->id ? 'checked' : '' }}>
-                        <span class="block text-xl font-extrabold text-[#082c58]">{{ $option->months }} months</span>
-                        <span class="mt-2 block text-2xl font-extrabold text-sky-700">{{ $option->currency }} {{ number_format($option->price, 2) }}</span>
+                        <span data-duration-label class="block text-lg font-extrabold text-[#082c58] sm:text-xl">{{ $option->months }} months</span>
+                        <span class="mt-2 block text-xl font-extrabold text-sky-700 sm:text-2xl">{{ $option->currency }} {{ number_format($option->price, 2) }}</span>
                     </label>
                     @endforeach
                 </div>
             </section>
 
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-extrabold text-[#082c58]">2. Child account information</h2>
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                <h2 class="text-base font-extrabold text-[#082c58] sm:text-lg">2. Child account information</h2>
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
                     <label class="sm:col-span-2"><span class="text-sm font-bold text-slate-700">Child name</span><input name="name" value="{{ old('name') }}" required maxlength="255" class="mt-2 w-full rounded-xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"></label>
                     <label class="sm:col-span-2"><span class="text-sm font-bold text-slate-700">Username</span><input id="username" name="username" value="{{ old('username') }}" required minlength="4" maxlength="40" pattern="[A-Za-z0-9_-]+" autocomplete="off" class="mt-2 w-full rounded-xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"><span id="username-status" class="mt-2 block text-xs text-slate-500">Use at least 4 letters, numbers, dashes, or underscores.</span></label>
@@ -33,10 +33,10 @@
             </section>
         </div>
 
-        <aside class="h-fit rounded-2xl bg-[#082c58] p-6 text-white shadow-xl lg:sticky lg:top-6">
+        <aside class="h-fit min-w-0 rounded-2xl bg-[#082c58] p-5 text-white shadow-xl sm:p-6 lg:sticky lg:top-[5.5rem]">
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-200">Order summary</p><h2 class="mt-2 text-xl font-extrabold">{{ $package->name }}</h2>
             <div class="mt-5 border-y border-white/20 py-4"><div class="flex justify-between text-sm"><span>One child licence</span><span id="summary-duration">—</span></div></div>
-            <div class="mt-5 flex items-end justify-between"><span class="font-bold">Total</span><span id="summary-total" class="text-2xl font-extrabold text-[#f2c237]">—</span></div>
+            <div class="mt-5 flex flex-wrap items-end justify-between gap-2"><span class="font-bold">Total</span><span id="summary-total" class="text-xl font-extrabold text-[#f2c237] sm:text-2xl">—</span></div>
             <p class="mt-5 rounded-xl bg-white/10 p-3 text-xs leading-5 text-sky-100">{{ $cartMode ? 'Child details are saved as pending. The account is created only after the combined cart payment.' : 'You\'ll be redirected to our secure payment gateway. The child account and subscription are created only after payment is confirmed.' }}</p>
             <button id="submit-button" data-mode="{{ $cartMode ? 'cart' : 'buy' }}" class="mt-5 w-full rounded-xl bg-[#f2c237] px-4 py-3 font-extrabold text-[#082c58] hover:bg-yellow-300">{{ $cartMode ? 'Add to cart' : 'Proceed to payment' }}</button>
         </aside>
@@ -57,7 +57,7 @@
     function updateTotal() {
         const selected = document.querySelector('input[name="duration_option_id"]:checked');
         if (!selected) return;
-        duration.textContent = selected.closest('label').querySelector('.text-xl').textContent;
+        duration.textContent = selected.closest('label').querySelector('[data-duration-label]').textContent;
         total.textContent = `${selected.dataset.currency} ${Number(selected.dataset.price).toFixed(2)}`;
         submit.textContent = `${submit.dataset.mode === 'cart' ? 'Add to cart' : 'Proceed to payment'} · ${total.textContent}`;
     }

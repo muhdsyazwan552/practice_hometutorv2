@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -27,6 +28,37 @@ class ActivationCode extends Model
     protected static function booted(): void
     {
         static::creating(fn (ActivationCode $code) => $code->uuid ??= (string) Str::uuid());
+    }
+
+    /**
+     * Rows written under an earlier APP_KEY can no longer be decrypted. The
+     * plain code is display-only — redemption matches on code_hash — so an
+     * unreadable row yields null here instead of throwing and taking down the
+     * whole listing. Set APP_PREVIOUS_KEYS to the old key to read them again.
+     */
+    public function fromEncryptedString($value)
+    {
+        try {
+            return parent::fromEncryptedString($value);
+        } catch (DecryptException) {
+            return null;
+        }
+    }
+
+    /**
+     * What to print wherever the full code must stay hidden, or cannot be read.
+     */
+    public function maskedCode(string $separator = ' '): string
+    {
+        return '••••'.$separator.($this->code_last_four ?: '????');
+    }
+
+    /**
+     * The full code when it is readable, otherwise the masked form.
+     */
+    public function codeOrMask(string $separator = ' '): string
+    {
+        return $this->code_value ?: $this->maskedCode($separator);
     }
 
     public function package()

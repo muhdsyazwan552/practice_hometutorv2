@@ -38,6 +38,7 @@ class ChildReportCardController extends Controller
             'parentReportUrl' => route('parent.children.reports', $student->uuid),
             'sessionHistoryUrl' => route('parent.children.reports.history', $student->uuid),
             'reportChildren' => $this->reportChildren($request, $student),
+            'activeTab' => 'report-card',
             'period' => $period,
             'summary' => $this->summary($sessions),
             'subjects' => $this->subjectProgress($sessions),

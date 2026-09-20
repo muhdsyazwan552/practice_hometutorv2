@@ -61,6 +61,7 @@ class ChildReportController extends Controller
             'parentReportUrl' => route('parent.children.reports', $student->uuid),
             'sessionHistoryUrl' => route('parent.children.reports.history', $student->uuid),
             'reportChildren' => $this->reportChildren($request, $student),
+            'activeTab' => 'session-log',
             'filters' => $filters,
             'forms' => $forms->values(),
             'subjects' => $subjects->values(),

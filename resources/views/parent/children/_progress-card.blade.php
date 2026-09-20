@@ -19,27 +19,27 @@
 @endphp
 
 <article class="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_18px_45px_-28px_rgba(8,44,88,0.5)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_-28px_rgba(8,44,88,0.6)]">
-    <header class="relative overflow-hidden bg-gradient-to-r from-[#082c58] via-[#075895] to-[#0798dc] px-5 py-6 text-white sm:px-7">
+    <header class="relative overflow-hidden bg-gradient-to-r from-[#082c58] via-[#075895] to-[#0798dc] px-4 py-5 text-white sm:px-7 sm:py-6">
         <div class="absolute -right-10 -top-16 h-44 w-44 rounded-full border-[22px] border-white/5"></div>
         <div class="absolute right-24 top-8 h-2 w-2 rounded-full bg-cyan-200/30"></div>
-        <div class="relative flex items-center justify-between gap-4">
-            <div class="flex min-w-0 items-center gap-4">
-                <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-gradient-to-br from-sky-300 to-sky-600 text-2xl font-bold shadow-lg sm:h-24 sm:w-24 sm:text-3xl">
+        <div class="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-gradient-to-br from-sky-300 to-sky-600 text-xl font-bold shadow-lg sm:h-24 sm:w-24 sm:text-3xl">
                     {{ $metrics['initials'] ?? 'HT' }}
                 </div>
                 <div class="min-w-0">
-                    <h3 class="truncate text-xl font-bold sm:text-2xl">{{ $childName }}</h3>
-                    <p class="mt-1 truncate text-sm text-blue-100">{{ '@'.$child->user->username }}</p>
-                    <p class="mt-1 text-sm font-medium text-white/90">{{ $child->level?->name ?? 'Level not set' }}</p>
+                    <h3 class="truncate text-lg font-bold sm:text-2xl">{{ $childName }}</h3>
+                    <p class="mt-1 truncate text-xs text-blue-100 sm:text-sm">{{ '@'.$child->user->username }}</p>
+                    <p class="mt-1 truncate text-xs font-medium text-white/90 sm:text-sm">{{ $child->level?->name ?? 'Level not set' }}</p>
                 </div>
             </div>
-            <span class="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm {{ $licenseBadgeClass }}">
+            <span class="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm {{ $licenseBadgeClass }}">
                 <span class="h-2 w-2 rounded-full bg-current"></span>{{ $licenseLabel }}
             </span>
         </div>
     </header>
 
-    <div class="px-5 py-5 sm:px-7">
+    <div class="px-4 py-5 sm:px-7">
         <div class="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             <div class="flex items-center gap-3 py-3 sm:py-1 sm:pr-4">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
@@ -64,25 +64,25 @@
         <div class="my-5 h-px bg-slate-100"></div>
 
         <div class="grid items-center gap-5 sm:grid-cols-2">
-            <div class="flex items-center gap-4 sm:border-r sm:border-slate-100 sm:pr-5">
-                <div class="relative flex h-28 w-28 shrink-0 items-center justify-center rounded-full" style="background: conic-gradient(#0788c9 {{ $scoreProgress }}%, #e2e8f0 0)">
-                    <div class="flex h-[5.6rem] w-[5.6rem] flex-col items-center justify-center rounded-full bg-white shadow-inner">
+            <div class="flex items-center gap-3 sm:gap-4 sm:border-r sm:border-slate-100 sm:pr-5">
+                <div class="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-full sm:h-28 sm:w-28" style="background: conic-gradient(#0788c9 {{ $scoreProgress }}%, #e2e8f0 0)">
+                    <div class="flex h-[4.8rem] w-[4.8rem] flex-col items-center justify-center rounded-full bg-white shadow-inner sm:h-[5.6rem] sm:w-[5.6rem]">
                         <span class="text-[11px] font-medium text-slate-500">Average</span>
                         <span class="text-2xl font-bold text-[#082c58]">{{ $score !== null ? $score.'%' : '—' }}</span>
                     </div>
                 </div>
                 <div><p class="text-xs font-medium uppercase tracking-wide text-slate-400">Performance</p><p class="mt-1 text-sm leading-5 text-slate-600">{{ $score !== null ? 'Average score over the last 30 days.' : 'No completed sessions in the last 30 days.' }}</p></div>
             </div>
-            <div class="flex items-center gap-4 sm:pl-1">
-                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-7 w-7" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M5 5h6M8 2v6m7-3h4m-2-2v4M5 16h6m4-3 4 4m0-4-4 4"/></svg>
+            <div class="flex items-center gap-3 sm:gap-4 sm:pl-1">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 sm:h-14 sm:w-14">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M5 5h6M8 2v6m7-3h4m-2-2v4M5 16h6m4-3 4 4m0-4-4 4"/></svg>
                 </span>
-                <div><p class="text-xs font-medium text-slate-500">Weakest subject</p><p class="mt-1 text-lg font-bold text-[#082c58]">{{ $metrics['weakest_subject'] ?? 'Not enough data' }}</p></div>
+                <div class="min-w-0"><p class="text-xs font-medium text-slate-500">Weakest subject</p><p class="mt-1 text-base font-bold text-[#082c58] sm:text-lg">{{ $metrics['weakest_subject'] ?? 'Not enough data' }}</p></div>
             </div>
         </div>
     </div>
 
-    <footer class="border-t border-slate-100 bg-slate-50/80 px-5 py-4 sm:px-7">
+    <footer class="border-t border-slate-100 bg-slate-50/80 px-4 py-4 sm:px-7">
         <div class="mb-3 flex items-center gap-2 text-sm {{ $activeLicense ? 'text-slate-600' : 'text-amber-700' }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-5 w-5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 2v3m8-3v3M3.5 9h17M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z"/></svg>
             <span class="font-medium">

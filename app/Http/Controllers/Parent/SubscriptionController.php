@@ -24,6 +24,11 @@ class SubscriptionController extends Controller
     {
         $code = $request->user()->activationCodes()->where('uuid', $codeUuid)
             ->where('status', ActivationCode::STATUS_UNUSED)->firstOrFail();
+
+        if (! $code->code_value) {
+            return back()->with('error', 'This code cannot be read on this server, so it cannot be emailed again. Please contact support with the code ending '.$code->code_last_four.'.');
+        }
+
         $service->resend($code, $request->user());
 
         return back()->with('success', 'The activation-code email was sent again.');

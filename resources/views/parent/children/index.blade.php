@@ -3,12 +3,12 @@
 @section('title', 'Children')
 
 @section('content')
-    <div class="flex flex-wrap items-end justify-between gap-4">
-        <div><p class="text-sm font-bold uppercase tracking-[0.16em] text-sky-700">Family</p><h1 class="mt-2 text-3xl font-bold text-[#082c58]">Child accounts</h1></div>
-        <a href="{{ route('parent.children.create') }}" class="rounded-xl bg-[#f2c237] px-5 py-3 text-sm font-bold text-[#082c58]">Create child with code</a>
+    <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div><p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-700 sm:text-sm">Family</p><h1 class="mt-2 text-2xl font-bold text-[#082c58] sm:text-3xl">Child accounts</h1></div>
+        <a href="{{ route('parent.children.create') }}" class="w-full rounded-xl bg-[#f2c237] px-5 py-3 text-center text-sm font-bold text-[#082c58] sm:w-auto">Create child with code</a>
     </div>
 
-    <div class="mt-7 grid gap-6 xl:grid-cols-2">
+    <div class="mt-6 grid gap-4 sm:mt-7 sm:gap-6 xl:grid-cols-2">
         @forelse ($children as $child)
             @include('parent.children._progress-card', ['child' => $child])
         @empty

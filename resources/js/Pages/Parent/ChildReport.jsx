@@ -1,5 +1,5 @@
 import QuestionReviewModal from "@/Components/QuestionReviewModal";
-import DashboardLayout from "@/Layouts/DashboardLayout";
+import ParentChildLayout from "@/Layouts/ParentChildLayout";
 import { Head, router } from "@inertiajs/react";
 import {
     AcademicCapIcon,
@@ -79,79 +79,18 @@ export default function ChildReport({
     };
 
     return (
-        <DashboardLayout>
+        <ParentChildLayout>
             <Head title={`${viewedChild?.name || "Child"} Report`} />
-            <main className="min-h-[calc(100vh-5rem)] bg-[#eff9ff] px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-                <div className="mx-auto max-w-7xl space-y-6">
-                    <section className="overflow-hidden rounded-[2rem] bg-[#082c58] px-6 py-7 text-white shadow-xl sm:px-9">
-                        <div className="flex flex-wrap items-end justify-between gap-5">
-                            <div>
-                                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
-                                    Parent report · Read only
-                                </p>
-                                <h1 className="mt-2 text-3xl font-extrabold">
-                                    {viewedChild?.name}
-                                </h1>
-                                <p className="mt-2 text-sm text-blue-100">
-                                    Filter learning performance and safely
-                                    review completed sessions.
-                                </p>
-                            </div>
-                            {/* <div className="flex flex-wrap items-center gap-2">
-                                <label className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-cyan-100">
-                                    Child
-                                    <select
-                                        value={viewedChild?.uuid || ""}
-                                        onChange={(event) =>
-                                            router.visit(
-                                                reportChildren.find(
-                                                    (child) =>
-                                                        child.uuid ===
-                                                        event.target.value,
-                                                )?.history_url,
-                                            )
-                                        }
-                                        className="ml-2 bg-transparent font-extrabold text-white outline-none"
-                                    >
-                                        {reportChildren.map((child) => (
-                                            <option
-                                                className="text-slate-800"
-                                                key={child.uuid}
-                                                value={child.uuid}
-                                            >
-                                                {child.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-                                {parentReportUrl && (
-                                    <a
-                                        href={parentReportUrl}
-                                        className="rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#082c58] shadow-sm"
-                                    >
-                                        View report card
-                                    </a>
-                                )}
-                            </div> */}
-                            {/* <div className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
-                                <p className="text-xs font-bold text-cyan-100">
-                                    Username:
-                                </p>
-                                <p className="mt-0 text-sm font-bold">
-                                    {viewedChild?.username}
-                                </p>
-                            </div> */}
-                        </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8">
+                <div className="space-y-6">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                         <div className="flex items-center gap-2">
                             <ListBulletIcon className="h-5 w-5 text-sky-600" />
                             <h2 className="font-extrabold text-[#082c58]">
                                 Report filters
                             </h2>
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                             <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
                                 Form
                                 <select
@@ -275,7 +214,7 @@ export default function ChildReport({
                         </div>
                     </section>
 
-                    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <section className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
                         <SummaryCard
                             label="Total sessions"
                             value={summary.total_sessions || 0}
@@ -316,7 +255,7 @@ export default function ChildReport({
                     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                             <div>
-                                <h2 className="text-lg font-extrabold text-[#082c58]">
+                                <h2 className="text-base font-extrabold text-[#082c58] sm:text-lg">
                                     Session history
                                 </h2>
                                 <p className="mt-1 text-sm text-slate-500">
@@ -334,7 +273,94 @@ export default function ChildReport({
                                 {pagination.last_page || 1}
                             </span>
                         </div>
-                        <div className="overflow-x-auto">
+                        {/* Phone and tablet: one card per session, so the report never scrolls sideways. */}
+                        <div className="divide-y divide-slate-100 lg:hidden">
+                            {sessionRows.map((session) => (
+                                <article key={session.uuid} className="p-4 sm:p-5">
+                                    <div className="flex flex-wrap items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="font-extrabold text-[#082c58]">
+                                                {session.subject}
+                                            </p>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                {session.topic} ·{" "}
+                                                {session.question_type}
+                                            </p>
+                                        </div>
+                                        <span
+                                            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold capitalize ${session.type === "mission" ? "bg-violet-100 text-violet-700" : "bg-sky-100 text-sky-700"}`}
+                                        >
+                                            {session.type}
+                                        </span>
+                                    </div>
+                                    <dl className="mt-4 grid gap-3 min-[420px]:grid-cols-3">
+                                        <div>
+                                            <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                                Questions
+                                            </dt>
+                                            <dd className="mt-0.5 text-sm font-bold text-slate-700">
+                                                {session.correct}/
+                                                {session.total_questions}
+                                                <span className="block text-xs font-medium text-slate-500">
+                                                    {session.wrong} wrong ·{" "}
+                                                    {session.skipped} skipped
+                                                </span>
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                                Result
+                                            </dt>
+                                            <dd
+                                                className={`mt-0.5 inline-flex items-center gap-1 text-sm font-extrabold ${session.score >= 80 ? "text-emerald-700" : "text-amber-700"}`}
+                                            >
+                                                {session.score >= 80 ? (
+                                                    <CheckCircleIcon className="h-4 w-4" />
+                                                ) : (
+                                                    <ExclamationTriangleIcon className="h-4 w-4" />
+                                                )}
+                                                {session.score}%
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                                Date · time
+                                            </dt>
+                                            <dd className="mt-0.5 text-sm font-semibold text-slate-700">
+                                                {session.date}
+                                                <span className="block text-xs font-medium text-slate-500">
+                                                    {formatDuration(
+                                                        session.time_seconds,
+                                                    )}
+                                                </span>
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                    <button
+                                        type="button"
+                                        onClick={() => setReviewSession(session)}
+                                        className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#0788c9] px-3 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#056fa7] min-[420px]:w-auto"
+                                    >
+                                        <DocumentMagnifyingGlassIcon className="h-4 w-4" />{" "}
+                                        Review
+                                    </button>
+                                </article>
+                            ))}
+                            {!sessionRows.length && (
+                                <div className="px-5 py-12 text-center">
+                                    <ChartBarIcon className="mx-auto h-10 w-10 text-slate-300" />
+                                    <p className="mt-3 font-bold text-slate-600">
+                                        No sessions match these filters
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-400">
+                                        Try another subject, topic, type or date
+                                        period.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                             <table className="min-w-full divide-y divide-slate-100 text-left text-sm">
                                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                                     <tr>
@@ -494,6 +520,6 @@ export default function ChildReport({
                 reviewUrl={reviewSession?.review_url}
                 readOnly
             />
-        </DashboardLayout>
+        </ParentChildLayout>
     );
 }

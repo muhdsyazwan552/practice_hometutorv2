@@ -299,7 +299,7 @@ class ActivationCodeController extends Controller
             $batch->activationCodes()->with('package')->orderBy('id')->chunk(250, function ($codes) use ($handle, $batch): void {
                 foreach ($codes as $code) {
                     fputcsv($handle, [
-                        $code->code_value,
+                        $code->codeOrMask('-'),
                         $batch->reference,
                         ucfirst($batch->source_type),
                         $batch->company?->name ?? $batch->event_name,

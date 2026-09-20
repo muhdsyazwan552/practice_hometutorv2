@@ -210,8 +210,9 @@ class ParentPortalTest extends TestCase
         $this->actingAs($parent)->get($url)
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Dashboard')
+                ->component('Parent/Dashboard')
                 ->where('viewerMode', 'parent')
+                ->where('activeTab', 'dashboard')
                 ->where('viewedChild.uuid', $student->uuid)
                 ->where('viewedChild.name', 'Owned Child')
                 ->where('auth.user.id', $parent->id));

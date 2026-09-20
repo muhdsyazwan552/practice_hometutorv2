@@ -275,6 +275,14 @@ class ActivationCodeService
             return;
         }
 
+        // A code encrypted under an earlier APP_KEY cannot be read back, so
+        // sending would deliver an email with an empty code box.
+        if (! $code->code_value) {
+            $this->log($code, $actor, 'email', 'unreadable_code');
+
+            return;
+        }
+
         try {
             Mail::to($code->sent_to_email)->send(new ActivationCodeIssued($code));
             $code->update(['emailed_at' => now()]);
