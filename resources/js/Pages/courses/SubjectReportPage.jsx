@@ -213,6 +213,8 @@ export default function SubjectReportPage() {
             activeTab="Report"
             selectedStandard={currentStandard}
             onStandardChange={handleStandardChange}
+            isLoading={isLoading}
+            loadingMessage={`Loading ${activeTab.toLowerCase()} progress…`}
         >
             <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
                 {/* Header */}
@@ -236,9 +238,6 @@ export default function SubjectReportPage() {
                             onClick={() => handleTabChange("Objective")}
                             disabled={isLoading}
                         >
-                            {isLoading && activeTab === "Objective" && (
-                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                            )}
                             Objective
                         </button>
 
@@ -248,26 +247,10 @@ export default function SubjectReportPage() {
                             onClick={() => handleTabChange("Subjective")}
                             disabled={isLoading}
                         >
-                            {isLoading && activeTab === "Subjective" && (
-                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                            )}
                             Subjective
                         </button>
                     </div>
                 </div>
-
-                {/* Global loading overlay — z-[200] clears the sticky subject navbar
-            (z-[110]) so the spinner isn't hidden behind it. */}
-                {isLoading && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/10 p-4">
-                        <div className="flex flex-col items-center rounded-lg bg-white p-6 shadow-lg">
-                            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                            <p className="text-gray-700">
-                                Loading {activeTab.toLowerCase()} data...
-                            </p>
-                        </div>
-                    </div>
-                )}
 
                 {/* Progress Details */}
                 <div className={`border shadow-sm ${themeCardRadius}`} style={themeSurface}>

@@ -141,7 +141,8 @@ class QuizArenaController extends Controller
             ->where('isactive', 1)
             ->select('id', 'answer_text', 'answer_option_file', 'iscorrectanswer as is_correct_answer', 'reason', 'reason2', 'reason_file')
             ->inRandomOrder()
-            ->get();
+            ->get()
+            ->map(fn ($answer) => QuestionContentNormalizer::answerRow($answer));
 
         $questionData = ['id' => $question->id, 'topic_id' => $question->topic_id];
 

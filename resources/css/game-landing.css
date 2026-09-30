@@ -1,0 +1,102 @@
+/* Game-style landing page (Pages/PracticeGameLanding.jsx). Everything is
+   prefixed gl- or scoped to .game-landing so nothing leaks into the app. */
+
+.game-landing {
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.game-landing .font-game {
+  font-family: 'Chakra Petch', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.gl-neon-text {
+  background: linear-gradient(90deg, #22d3ee, #a78bfa 45%, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gl-glow-text {
+  text-shadow: 0 0 18px rgba(139, 92, 246, 0.55), 0 0 42px rgba(34, 211, 238, 0.25);
+}
+
+/* Chamfered corners, like buttons in a game menu. */
+.gl-clip {
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+/* Gradient rim that lights up on hover. */
+.gl-neon-border {
+  position: relative;
+}
+.gl-neon-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #22d3ee, #8b5cf6 50%, #ec4899);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.gl-neon-border:hover::before,
+.gl-neon-border:focus-within::before {
+  opacity: 1;
+}
+
+/* Perspective grid "floor" under a section. */
+.gl-grid-floor {
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.35) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(520px) rotateX(62deg);
+  transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+  mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+}
+
+.gl-scanlines {
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+}
+
+/* Endless ticker. */
+.gl-marquee {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.gl-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: gl-marquee var(--gl-speed, 40s) linear infinite;
+}
+.gl-marquee-track.gl-reverse {
+  animation-direction: reverse;
+}
+.gl-marquee:hover .gl-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes gl-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@keyframes gl-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.gl-blink {
+  animation: gl-blink 1.4s steps(2, jump-none) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-marquee-track,
+  .gl-blink {
+    animation: none;
+  }
+}

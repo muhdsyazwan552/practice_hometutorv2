@@ -76,7 +76,7 @@ class ProfileController extends Controller
             ->unique()
             ->all();
 
-        $ownedThemeIds = $user->unlockedDashboardThemes()
+        $ownedThemeIds = $user->availableDashboardThemes()
             ->where('dashboard_themes.is_active', true)
             ->whereIn('dashboard_themes.id', $themeIds)
             ->pluck('dashboard_themes.id')
@@ -97,7 +97,7 @@ class ProfileController extends Controller
 
     private function themesFor($user): array
     {
-        $themes = $user->unlockedDashboardThemes()
+        $themes = $user->availableDashboardThemes()
             ->where('dashboard_themes.is_active', true)
             ->orderBy('dashboard_themes.sort_order')
             ->get();

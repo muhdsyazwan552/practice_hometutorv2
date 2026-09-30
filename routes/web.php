@@ -41,13 +41,19 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
+// Main page: the practice landing page for guests; signed-in users go to their own home.
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route(Auth::user()->homeRouteName());
     }
 
-    return Inertia::render('Welcome');
-});
+    return Inertia::render('PracticeLanding');
+})->name('home');
+
+// The landing page used to be previewed at /landing; keep old links working.
+Route::permanentRedirect('/landing', '/')->name('landing.practice');
+// Game-style version (Vanta.js + React Three Fiber), previewed alongside the others.
+Route::get('/landing/game', fn () => Inertia::render('PracticeGameLanding'))->name('landing.game');
 
 Route::get('/demo/literasi-web', function () {
     return Inertia::render('Demos/LiterasiWebGame/Index');
@@ -256,6 +262,7 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
     });
 });
 
-Route::post('/change-language', [LanguageController::class, 'change'])->middleware(['web', 'auth'])->name('language.change');
+// Open to guests too (the log in / register page has an EN / BM switch); guests keep the choice in the session.
+Route::post('/change-language', [LanguageController::class, 'change'])->middleware('web')->name('language.change');
 
 require __DIR__.'/auth.php';

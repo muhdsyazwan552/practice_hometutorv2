@@ -14,7 +14,9 @@ use Illuminate\Validation\ValidationException;
 
 class QuizArenaWalletService
 {
-    public const STARTER_BONUS_POINTS = 300;
+    // Enough for every child to claim one theme from the shop for free
+    // (Ocean Blue, Jungle, Candy Garden, Sky Kingdom or Study Campus).
+    public const STARTER_BONUS_POINTS = 600;
 
     public function balance(int $userId): int
     {
@@ -62,15 +64,36 @@ class QuizArenaWalletService
         }
     }
 
-    public function grantStarterBonus(int $userId): void
+    /**
+     * Gives the one-time new-account bonus, or tops it up to the current
+     * amount for a child who got an older, smaller bonus (it was 300).
+     * Safe to call any number of times: every grant has its own event key,
+     * so the unique (user_id, event_key) index stops a second payout.
+     * Returns the points actually added (0 when already complete).
+     */
+    public function grantStarterBonus(int $userId): int
     {
-        $this->grant(
+        $received = $this->starterBonusReceived($userId);
+        $missing = self::STARTER_BONUS_POINTS - $received;
+        if ($missing <= 0) {
+            return 0;
+        }
+
+        $granted = $this->grant(
             $userId,
-            self::STARTER_BONUS_POINTS,
+            $missing,
             'starter_bonus',
-            'Bonus akaun baharu',
-            "starter_bonus:user:{$userId}",
+            $received === 0 ? 'Bonus akaun baharu' : 'Tambahan bonus akaun baharu',
+            $received === 0 ? "starter_bonus:user:{$userId}" : 'starter_bonus_topup:'.self::STARTER_BONUS_POINTS.":user:{$userId}",
         );
+
+        return $granted ? $missing : 0;
+    }
+
+    /** Starter-bonus points this user has already been given. */
+    public function starterBonusReceived(int $userId): int
+    {
+        return (int) QuizArenaPointLog::where('user_id', $userId)->where('type', 'starter_bonus')->sum('points');
     }
 
     /**

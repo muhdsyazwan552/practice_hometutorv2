@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
+import ThemeLoader from '@/Components/ThemeLoader';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
   ArrowRightIcon,
@@ -90,7 +91,7 @@ export default function SubjectPage({ selectedStandard }) {
   const progress = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   if (!content) {
-    return <SubjectLayout subject={subject} selectedStandard={currentStandard}><div className="mx-auto max-w-[1440px] px-4 py-20 text-center text-sm text-slate-500">Loading course content…</div></SubjectLayout>;
+    return <SubjectLayout subject={subject} selectedStandard={currentStandard}><ThemeLoader message="Loading your course…" /></SubjectLayout>;
   }
 
   return (

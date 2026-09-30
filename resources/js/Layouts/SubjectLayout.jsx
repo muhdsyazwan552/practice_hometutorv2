@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import SubjectNavbar from './SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
+import ThemeLoader from '@/Components/ThemeLoader';
 import { useLanguage } from '@/Contexts/LanguageContext';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 import {
@@ -20,6 +21,7 @@ export default function SubjectLayout({
   onStandardChange,
   selectedStandard: propSelectedStandard,
   isLoading = false,
+  loadingMessage = 'Loading your course…',
 }) {
   const { props } = usePage();
   const { form, level_id, subject_id, studentTheme, availableForms } = props;
@@ -55,15 +57,8 @@ export default function SubjectLayout({
   const showLoading = isLoading || internalLoading;
 
   return (
-    <div className="student-theme-shell min-h-screen text-slate-900" style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
-      {showLoading && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/20 backdrop-blur-sm">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-2xl">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
-            <p className="text-sm font-semibold text-slate-700">Loading your course…</p>
-          </div>
-        </div>
-      )}
+    <div className="student-theme-shell min-h-screen text-slate-900" data-theme-style={studentTheme?.slug} style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
+      {showLoading && <ThemeLoader variant="overlay" message={loadingMessage} />}
 
       <SubjectNavbar title={title} />
 

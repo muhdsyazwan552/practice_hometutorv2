@@ -1,0 +1,125 @@
+/* Practice landing page (Pages/PracticeLanding.jsx) and Components/PracticeLanding/*. Light and dark sections take turns (dark ones carry .pl-dark). */
+.practice-landing { overflow-x: clip; }
+.practice-landing .font-display { font-family: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.03em; }
+
+/* Highlight text: a calm two-tone blue -> violet (no rainbow), deep enough to read on white.
+   Dark sections swap in pastel tones below. The rainbow stays for decorative bars only. */
+.practice-landing .text-spectrum {
+    background: linear-gradient(95deg, #1d4ed8 0%, #6d28d9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.practice-landing .bg-spectrum { background: linear-gradient(95deg, #2563eb, #7c3aed 35%, #db2777 68%, #f59e0b); }
+
+/* Aurora (pastel, light background) */
+.pl-aurora { position: absolute; border-radius: 9999px; filter: blur(80px); opacity: .55; animation: pl-drift 20s ease-in-out infinite alternate; }
+.pl-aurora-1 { width: 38rem; height: 38rem; left: -12rem; top: -14rem; background: #bfdbfe; }
+.pl-aurora-2 { width: 32rem; height: 32rem; right: -10rem; top: -6rem; background: #fbcfe8; animation-duration: 24s; animation-delay: -6s; opacity: .5; }
+.pl-aurora-3 { width: 28rem; height: 28rem; left: 40%; top: 10rem; background: #ddd6fe; animation-duration: 28s; animation-delay: -12s; opacity: .45; }
+@keyframes pl-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(5rem, 2rem) scale(1.12); }
+    100% { transform: translate(-3rem, 4rem) scale(.95); }
+}
+
+/* Grid */
+.pl-grid {
+    background-image:
+        linear-gradient(rgba(15, 23, 42, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, .055) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 25%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 25%, transparent 75%);
+}
+
+/* Shiny text on light backgrounds */
+.pl-shiny {
+    background: linear-gradient(110deg, #475569 35%, #0f172a 50%, #475569 65%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: pl-shine 3.5s linear infinite;
+}
+@keyframes pl-shine { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+/* Spotlight card border: show the gradient only in a 1px ring. */
+.pl-card-edge {
+    padding: 1px;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* Marquee */
+.pl-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.pl-marquee-track { animation: pl-marquee linear infinite; }
+@keyframes pl-marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+/* 3D card: layers marked data-depth move toward the viewer on hover. */
+.pl-card3d [data-depth] { transition: transform .5s cubic-bezier(.22, 1, .36, 1); transform: translateZ(0); }
+.pl-card3d.is-hover [data-depth="1"] { transform: translateZ(30px); }
+.pl-card3d.is-hover [data-depth="2"] { transform: translateZ(55px); }
+.pl-card3d.is-hover [data-depth="3"] { transform: translateZ(80px); }
+
+/* Meteors (dark panels only) */
+.pl-meteor {
+    position: absolute;
+    top: -2rem;
+    width: 2px;
+    height: 2px;
+    border-radius: 9999px;
+    background: #cbd5e1;
+    transform: rotate(215deg);
+    animation: pl-meteor linear infinite;
+}
+.pl-meteor::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 90px;
+    height: 1px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, #93c5fd, transparent);
+}
+@keyframes pl-meteor {
+    0% { transform: rotate(215deg) translateX(0); opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: rotate(215deg) translateX(-900px); opacity: 0; }
+}
+
+/* Dark sections (hero, Cara belajar, Quiz Arena): deeper aurora, faint white grid, light shine. */
+.pl-dark .pl-aurora { opacity: .4; filter: blur(110px); }
+.pl-dark .pl-aurora-1 { background: #1d4ed8; }
+.pl-dark .pl-aurora-2 { background: #9d174d; opacity: .35; }
+.pl-dark .pl-aurora-3 { background: #5b21b6; opacity: .35; }
+.pl-dark .pl-grid {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px);
+}
+.pl-dark .text-spectrum { background-image: linear-gradient(95deg, #93c5fd 0%, #c4b5fd 100%); }
+.pl-dark .pl-shiny { background-image: linear-gradient(110deg, #cbd5e1 35%, #fff 50%, #cbd5e1 65%); }
+
+/* Rainbow tint for the Vanta NET / WAVES backgrounds. `color` blending keeps each pixel's
+   brightness and takes the hue from the gradient, so lines and wave facets turn rainbow
+   while the near-white background stays near-white. Place it right after the Vanta layer,
+   inside the same stacking context. */
+.pl-rainbow-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444);
+    background-size: 160% 160%;
+    mix-blend-mode: color;
+    animation: pl-rainbow-shift 24s linear infinite alternate;
+}
+@keyframes pl-rainbow-shift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pl-aurora, .pl-shiny, .pl-marquee-track, .pl-meteor, .pl-rainbow-tint { animation: none; }
+}

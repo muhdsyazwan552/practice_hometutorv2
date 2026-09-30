@@ -86,7 +86,7 @@ export default function StudentNavbar() {
               <ApplicationLogo className="h-9 w-9 object-contain" />
             </span>
             <span className="hidden sm:block">
-              <span className="block text-sm font-bold leading-none tracking-tight">PTRS Learning</span>
+              <span className="block text-sm font-bold leading-none tracking-tight">Hometutor</span>
               <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--nav-soft)]">Student portal</span>
             </span>
           </Link>

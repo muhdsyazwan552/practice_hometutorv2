@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { usePage, router } from "@inertiajs/react";
 import SubjectLayout from "@/Layouts/SubjectLayout";
+import ThemeLoader from "@/Components/ThemeLoader";
 import MasteryChallenge from "@/Components/MasteryChallenge";
 import PracticeChallenge from "@/Components/PracticeChallenge";
 
@@ -229,9 +230,7 @@ export default function SubjectMissionPage() {
     if (loading)
         return (
             <SubjectLayout subject={subject_abbr} activeTab="Mission">
-                <div className="flex h-96 items-center justify-center text-slate-500">
-                    Loading mission...
-                </div>
+                <ThemeLoader message="Loading your practice…" />
             </SubjectLayout>
         );
 

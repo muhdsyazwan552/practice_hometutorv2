@@ -4,6 +4,7 @@ import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { Head, usePage, router } from '@inertiajs/react'; // Added router import
 import QuestionReportButton from '@/Components/QuestionReportButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import { useQuestionTools } from '@/Components/QuestionTools';
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const pageProps = usePage().props;
@@ -81,10 +82,13 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       answered: answered,
       skipped: skipped,
       timeElapsed: timeElapsed,
+      // Subjective answers are not marked (yet): the review shows the answer next to the scheme.
       questions: questions.map((q, index) => ({
         question: q.question,
         answered: answers[index].trim() !== "",
-        correct: true
+        skipped: answers[index].trim() === "",
+        answer: answers[index],
+        schema: q.schema,
       }))
     };
 
@@ -138,6 +142,9 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const [showSchema, setShowSchema] = useState(Array(questions.length).fill(false));
   const [isCorrect, setIsCorrect] = useState(Array(questions.length).fill(null));
   const [firstTryResults, setFirstTryResults] = useState(Array(questions.length).fill(null));
+
+  // Tools menu (calculator, kamus)
+  const { toolsButton, toolWindows } = useQuestionTools();
 
   // Audio refs
   const correctSoundRef = useRef(null);
@@ -443,43 +450,17 @@ const processHtmlContent = (html) => {
 
 
   // Responsive Progress Circles Component
-  const ProgressCircles = () => (
-    <div className="flex justify-center space-x-2 md:space-x-3 overflow-x-auto py-2 px-2">
-      {questions.map((_, index) => {
-        let circleColor = 'bg-gray-300';
-
-        if (firstTryResults[index] !== null) {
-          circleColor = firstTryResults[index] ? 'bg-green-500' : 'bg-red-500';
-        } else if (index === currentIndex) {
-          circleColor = 'bg-blue-500';
-        }
-
-        return (
-          <div
-            key={index}
-            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${index === currentIndex ? 'ring-2 md:ring-4 ring-blue-200 scale-110' : ''
-              } flex-shrink-0`}
-          >
-            {index + 1}
-          </div>
-        );
-      })}
-    </div>
-  );
+  // First-try result per question for the header dots: true / false / null (not answered).
+  const questionStatuses = questions.map((_, index) => {
+    const result = firstTryResults[index];
+    return result === null || result === undefined ? null : Boolean(result);
+  });
 
   // Responsive Footer Content
   const footerContent = (
     <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 px-4 md:px-10 py-3">
-      {/* Tools Button - Hidden on mobile, visible on tablet and up */}
-      <button className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-        <span>🔧</span>
-        <span className="hidden md:inline">Tools</span>
-      </button>
-
-      {/* Mobile Tools Button */}
-      <button className="sm:hidden flex items-center gap-2 px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-        <span>🔧</span>
-      </button>
+      {/* Tools menu (calculator, kamus), shared with the objective page */}
+      <div className="self-start sm:self-auto">{toolsButton}</div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         {/* Check Answer button */}
@@ -787,7 +768,8 @@ const processHtmlContent = (html) => {
         subject={subject}
         standard={standard}
         currentTopic={topic || "Subjective Questions"}
-        progressCircles={<ProgressCircles />}
+        questionStatuses={questionStatuses}
+        currentIndex={currentIndex}
         timeElapsed={timeElapsed}
         getTimeColor={getTimeColor}
         sectionTitle={sectionTitle || getSectionTitle()}
@@ -796,6 +778,9 @@ const processHtmlContent = (html) => {
       >
         {mainContent}
       </SubjectiveQuestionLayout>
+
+      {/* Calculator / kamus windows: drag by the header, stay on screen */}
+      {toolWindows}
 
       {/* Custom CSS for animations and responsive design */}
       <style>{`

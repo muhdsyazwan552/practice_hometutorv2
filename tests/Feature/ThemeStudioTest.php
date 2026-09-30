@@ -106,6 +106,27 @@ class ThemeStudioTest extends TestCase
         $this->patch(route('profile.themes.update'), $this->payload(['card' => ['character' => 'robo-lab']]))->assertSessionHasErrors('customization.card.character');
     }
 
+    public function test_every_student_owns_the_default_theme_and_falls_back_to_it(): void
+    {
+        $default = DashboardTheme::create(['slug' => DashboardTheme::DEFAULT_SLUG, 'name' => 'Default', 'sort_order' => 0]);
+        $newStudent = User::factory()->create(['role_id' => User::ROLE_CHILD]);
+
+        // No unlock rows at all, yet Default is offered, active and saveable.
+        $this->actingAs($newStudent)->get('/profile')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('themes.available.0.slug', 'default')
+            ->where('themes.active_dashboard_theme_id', $default->id)
+            ->where('studentTheme.slug', 'default'));
+
+        $this->patch(route('profile.themes.update'), [
+            'dashboard_theme_id' => $default->id, 'learning_space_card_theme_id' => $default->id,
+        ])->assertSessionHasNoErrors();
+
+        // A student who already picked a theme keeps it.
+        $this->student->update(['active_dashboard_theme_id' => $this->cats->id]);
+        $this->actingAs($this->student)->get('/profile')->assertInertia(fn ($page) => $page
+            ->where('studentTheme.slug', 'cat-club'));
+    }
+
     public function test_saving_without_customization_restores_theme_defaults(): void
     {
         $this->student->update(['theme_customization' => ['accent' => '#000000']]);

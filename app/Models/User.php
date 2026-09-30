@@ -90,6 +90,22 @@ class User extends Authenticatable
         )->withPivot(['source', 'unlocked_at'])->withTimestamps();
     }
 
+    /**
+     * Themes the student can use: everything they unlocked plus the free
+     * Default theme, which every student owns without an unlock row.
+     */
+    public function availableDashboardThemes()
+    {
+        return DashboardTheme::query()->where(function ($query) {
+            $query->where('dashboard_themes.slug', DashboardTheme::DEFAULT_SLUG)
+                ->orWhereIn('dashboard_themes.id', function ($unlocks) {
+                    $unlocks->select('dashboard_theme_id')
+                        ->from('student_dashboard_theme_unlocks')
+                        ->where('user_id', $this->id);
+                });
+        });
+    }
+
     public function student()
     {
         return $this->hasOne(Student::class, 'user_id', 'id');

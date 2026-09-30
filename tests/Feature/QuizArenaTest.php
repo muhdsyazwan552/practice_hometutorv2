@@ -289,11 +289,12 @@ class QuizArenaTest extends TestCase
         $this->assertSame(5, $ranked[$students[3]->id]->points_awarded);
 
         // Settlement also credits the wallet ledger, on top of each student's
-        // 300-point new-account starter bonus (granted when childWithLevel()
-        // created their Student record).
+        // new-account starter bonus (granted when childWithLevel() created
+        // their Student record).
         $wallet = app(QuizArenaWalletService::class);
-        $this->assertSame(350, $wallet->balance($students[0]->id));
-        $this->assertSame(305, $wallet->balance($students[3]->id));
+        $bonus = QuizArenaWalletService::STARTER_BONUS_POINTS;
+        $this->assertSame($bonus + 50, $wallet->balance($students[0]->id));
+        $this->assertSame($bonus + 5, $wallet->balance($students[3]->id));
 
         $winnerLog = QuizArenaPointLog::where('user_id', $students[0]->id)->where('type', 'quiz_arena_weekend')->first();
         $this->assertNotNull($winnerLog);
@@ -301,7 +302,7 @@ class QuizArenaTest extends TestCase
 
         // Re-running settlement must not double-award (idempotent via event_key).
         app(QuizArenaService::class)->settleWeekend($weekendDate);
-        $this->assertSame(350, $wallet->balance($students[0]->id));
+        $this->assertSame($bonus + 50, $wallet->balance($students[0]->id));
     }
 
     public function test_new_student_receives_a_one_time_starter_bonus(): void
@@ -311,6 +312,39 @@ class QuizArenaTest extends TestCase
         $wallet = app(QuizArenaWalletService::class);
         $this->assertSame(QuizArenaWalletService::STARTER_BONUS_POINTS, $wallet->balance($child->id));
         $this->assertDatabaseCount('quiz_arena_point_logs', 1);
+    }
+
+    public function test_starter_bonus_is_enough_for_one_theme_and_tops_up_an_older_smaller_bonus(): void
+    {
+        $this->assertSame(600, QuizArenaWalletService::STARTER_BONUS_POINTS);
+
+        $child = $this->childWithLevel();
+        $wallet = app(QuizArenaWalletService::class);
+
+        // A child who got the old 300 bonus is topped up to 600, once.
+        \App\Models\QuizArenaPointLog::query()->where('user_id', $child->id)->delete();
+        $wallet->grant($child->id, 300, 'starter_bonus', 'Bonus akaun baharu', "starter_bonus:user:{$child->id}");
+        $this->assertSame(300, $wallet->grantStarterBonus($child->id));
+        $this->assertSame(0, $wallet->grantStarterBonus($child->id));
+        $this->assertSame(600, $wallet->balance($child->id));
+    }
+
+    public function test_command_gives_existing_children_the_starter_bonus_once(): void
+    {
+        $child = $this->childWithLevel();
+        $wallet = app(QuizArenaWalletService::class);
+        // An existing child created before the bonus existed has no points.
+        \App\Models\QuizArenaPointLog::query()->where('user_id', $child->id)->delete();
+        $parent = User::factory()->create(['role_id' => User::ROLE_PARENT]);
+
+        $this->artisan('quiz-arena:grant-starter-bonus', ['--dry-run' => true])->assertSuccessful();
+        $this->assertSame(0, $wallet->balance($child->id));
+
+        $this->artisan('quiz-arena:grant-starter-bonus')->assertSuccessful();
+        $this->artisan('quiz-arena:grant-starter-bonus')->assertSuccessful();
+
+        $this->assertSame(600, $wallet->balance($child->id));
+        $this->assertSame(0, $wallet->balance($parent->id));
     }
 
     public function test_wallet_endpoint_returns_balance_rewards_and_log(): void

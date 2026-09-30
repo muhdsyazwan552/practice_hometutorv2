@@ -234,7 +234,8 @@ class ChallengeController extends Controller
                 'reason_file'
             )
             ->inRandomOrder()
-            ->get();
+            ->get()
+            ->map(fn ($answer) => QuestionContentNormalizer::answerRow($answer));
 
         Log::info('Returning question', [
             'question_id' => $nextQuestion->id,

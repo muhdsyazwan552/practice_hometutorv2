@@ -48,11 +48,19 @@
   box-shadow: 0 12px 32px rgba(15, 23, 42, .18);
 }
 
+/* The four stat cards. Frosted but mostly solid, so the dark text stays
+   readable over any scene picture (dark ones like Space and Gold Champion too). */
 .student-theme-dashboard .theme-glass-card {
-  background: color-mix(in srgb, white 18%, transparent);
-  border-color: color-mix(in srgb, white 55%, var(--theme-accent) 12%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--theme-card) 88%, transparent);
+  border-color: color-mix(in srgb, white 60%, var(--theme-accent) 25%);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+}
+
+/* The theme corner ornaments (✦, 🦖 ...) would sit behind the stat icons.
+   Gold Champion is left out: its ::after is the metallic rim, not an ornament. */
+.student-theme-dashboard:not([data-theme-style="gold-champion"]) .theme-glass-card::after {
+  display: none !important;
 }
 
 .student-theme-dashboard .theme-subject-card {
@@ -82,8 +90,7 @@
   transition: background .25s ease, color .25s ease;
 }
 
-.student-theme-shell .student-theme-course-header,
-.student-theme-shell .student-theme-compact-header {
+.student-theme-shell .student-theme-course-header {
   background: var(--theme-hero) !important;
 }
 
@@ -126,6 +133,835 @@
 .student-theme-shell .student-theme-content [class*="text-blue-"],
 .student-theme-shell .student-theme-content [class*="text-indigo-"] {
   color: var(--theme-accent) !important;
+}
+
+/* Themed depth for every student card and box: an outer shadow tinted with
+   the student's accent colour, plus a "shade" (light top edge, accent-tinted
+   bottom edge) so boxes read as raised surfaces in every theme. */
+.student-theme-dashboard,
+.student-theme-shell {
+  --theme-card-shadow:
+    0 1px 2px rgba(15, 23, 42, .06),
+    0 12px 28px -8px color-mix(in srgb, var(--theme-accent) 34%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .75),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 10%, transparent);
+  --theme-card-shadow-sm:
+    0 1px 2px rgba(15, 23, 42, .05),
+    0 6px 14px -5px color-mix(in srgb, var(--theme-accent) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    inset 0 -2px 0 color-mix(in srgb, var(--theme-accent) 9%, transparent);
+  --theme-card-shadow-hover:
+    0 2px 4px rgba(15, 23, 42, .07),
+    0 20px 40px -10px color-mix(in srgb, var(--theme-accent) 45%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .8),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 14%, transparent);
+}
+
+/* Over a scene picture the accent glow alone gets lost, so add a neutral layer. */
+.student-theme-dashboard.has-theme-bg {
+  --theme-card-shadow:
+    0 2px 4px rgba(15, 23, 42, .10),
+    0 14px 32px -8px color-mix(in srgb, var(--theme-accent) 40%, rgba(15, 23, 42, .35)),
+    inset 0 1px 0 rgba(255, 255, 255, .65),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  --theme-card-shadow-hover:
+    0 3px 6px rgba(15, 23, 42, .12),
+    0 22px 44px -10px color-mix(in srgb, var(--theme-accent) 50%, rgba(15, 23, 42, .4)),
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 18%, transparent);
+}
+
+.student-theme-dashboard .theme-surface,
+.student-theme-dashboard .theme-glass-card,
+.student-theme-dashboard .theme-subject-card,
+:is(.student-theme-content, .student-theme-dashboard)
+  :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  box-shadow: var(--theme-card-shadow);
+}
+
+/* Smaller boxes (rounded-xl) sit inside cards, so they get a lighter lift. */
+:is(.student-theme-content, .student-theme-dashboard)
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  box-shadow: var(--theme-card-shadow-sm);
+}
+
+.student-theme-dashboard .theme-subject-card:hover,
+:is(.student-theme-content, .student-theme-dashboard)
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], [class*="rounded-xl"]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="shadow"]):not([class*="rounded-full"], :disabled):hover {
+  box-shadow: var(--theme-card-shadow-hover);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme personalities. The theme container carries data-theme-style="<slug>".
+   Big cards get the full treatment (studs / shine); small rounded-xl boxes
+   inside them get a lighter version of the same look.
+   --------------------------------------------------------------------------- */
+
+/* Brick Builders: every card is a toy brick. Squarer corners, a coloured top
+   plate, studs in the corner and a solid (unblurred) side like a real brick.
+   Neighbouring cards cycle through classic brick colours. */
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  --brick: var(--theme-accent);
+  border-radius: 12px;
+  isolation: isolate;
+  box-shadow:
+    inset 0 5px 0 var(--brick),
+    inset 0 7px 0 color-mix(in srgb, var(--brick) 35%, white),
+    inset 0 -4px 0 rgba(15, 23, 42, .07),
+    0 6px 0 color-mix(in srgb, var(--brick) 72%, black),
+    0 12px 20px -4px rgba(15, 23, 42, .22);
+}
+
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero):nth-child(4n+2) { --brick: #f1ae18; }
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero):nth-child(4n+3) { --brick: #1f6fd1; }
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero):nth-child(4n+4) { --brick: #2e9e4f; }
+
+/* Four studs in the top-right corner, drawn behind the card's content. */
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: -1;
+  width: 80px;
+  height: 18px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 42% 38%,
+      color-mix(in srgb, var(--brick) 45%, white) 0 2.5px,
+      var(--brick) 3.5px 6.5px,
+      color-mix(in srgb, var(--brick) 68%, black) 7px 7.5px,
+      transparent 8px)
+    0 0 / 20px 18px repeat-x;
+  filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--brick) 60%, black));
+  opacity: .9;
+}
+
+/* Clicking a brick card presses it down onto the baseplate. */
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow:
+    inset 0 5px 0 var(--brick),
+    inset 0 7px 0 color-mix(in srgb, var(--brick) 35%, white),
+    inset 0 -4px 0 rgba(15, 23, 42, .07),
+    0 8px 0 color-mix(in srgb, var(--brick) 72%, black),
+    0 16px 24px -4px rgba(15, 23, 42, .26);
+}
+
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], [class*="rounded-xl"], .theme-subject-card):not([class*="rounded-full"]):active {
+  box-shadow:
+    inset 0 5px 0 var(--brick, var(--theme-accent)),
+    0 2px 0 color-mix(in srgb, var(--brick, var(--theme-accent)) 72%, black);
+}
+
+:is([data-theme-style="brick-builders"] .student-theme-content, .student-theme-dashboard[data-theme-style="brick-builders"])
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: 8px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, .7),
+    inset 0 -3px 0 rgba(15, 23, 42, .06),
+    0 4px 0 color-mix(in srgb, var(--brick, var(--theme-accent)) 60%, black),
+    0 7px 12px -4px rgba(15, 23, 42, .18);
+}
+
+/* Cat Club: soft, round, warm and glowing, like a sleepy kitten in the sun.
+   Rounder corners, a warm peach halo, a pillowy inner light and a slow shine
+   that drifts across the card, plus a tiny twinkling sparkle. */
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-radius: 28px;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 16%, white),
+    0 12px 30px -8px color-mix(in srgb, var(--theme-accent) 34%, transparent),
+    0 0 42px -6px rgba(255, 184, 150, .55),
+    inset 0 2px 12px rgba(255, 255, 255, .95),
+    inset 0 -10px 22px -12px color-mix(in srgb, var(--theme-accent) 30%, transparent);
+}
+
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+/* Soft glow in the corners plus a drifting diagonal shine. */
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .6) 48%, rgba(255, 240, 230, .35) 52%, transparent 62%) 0 0 / 260% 100% no-repeat,
+    radial-gradient(90% 70% at 0% 0%, rgba(255, 255, 255, .8), transparent 60%),
+    radial-gradient(80% 70% at 100% 100%, color-mix(in srgb, var(--theme-accent) 14%, transparent), transparent 70%);
+  animation: cat-card-shine 7s ease-in-out infinite;
+}
+
+/* A little twinkling sparkle in the top-right corner. */
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: '\2726';
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  z-index: -1;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--theme-accent) 55%, #ffc27a);
+  text-shadow: 0 0 10px rgba(255, 200, 150, .9);
+  animation: cat-card-twinkle 3.2s ease-in-out infinite;
+}
+
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 26%, white),
+    0 18px 38px -10px color-mix(in srgb, var(--theme-accent) 45%, transparent),
+    0 0 56px -4px rgba(255, 184, 150, .75),
+    inset 0 2px 12px rgba(255, 255, 255, .95),
+    inset 0 -10px 22px -12px color-mix(in srgb, var(--theme-accent) 36%, transparent);
+}
+
+:is([data-theme-style="cat-club"] .student-theme-content, .student-theme-dashboard[data-theme-style="cat-club"])
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 12%, white),
+    0 6px 16px -6px color-mix(in srgb, var(--theme-accent) 30%, transparent),
+    0 0 20px -6px rgba(255, 184, 150, .5),
+    inset 0 1px 6px rgba(255, 255, 255, .9);
+}
+
+@keyframes cat-card-shine {
+  0%, 100% { background-position: 130% 0, 0 0, 0 0; }
+  50% { background-position: -30% 0, 0 0, 0 0; }
+}
+
+@keyframes cat-card-twinkle {
+  0%, 100% { opacity: .35; transform: scale(.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+
+/* Robo Lab: every card is a lit control panel. Tight corners, a cyan neon
+   rim, corner brackets over a faint blueprint grid, and a scan line that
+   sweeps down the panel. */
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-radius: 10px;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 70%, white),
+    0 0 18px color-mix(in srgb, var(--theme-accent) 40%, transparent),
+    0 12px 26px -6px rgba(4, 14, 32, .45),
+    inset 0 0 0 1px rgba(255, 255, 255, .6),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 18%, transparent);
+}
+
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+/* Corner brackets + blueprint grid. */
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  --robo-line: var(--theme-accent);
+  --robo-grid: color-mix(in srgb, var(--theme-accent) 7%, transparent);
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--robo-line), var(--robo-line)) top 6px left 6px / 18px 2px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) top 6px left 6px / 2px 18px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) top 6px right 6px / 18px 2px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) top 6px right 6px / 2px 18px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) bottom 6px left 6px / 18px 2px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) bottom 6px left 6px / 2px 18px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) bottom 6px right 6px / 18px 2px no-repeat,
+    linear-gradient(var(--robo-line), var(--robo-line)) bottom 6px right 6px / 2px 18px no-repeat,
+    repeating-linear-gradient(0deg, var(--robo-grid) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, var(--robo-grid) 0 1px, transparent 1px 22px);
+}
+
+/* Scan line sweeping down the panel. */
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--theme-accent) 16%, transparent) 50%, transparent) 0 -30% / 100% 36px no-repeat;
+  animation: robo-card-scan 5.5s linear infinite;
+}
+
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow:
+    0 0 0 2px var(--theme-accent),
+    0 0 28px color-mix(in srgb, var(--theme-accent) 60%, transparent),
+    0 16px 30px -6px rgba(4, 14, 32, .5),
+    inset 0 0 0 1px rgba(255, 255, 255, .7),
+    inset 0 -3px 0 color-mix(in srgb, var(--theme-accent) 26%, transparent);
+}
+
+:is([data-theme-style="robo-lab"] .student-theme-content, .student-theme-dashboard[data-theme-style="robo-lab"])
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 45%, white),
+    0 0 10px color-mix(in srgb, var(--theme-accent) 25%, transparent),
+    inset 3px 0 0 color-mix(in srgb, var(--theme-accent) 70%, white);
+}
+
+@keyframes robo-card-scan {
+  0% { background-position: 0 -30%; }
+  100% { background-position: 0 130%; }
+}
+
+/* Space Explorer: cards float in space. Round corners, a violet-to-cyan
+   neon halo, a twinkling star field and the odd shooting star. */
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-radius: 24px;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 55%, white),
+    0 0 22px color-mix(in srgb, var(--theme-accent) 45%, transparent),
+    0 0 50px -10px rgba(76, 201, 255, .45),
+    0 14px 30px -8px rgba(10, 8, 40, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .8),
+    inset 0 -6px 18px -10px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+}
+
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+/* Star field. */
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  --star: color-mix(in srgb, var(--theme-accent) 55%, #7fd8ff);
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, var(--star) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 88% 14%, var(--star) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 32%, var(--star) 0 1px, transparent 2px),
+    radial-gradient(circle at 94% 62%, var(--star) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 34% 88%, var(--star) 0 1px, transparent 2px),
+    radial-gradient(circle at 6% 70%, var(--star) 0 1px, transparent 2px),
+    radial-gradient(circle at 58% 8%, var(--star) 0 1px, transparent 2px),
+    radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 70%),
+    radial-gradient(70% 60% at 0% 100%, rgba(76, 201, 255, .1), transparent 70%);
+  animation: space-card-twinkle 4s ease-in-out infinite;
+}
+
+/* Shooting star: a short streak that crosses the card now and then. */
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: '';
+  position: absolute;
+  top: 16%;
+  left: 8%;
+  z-index: -1;
+  width: 64px;
+  height: 2px;
+  border-radius: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-accent) 70%, white), #fff);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent) 60%, #7fd8ff);
+  opacity: 0;
+  transform: rotate(18deg);
+  animation: space-card-shooting-star 9s ease-in infinite;
+}
+
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero):nth-child(2n)::after {
+  animation-delay: 3.5s;
+}
+
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero):nth-child(3n)::after {
+  animation-delay: 6s;
+}
+
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 75%, white),
+    0 0 32px color-mix(in srgb, var(--theme-accent) 60%, transparent),
+    0 0 64px -8px rgba(76, 201, 255, .6),
+    0 18px 34px -8px rgba(10, 8, 40, .55),
+    inset 0 1px 0 rgba(255, 255, 255, .85),
+    inset 0 -6px 18px -10px color-mix(in srgb, var(--theme-accent) 50%, transparent);
+}
+
+:is([data-theme-style="space-explorer"] .student-theme-content, .student-theme-dashboard[data-theme-style="space-explorer"])
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 35%, white),
+    0 0 14px color-mix(in srgb, var(--theme-accent) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .8);
+}
+
+@keyframes space-card-twinkle {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+@keyframes space-card-shooting-star {
+  0%, 70% { left: 8%; top: 12%; opacity: 0; }
+  73% { opacity: 1; }
+  80% { left: 70%; top: 42%; opacity: 0; }
+  100% { left: 70%; top: 42%; opacity: 0; }
+}
+
+/* Default: clean and modern, no animation. A thin indigo-cyan-pink gradient
+   rim, a soft gradient wash and a layered shadow. */
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-radius: 20px;
+  border-color: transparent !important;
+  isolation: isolate;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .05),
+    0 4px 10px -6px color-mix(in srgb, #0ea5e9 30%, transparent),
+    0 16px 32px -14px color-mix(in srgb, var(--theme-accent) 38%, transparent);
+}
+
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+/* Gradient wash behind the content. */
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--theme-accent) 9%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in srgb, #0ea5e9 9%, transparent), transparent 60%);
+}
+
+/* Gradient rim: a 1.5px ring cut out of a gradient with a mask. */
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--theme-accent) 60%, white),
+    color-mix(in srgb, #0ea5e9 50%, white),
+    color-mix(in srgb, #d946ef 40%, white));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .06),
+    0 6px 14px -6px color-mix(in srgb, #0ea5e9 40%, transparent),
+    0 22px 40px -14px color-mix(in srgb, var(--theme-accent) 50%, transparent);
+}
+
+:is([data-theme-style="default"] .student-theme-content, .student-theme-dashboard[data-theme-style="default"])
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 16%, white),
+    0 6px 14px -8px color-mix(in srgb, var(--theme-accent) 35%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   The remaining themes share one set of card rules; each theme only fills in
+   the --tc-* variables below (radius, shadows, a decorative layer behind the
+   content and a small corner ornament).
+   --------------------------------------------------------------------------- */
+
+/* Ocean Blue: rounded like a pebble, aqua glow, bubbles rising inside. */
+[data-theme-style="ocean-blue"] {
+  --tc-radius: 22px;
+  --tc-radius-sm: 16px;
+  --tc-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 22%, white),
+    0 14px 30px -10px color-mix(in srgb, var(--theme-accent) 45%, transparent),
+    0 0 26px -8px rgba(97, 208, 236, .55),
+    inset 0 2px 0 rgba(255, 255, 255, .85),
+    inset 0 -8px 16px -10px color-mix(in srgb, var(--theme-accent) 35%, transparent);
+  --tc-shadow-hover:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 40%, white),
+    0 20px 40px -10px color-mix(in srgb, var(--theme-accent) 55%, transparent),
+    0 0 36px -6px rgba(97, 208, 236, .7),
+    inset 0 2px 0 rgba(255, 255, 255, .9),
+    inset 0 -8px 16px -10px color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  --tc-shadow-sm:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 20%, white),
+    0 6px 14px -6px color-mix(in srgb, var(--theme-accent) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .85);
+  --tc-before:
+    radial-gradient(circle at 18% 70%, transparent 0 4px, color-mix(in srgb, var(--theme-accent) 30%, transparent) 4.5px 5.5px, transparent 6px) 0 0 / 140px 140px,
+    radial-gradient(circle at 62% 30%, transparent 0 2.5px, color-mix(in srgb, var(--theme-accent) 28%, transparent) 3px 4px, transparent 4.5px) 0 0 / 110px 110px,
+    radial-gradient(circle at 85% 85%, transparent 0 6px, color-mix(in srgb, var(--theme-accent) 22%, transparent) 6.5px 7.5px, transparent 8px) 0 0 / 170px 170px,
+    radial-gradient(100% 60% at 50% 0%, rgba(255, 255, 255, .7), transparent 70%) 0 0 / 100% 100% no-repeat;
+  --tc-before-anim: ocean-card-bubbles 9s linear infinite;
+}
+
+@keyframes ocean-card-bubbles {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 -140px, 0 -110px, 0 -170px, 0 0; }
+}
+
+/* Jungle Adventure: leaf-shaped corners, deep green shadow, sunlight spots
+   through the canopy and a swaying leaf. */
+[data-theme-style="jungle-adventure"] {
+  --tc-radius: 30px 8px 30px 8px;
+  --tc-radius-sm: 16px 5px 16px 5px;
+  --tc-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 28%, white),
+    0 5px 0 color-mix(in srgb, var(--theme-accent) 55%, #083e32),
+    0 14px 26px -8px rgba(8, 62, 50, .35),
+    inset 0 2px 0 rgba(255, 255, 255, .7),
+    inset 0 -6px 14px -8px color-mix(in srgb, var(--theme-accent) 30%, transparent);
+  --tc-shadow-hover:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 50%, white),
+    0 7px 0 color-mix(in srgb, var(--theme-accent) 55%, #083e32),
+    0 18px 32px -8px rgba(8, 62, 50, .42),
+    inset 0 2px 0 rgba(255, 255, 255, .75),
+    inset 0 -6px 14px -8px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+  --tc-shadow-sm:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 25%, white),
+    0 3px 0 color-mix(in srgb, var(--theme-accent) 40%, white),
+    inset 0 1px 0 rgba(255, 255, 255, .8);
+  --tc-before:
+    radial-gradient(circle at 12% 20%, rgba(255, 236, 150, .45), transparent 18%),
+    radial-gradient(circle at 80% 70%, rgba(255, 236, 150, .35), transparent 16%),
+    radial-gradient(circle at 55% 12%, rgba(255, 236, 150, .3), transparent 12%),
+    radial-gradient(120% 80% at 100% 100%, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 70%);
+  --tc-before-anim: jungle-card-dapple 6s ease-in-out infinite;
+  --tc-after: '\1F343';
+  --tc-after-anim: jungle-card-sway 3.6s ease-in-out infinite;
+}
+
+@keyframes jungle-card-dapple {
+  0%, 100% { opacity: .7; }
+  50% { opacity: 1; }
+}
+
+@keyframes jungle-card-sway {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg) translateY(2px); }
+}
+
+/* Gold Champion: metallic gold. Cards get a brushed-gold rim (drawn in the
+   gold rule after the shared rules below), a soft neutral shadow and only a
+   faint warm tint, so practice pages stay calm instead of glaring yellow.
+   (No moving sheen: it washed out the text over the dark trophy scene.) */
+[data-theme-style="gold-champion"] {
+  --tc-radius: 16px;
+  --tc-radius-sm: 12px;
+  --tc-shadow:
+    0 2px 6px -2px rgba(61, 44, 5, .18),
+    0 14px 28px -14px rgba(61, 44, 5, .4),
+    inset 0 1px 0 rgba(255, 255, 255, .85);
+  --tc-shadow-hover:
+    0 3px 8px -2px rgba(61, 44, 5, .22),
+    0 20px 36px -14px rgba(61, 44, 5, .5),
+    0 0 22px -8px rgba(212, 175, 55, .55),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
+  --tc-shadow-sm:
+    0 0 0 1px color-mix(in srgb, #b08a2a 45%, white),
+    0 4px 10px -6px rgba(61, 44, 5, .3),
+    inset 0 1px 0 rgba(255, 255, 255, .85);
+  --tc-before:
+    linear-gradient(180deg, rgba(212, 175, 55, .09), transparent 40%),
+    radial-gradient(120% 80% at 100% 100%, rgba(176, 138, 42, .07), transparent 60%);
+}
+
+/* Candy Garden: a glossy sweet. Very round, a candy-stripe ribbon along
+   the top, sprinkles, a pink "sticker" edge and a wobbling sweet. */
+[data-theme-style="candy-garden"] {
+  --tc-radius: 28px;
+  --tc-radius-sm: 18px;
+  --tc-shadow:
+    0 0 0 2px color-mix(in srgb, var(--theme-accent) 30%, white),
+    0 6px 0 color-mix(in srgb, var(--theme-accent) 45%, #ffd1ea),
+    0 14px 28px -8px color-mix(in srgb, #8e57cd 45%, transparent),
+    inset 0 3px 0 rgba(255, 255, 255, .95),
+    inset 0 -8px 18px -10px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+  --tc-shadow-hover:
+    0 0 0 2px color-mix(in srgb, var(--theme-accent) 50%, white),
+    0 8px 0 color-mix(in srgb, var(--theme-accent) 55%, #ffd1ea),
+    0 20px 34px -8px color-mix(in srgb, #8e57cd 55%, transparent),
+    inset 0 3px 0 rgba(255, 255, 255, .95),
+    inset 0 -8px 18px -10px color-mix(in srgb, var(--theme-accent) 50%, transparent);
+  --tc-shadow-sm:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 25%, white),
+    0 3px 0 color-mix(in srgb, var(--theme-accent) 30%, #ffe3f2),
+    inset 0 2px 0 rgba(255, 255, 255, .9);
+  --tc-before:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--theme-accent) 22%, transparent) 0 8px, rgba(255, 255, 255, 0) 8px 16px, color-mix(in srgb, #8e57cd 18%, transparent) 16px 24px, rgba(255, 255, 255, 0) 24px 32px) 0 0 / 100% 10px no-repeat,
+    radial-gradient(circle at 14% 30%, #ff9ccf 0 2px, transparent 2.5px),
+    radial-gradient(circle at 78% 22%, #b99cff 0 2px, transparent 2.5px),
+    radial-gradient(circle at 90% 75%, #7fd9ff 0 2px, transparent 2.5px),
+    radial-gradient(circle at 30% 85%, #ffd66b 0 2px, transparent 2.5px),
+    radial-gradient(circle at 60% 60%, #9be7b0 0 1.5px, transparent 2px),
+    radial-gradient(80% 60% at 20% 0%, rgba(255, 255, 255, .8), transparent 65%);
+  --tc-after: '\1F36C';
+  --tc-after-top: 16px;
+  --tc-after-anim: candy-card-wobble 2.6s ease-in-out infinite;
+}
+
+@keyframes candy-card-wobble {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(12deg) scale(1.12); }
+}
+
+/* Sky Kingdom: airy and floating. Big soft sky-blue shadow, clouds drifting
+   along the bottom and a floating cloud up top. */
+[data-theme-style="sky-kingdom"] {
+  --tc-radius: 26px;
+  --tc-radius-sm: 18px;
+  --tc-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 16%, white),
+    0 22px 40px -14px color-mix(in srgb, var(--theme-accent) 45%, transparent),
+    0 6px 14px -6px rgba(18, 76, 123, .15),
+    inset 0 2px 10px rgba(255, 255, 255, .95);
+  --tc-shadow-hover:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 30%, white),
+    0 30px 50px -14px color-mix(in srgb, var(--theme-accent) 55%, transparent),
+    0 8px 18px -6px rgba(18, 76, 123, .2),
+    inset 0 2px 10px rgba(255, 255, 255, 1);
+  --tc-shadow-sm:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 14%, white),
+    0 10px 18px -10px color-mix(in srgb, var(--theme-accent) 40%, transparent),
+    inset 0 1px 4px rgba(255, 255, 255, .9);
+  --tc-before:
+    radial-gradient(38px 22px at 12% 100%, color-mix(in srgb, var(--theme-accent) 12%, white) 98%, transparent) 0 0 / 220px 100% repeat-x,
+    radial-gradient(52px 30px at 30% 100%, color-mix(in srgb, var(--theme-accent) 10%, white) 98%, transparent) 0 0 / 220px 100% repeat-x,
+    radial-gradient(34px 20px at 48% 100%, color-mix(in srgb, var(--theme-accent) 12%, white) 98%, transparent) 0 0 / 220px 100% repeat-x,
+    linear-gradient(180deg, rgba(255, 255, 255, .6), color-mix(in srgb, var(--theme-accent) 6%, transparent)) 0 0 / 100% 100% no-repeat;
+  --tc-before-anim: sky-card-clouds 24s linear infinite;
+  --tc-after: '\2601';
+  --tc-after-size: 20px;
+  --tc-after-color: color-mix(in srgb, var(--theme-accent) 35%, white);
+  --tc-after-glow: 0 2px 6px color-mix(in srgb, var(--theme-accent) 35%, transparent);
+  --tc-after-anim: sky-card-float 4s ease-in-out infinite;
+}
+
+@keyframes sky-card-clouds {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 220px 0, 220px 0, 220px 0, 0 0; }
+}
+
+@keyframes sky-card-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-4px, -3px); }
+}
+
+/* Dino Discovery: chunky and earthy like a fossil slab. Solid earthy base,
+   faint dino-skin spots and a stomping dinosaur. */
+[data-theme-style="dino-discovery"] {
+  --tc-radius: 16px;
+  --tc-radius-sm: 10px;
+  --tc-shadow:
+    0 0 0 2px color-mix(in srgb, var(--theme-accent) 35%, #f4e2b8),
+    0 6px 0 color-mix(in srgb, #8a5a2b 70%, var(--theme-accent)),
+    0 14px 24px -6px rgba(60, 40, 15, .35),
+    inset 0 2px 0 rgba(255, 255, 255, .7),
+    inset 0 -5px 0 rgba(138, 90, 43, .1);
+  --tc-shadow-hover:
+    0 0 0 2px color-mix(in srgb, var(--theme-accent) 55%, #f4e2b8),
+    0 8px 0 color-mix(in srgb, #8a5a2b 70%, var(--theme-accent)),
+    0 18px 28px -6px rgba(60, 40, 15, .4),
+    inset 0 2px 0 rgba(255, 255, 255, .75),
+    inset 0 -5px 0 rgba(138, 90, 43, .14);
+  --tc-shadow-sm:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 25%, #f4e2b8),
+    0 3px 0 rgba(138, 90, 43, .45),
+    inset 0 1px 0 rgba(255, 255, 255, .8);
+  --tc-before:
+    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--theme-accent) 10%, transparent) 0 7px, transparent 8px) 0 0 / 70px 60px,
+    radial-gradient(circle at 70% 75%, color-mix(in srgb, #e69c30 12%, transparent) 0 5px, transparent 6px) 0 0 / 70px 60px,
+    radial-gradient(120% 80% at 0% 100%, color-mix(in srgb, #e69c30 10%, transparent), transparent 70%) 0 0 / 100% 100% no-repeat;
+  --tc-after: '\1F996';
+  --tc-after-anim: dino-card-stomp 2.4s ease-in-out infinite;
+}
+
+@keyframes dino-card-stomp {
+  0%, 60%, 100% { transform: translateY(0) rotate(0deg); }
+  70% { transform: translateY(-4px) rotate(-8deg); }
+  80% { transform: translateY(0) rotate(0deg); }
+  88% { transform: translateY(-2px) rotate(6deg); }
+}
+
+/* Study Campus: a neat stack of notebook paper. Ruled lines, a margin line,
+   sheets peeking out underneath and a pin holding it on the board. */
+[data-theme-style="study-campus"] {
+  --tc-radius: 12px;
+  --tc-radius-sm: 8px;
+  --tc-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 22%, white),
+    5px 5px 0 -1px var(--theme-card),
+    5px 5px 0 0 color-mix(in srgb, var(--theme-accent) 25%, white),
+    10px 10px 0 -2px var(--theme-card),
+    10px 10px 0 -1px color-mix(in srgb, var(--theme-accent) 18%, white),
+    0 16px 28px -10px rgba(24, 63, 114, .3);
+  --tc-shadow-hover:
+    0 0 0 1.5px color-mix(in srgb, var(--theme-accent) 45%, white),
+    6px 6px 0 -1px var(--theme-card),
+    6px 6px 0 0 color-mix(in srgb, var(--theme-accent) 35%, white),
+    12px 12px 0 -2px var(--theme-card),
+    12px 12px 0 -1px color-mix(in srgb, var(--theme-accent) 25%, white),
+    0 20px 34px -10px rgba(24, 63, 114, .38);
+  --tc-shadow-sm:
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 20%, white),
+    3px 3px 0 -1px var(--theme-card),
+    3px 3px 0 0 color-mix(in srgb, var(--theme-accent) 22%, white);
+  --tc-before:
+    linear-gradient(90deg, transparent 22px, rgba(230, 90, 90, .28) 22px 24px, transparent 24px) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in srgb, var(--theme-accent) 9%, transparent) 25px 26px) 0 0 / 100% 100%;
+  --tc-after: '\1F4CC';
+  --tc-after-top: -8px;
+  --tc-after-right: 20px;
+  --tc-after-size: 20px;
+  --tc-after-z: 1;
+}
+
+/* Shared card rules for the themes above. */
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-radius: var(--tc-radius, 16px);
+  isolation: isolate;
+  box-shadow: var(--tc-shadow, var(--theme-card-shadow));
+}
+
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero, [class*="absolute"], [class*="fixed"], [class*="sticky"]) {
+  position: relative;
+}
+
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--tc-before, none);
+  animation: var(--tc-before-anim, none);
+}
+
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: var(--tc-after, none);
+  position: absolute;
+  top: var(--tc-after-top, 12px);
+  right: var(--tc-after-right, 16px);
+  z-index: var(--tc-after-z, -1);
+  font-size: var(--tc-after-size, 17px);
+  line-height: 1;
+  pointer-events: none;
+  color: var(--tc-after-color, inherit);
+  text-shadow: var(--tc-after-glow, none);
+  animation: var(--tc-after-anim, none);
+}
+
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(a, button):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["], .theme-subject-card):not([class*="rounded-full"]):hover {
+  box-shadow: var(--tc-shadow-hover, var(--theme-card-shadow-hover));
+}
+
+:is(
+  :is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"]) .student-theme-content,
+  .student-theme-dashboard:is([data-theme-style="ocean-blue"], [data-theme-style="jungle-adventure"], [data-theme-style="gold-champion"], [data-theme-style="candy-garden"], [data-theme-style="sky-kingdom"], [data-theme-style="dino-discovery"], [data-theme-style="study-campus"])
+)
+  :is(div, section, article, aside, li, a, button, details, form)[class*="rounded-xl"]:is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"]):not([class*="rounded-full"], [class*="blur-"]) {
+  border-radius: var(--tc-radius-sm, 12px);
+  box-shadow: var(--tc-shadow-sm, var(--theme-card-shadow-sm));
+}
+
+/* Gold Champion's brushed-metal rim: a 1.5px ring cut out of a gold gradient
+   (dark gold -> bright highlight -> dark gold), replacing the corner ornament.
+   Must come after the shared ::after rule above, which it overrides. The
+   card's own 1px border is hidden so the rim doesn't look doubled. */
+:is([data-theme-style="gold-champion"] .student-theme-content, .student-theme-dashboard[data-theme-style="gold-champion"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero) {
+  border-color: transparent !important;
+}
+
+:is([data-theme-style="gold-champion"] .student-theme-content, .student-theme-dashboard[data-theme-style="gold-champion"])
+  :is(.theme-surface, .theme-glass-card, .theme-subject-card, :is(div, section, article, aside, li, a, button, details, form):is([class*="rounded-2xl"], [class*="rounded-3xl"], [class*="rounded-["]):is([class~="border"], [class*="border-2"], [class*="ring-1"], [class~="bg-white"], [class*="bg-white/"], [class*="shadow"])):not([class*="rounded-full"], [class*="blur-"], .student-theme-hero)::after {
+  content: '';
+  inset: 0;
+  z-index: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  font-size: 0;
+  text-shadow: none;
+  animation: none;
+  background: linear-gradient(135deg, #5c4410 0%, #c9a23a 20%, #f6e7a8 38%, #b08a2a 55%, #6b4f12 72%, #d9b653 90%, #8a6a1c 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme-style] *::before,
+  [data-theme-style] *::after {
+    animation: none !important;
+  }
 }
 
 html.lenis,

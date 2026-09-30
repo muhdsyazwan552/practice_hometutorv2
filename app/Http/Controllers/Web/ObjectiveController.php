@@ -420,14 +420,15 @@ class ObjectiveController extends Controller
     }
 
     /**
-     * Get explanation from question or answers
+     * Get explanation from answers: reason, then reason2, then reason_file,
+     * falling back to the question's explanation field.
      */
     private function getExplanation($question)
     {
         // Check if any answer has a reason
         if (isset($question->answers) && !empty($question->answers)) {
             foreach ($question->answers as $answer) {
-                if (!empty($answer->reason)) {
+                if (QuestionContentNormalizer::hasContent($answer->reason ?? null)) {
                     $reason = QuestionContentNormalizer::normalizeHtml($answer->reason);
 
                     // Check if reason contains HTML
@@ -439,6 +440,27 @@ class ObjectiveController extends Controller
                     }
 
                     return $reason;
+                }
+            }
+
+            foreach ($question->answers as $answer) {
+                if (QuestionContentNormalizer::hasContent($answer->reason2 ?? null)) {
+                    return $this->processExplanationHtml($answer->reason2);
+                }
+            }
+
+            // Image-only explanations are stored as a file in reason_file
+            foreach ($question->answers as $answer) {
+                if (QuestionContentNormalizer::hasContent($answer->reason_file ?? null)) {
+                    $imageUrl = QuestionContentNormalizer::imageFileUrl($answer->reason_file, 'answers');
+
+                    if ($imageUrl) {
+                        $escapedUrl = htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8');
+
+                        return '<p><img src="' . $escapedUrl . '" alt="Explanation image" /></p>';
+                    }
+
+                    return $this->processExplanationHtml($answer->reason_file);
                 }
             }
         }

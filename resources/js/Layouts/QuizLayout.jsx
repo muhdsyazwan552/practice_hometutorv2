@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePage } from '@inertiajs/react';
 import QuestionNavbar from './QuestionNavbar';
-import Calculator from '../Components/Calculator'; // Import kalkulator
+import ScientificCalculator from '@/Components/ScientificCalculator';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 
 const QuizLayout = ({ 
@@ -16,10 +16,9 @@ const QuizLayout = ({
   const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
   const [navbarVisible, setNavbarVisible] = useState(true);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
-  const [calculatorPosition, setCalculatorPosition] = useState({ x: 20, y: 20 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [calculatorPosition, setCalculatorPosition] = useState({ x: 8, y: 80 });
   const calculatorRef = useRef(null);
+  const calculatorDrag = useRef(null);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -39,63 +38,17 @@ const QuizLayout = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle calculator drag events
-  const handleMouseDown = (e) => {
-    if (!calculatorVisible) return;
-    
-    setIsDragging(true);
-    const rect = calculatorRef.current.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-    
-    e.preventDefault();
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging || !calculatorVisible) return;
-    
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
-    
-    // Ensure calculator stays within viewport bounds
-    const maxX = window.innerWidth - 400; // Calculator width
-    const maxY = window.innerHeight - 500; // Calculator height
-    
-    setCalculatorPosition({
-      x: Math.max(0, Math.min(newX, maxX)),
-      y: Math.max(0, Math.min(newY, maxY))
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Add event listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'grabbing';
-      document.body.style.userSelect = 'none';
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+  // Keep the calculator on screen, with its header always reachable.
+  const clampCalculator = (x, y) => {
+    const width = calculatorRef.current?.offsetWidth ?? 288;
+    return {
+      x: Math.min(Math.max(8, x), Math.max(8, window.innerWidth - width - 8)),
+      y: Math.min(Math.max(8, y), Math.max(8, window.innerHeight - 56)),
     };
-  }, [isDragging, calculatorVisible]);
+  };
 
   const toggleCalculator = () => {
+    if (!calculatorVisible) setCalculatorPosition(clampCalculator(window.innerWidth - 304, 80));
     setCalculatorVisible(!calculatorVisible);
   };
 
@@ -138,7 +91,7 @@ const QuizLayout = ({
   );
 
   return (
-    <div className={`student-theme-shell min-h-screen ${bgColor}`} style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
+    <div className={`student-theme-shell min-h-screen ${bgColor}`} data-theme-style={studentTheme?.slug} style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
       {/* Pass navbarVisible prop to QuestionNavbar */}
       {/* <QuestionNavbar title={title} visible={navbarVisible} /> */}
       
@@ -164,26 +117,38 @@ const QuizLayout = ({
         </button>
       </div>
 
-      {/* Draggable Calculator */}
+      {/* Draggable Calculator: drag the header with a mouse or finger */}
       {calculatorVisible && (
         <div
           ref={calculatorRef}
-          className="fixed z-50 shadow-2xl rounded-lg overflow-hidden cursor-move transition-transform duration-200"
+          className="fixed z-50 overflow-hidden rounded-lg bg-slate-900 shadow-2xl ring-1 ring-black/20"
           style={{
             left: `${calculatorPosition.x}px`,
             top: `${calculatorPosition.y}px`,
-            transform: isDragging ? 'scale(1.02)' : 'scale(1)',
-            minWidth: '380px'
           }}
-          onMouseDown={handleMouseDown}
         >
           {/* Calculator Header */}
-          <div className="bg-gray-800 px-4 py-2 flex justify-between items-center border-b border-gray-700">
-            <div className="flex items-center space-x-2">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div
+            className="flex cursor-move items-center justify-between bg-slate-800 px-2.5 py-1"
+            style={{ touchAction: 'none' }}
+            onPointerDown={(e) => {
+              if (e.target.closest('button')) return;
+              e.currentTarget.setPointerCapture(e.pointerId);
+              const rect = calculatorRef.current.getBoundingClientRect();
+              calculatorDrag.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }}
+            onPointerMove={(e) => {
+              if (!calculatorDrag.current) return;
+              setCalculatorPosition(clampCalculator(e.clientX - calculatorDrag.current.x, e.clientY - calculatorDrag.current.y));
+            }}
+            onPointerUp={() => { calculatorDrag.current = null; }}
+            onPointerCancel={() => { calculatorDrag.current = null; }}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              <span className="text-white font-medium">Scientific Calculator</span>
+              <span className="text-xs font-semibold text-white">Scientific Calculator</span>
             </div>
             <div className="flex space-x-1">
               <button
@@ -196,9 +161,9 @@ const QuizLayout = ({
             </div>
           </div>
           
-          {/* Calculator Content */}
-          <div className="max-h-[600px] overflow-y-auto">
-            <Calculator />
+          {/* Calculator Content - scrolls only when the screen is shorter than the calculator */}
+          <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto">
+            <ScientificCalculator />
           </div>
         </div>
       )}

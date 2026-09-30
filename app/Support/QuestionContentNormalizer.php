@@ -94,6 +94,51 @@ class QuestionContentNormalizer
         );
     }
 
+    /**
+     * True when the value has visible text or an image, so blank editor
+     * output such as "<p>&nbsp;</p>" counts as empty.
+     */
+    public static function hasContent(?string $value): bool
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return false;
+        }
+
+        if (preg_match('/<img\b/i', $value)) {
+            return true;
+        }
+
+        $text = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(str_replace("\xC2\xA0", ' ', $text)) !== '';
+    }
+
+    /**
+     * Resolve legacy [IMG_PATH_FILE] placeholders and bare filenames on a raw
+     * answers row so its HTML and *_file fields can be rendered directly.
+     */
+    public static function answerRow(object $answer): object
+    {
+        foreach (['answer_text', 'reason', 'reason2'] as $field) {
+            if (isset($answer->{$field})) {
+                $answer->{$field} = self::normalizeHtml($answer->{$field});
+            }
+        }
+
+        if (! empty($answer->answer_option_file)) {
+            $answer->answer_option_file = self::answerFileUrl($answer->answer_option_file);
+        }
+
+        if (! empty($answer->reason_file)) {
+            $answer->reason_file = self::imageFileUrl($answer->reason_file, 'answers')
+                ?? self::normalizeHtml($answer->reason_file);
+        }
+
+        return $answer;
+    }
+
     public static function questionHtml(?string $html, ?string $questionFile = null): ?string
     {
         $normalizedHtml = self::normalizeHtml($html) ?? '';

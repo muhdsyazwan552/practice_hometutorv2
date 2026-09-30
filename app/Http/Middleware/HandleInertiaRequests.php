@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
                     return null;
                 }
 
-                $themes = $user->unlockedDashboardThemes()
+                $themes = $user->availableDashboardThemes()
                     ->where('dashboard_themes.is_active', true)
                     ->orderBy('dashboard_themes.sort_order')
                     ->get();

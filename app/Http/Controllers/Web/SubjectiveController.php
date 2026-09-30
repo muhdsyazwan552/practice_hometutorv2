@@ -562,7 +562,7 @@ class SubjectiveController extends Controller
         if ($question->answers && !$question->answers->isEmpty()) {
             // Priority 1: Check for reason
             foreach ($question->answers as $answer) {
-                if (!empty($answer->reason)) {
+                if (QuestionContentNormalizer::hasContent($answer->reason)) {
                     Log::info("✅ Found reason for explanation");
                     $reason = QuestionContentNormalizer::normalizeHtml($answer->reason);
                     $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $reason);
@@ -575,7 +575,7 @@ class SubjectiveController extends Controller
 
             // Priority 2: Check for reason2
             foreach ($question->answers as $answer) {
-                if (!empty($answer->reason2)) {
+                if (QuestionContentNormalizer::hasContent($answer->reason2)) {
                     Log::info("✅ Found reason2 for explanation");
                     $reason = QuestionContentNormalizer::normalizeHtml($answer->reason2);
                     $hasHtml = preg_match('/<p[^>]*>|<br>|<div|<img/i', $reason);
@@ -588,9 +588,15 @@ class SubjectiveController extends Controller
 
             // Priority 3: Check for reason_file
             foreach ($question->answers as $answer) {
-                if (!empty($answer->reason_file)) {
+                if (QuestionContentNormalizer::hasContent($answer->reason_file)) {
                     Log::info("✅ Found reason_file for explanation");
                     $reasonFile = $answer->reason_file;
+
+                    if ($imageUrl = QuestionContentNormalizer::imageFileUrl($reasonFile, 'answers')) {
+                        $escapedUrl = htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8');
+
+                        return '<p><img src="' . $escapedUrl . '" alt="Explanation image" /></p>';
+                    }
 
                     // Check if it's text content (not a URL)
                     if (is_string($reasonFile) && !filter_var($reasonFile, FILTER_VALIDATE_URL)) {

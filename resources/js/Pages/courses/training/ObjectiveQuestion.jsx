@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Head, usePage, Link, router } from '@inertiajs/react';
 import ObjectiveQuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
 import ResultQuestion from '@/Pages/courses/training/ResultQuestion';
-import Calculator from '@/Components/ScientificCalculator';
 import PageDrawingTool from '@/Components/PageDrawingTool';
 import AutoNotes from '@/Components/AutoNotes';
 import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ThemeLoader from '@/Components/ThemeLoader';
+import { useQuestionTools } from '@/Components/QuestionTools';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 
 /**
@@ -218,6 +219,25 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
 };
 
 /**
+ * Per-question review rows for the results screen ("Review my answers").
+ * `correct` is the first-try result, the same basis as the saved score.
+ */
+const buildQuestionReview = (questions, firstTryResults, answeredQuestions) =>
+  questions.map((q, index) => {
+    const result = firstTryResults[index];
+    const options = q.options || [];
+    return {
+      question: q.question_text || 'Question',
+      hasImage: !!q.question_file,
+      answered: answeredQuestions.has(index),
+      correct: result?.isCorrect || false,
+      skipped: !answeredQuestions.has(index),
+      chosenAnswer: result ? options[result.selectedIndex]?.text ?? null : null,
+      correctAnswer: options[q.correctAnswer]?.text ?? null,
+    };
+  });
+
+/**
  * Main ObjectiveQuestion Component
  * Handles the complete objective question quiz flow
  * 
@@ -311,13 +331,8 @@ export default function ObjectiveQuestion() {
       form: standard,
     }));
   }, [level_id, standard, subject, subject_id]);
-  // Tools State
-  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
-  const [showCalculator, setShowCalculator] = useState(false);
-  const [calculatorMinimized, setCalculatorMinimized] = useState(false);
-  const [calculatorPosition, setCalculatorPosition] = useState({ x: window.innerWidth - 350, y: 100 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  // Tools menu (calculator, kamus): state lives here so it survives footer re-renders
+  const { toolsButton, toolWindows } = useQuestionTools();
 
   // Drawing and Notes State
   const [showPageDrawing, setShowPageDrawing] = useState(false);
@@ -362,15 +377,7 @@ const handleExitWithResults = async () => {
     isComplete: false,
     completionType: 'early_exit',
     isEarlyExit: true,
-    questions: questions.map((q, index) => {
-      const result = firstTryResults[index];
-      return {
-        question: q.question_text || 'Question',
-        answered: answeredQuestions.has(index),
-        correct: result?.isCorrect || false,
-        skipped: !answeredQuestions.has(index)
-      };
-    })
+    questions: buildQuestionReview(questions, firstTryResults, answeredQuestions)
   };
 
   // Save the practice session first
@@ -1127,6 +1134,36 @@ const savePracticeSession = async () => {
     });
   };
 
+  /**
+   * Starts a new round with only the questions that were wrong on the first try
+   * or skipped. No server round-trip: the questions are already loaded, and the
+   * round is saved as its own practice session like any other.
+   */
+  const handleRetryWrong = () => {
+    const retry = questions.filter((_, index) => !firstTryResults[index]?.isCorrect);
+    if (retry.length === 0) return;
+
+    setQuestions(retry);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer({ index: null, id: null });
+    setShowExplanation(false);
+    setScore(0);
+    setQuizCompleted(false);
+    setAnsweredQuestions(new Set());
+    setIncorrectAnswers(new Set());
+    setIsAnswerCorrect(null);
+    setFirstTryResults(Array(retry.length).fill(null));
+    setHasCheckedFirstTry(false);
+    setShowCelebration(false);
+    setTimeElapsed(0);
+    setFinalTimeElapsed(null);
+    setQuestionAttempts([]);
+    setPracticeStartTime(new Date().toISOString());
+    setQuestionStartTime(Date.now());
+    setTimerRunning(true);
+    window.scrollTo({ top: 0 });
+  };
+
   // ============================
   // UTILITY FUNCTIONS
   // ============================
@@ -1165,41 +1202,13 @@ const savePracticeSession = async () => {
   // ============================
 
   /**
-   * ProgressCircles Component
-   * Shows circular indicators for each question with color coding:
-   * - Gray: Not attempted
-   * - Green: Correct on first try
-   * - Red: Incorrect on first try
-   * - Blue: Current question
-   * 
-   * @returns {JSX.Element} - Progress circles row
+   * First-try result per question for the header dots:
+   * true = correct, false = wrong, null = not answered yet.
    */
-  const ProgressCircles = () => (
-    <div className="flex justify-center space-x-2 md:space-x-2 mb-2 md:mb-6">
-      {questions.map((_, index) => {
-        let circleColor = 'bg-gray-300';
-
-        const result = firstTryResults[index];
-
-        // Color based on first-try result
-        if (result !== null && result !== undefined) {
-          circleColor = result.isCorrect ? 'bg-green-500' : 'bg-red-500';
-        } else if (index === currentQuestionIndex) {
-          circleColor = 'bg-blue-500';
-        }
-
-        return (
-          <div
-            key={index}
-            className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${index === currentQuestionIndex ? 'ring-2 md:ring-4 ring-blue-200 scale-110' : ''
-              }`}
-          >
-            {index + 1}
-          </div>
-        );
-      })}
-    </div>
-  );
+  const questionStatuses = questions.map((_, index) => {
+    const result = firstTryResults[index];
+    return result === null || result === undefined ? null : Boolean(result.isCorrect);
+  });
 
   /**
    * Confetti Component
@@ -1239,35 +1248,6 @@ const savePracticeSession = async () => {
   };
 
   /**
-   * Calculator drag handler effect
-   * Allows dragging the calculator modal around the screen
-   */
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragging) return;
-
-      setCalculatorPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
-
-  /**
    * FooterContent Component
    * Contains the quiz control buttons (Tools, Check Answer, Next)
    *
@@ -1275,125 +1255,8 @@ const savePracticeSession = async () => {
    */
   const FooterContent = () => (
     <div className="mx-auto flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      {/* Left side: Tools button */}
-      <div className="hidden items-center gap-2 sm:flex">
-        <div className="relative">
-        <button
-          onClick={() => setShowToolsDropdown(!showToolsDropdown)}
-          className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          Tools
-        </button>
-
-        {/* Tools Dropdown Menu */}
-        {showToolsDropdown && (
-          <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-            <div className="py-1">
-              <button
-                onClick={() => {
-                  setShowCalculator(true);
-                  setShowToolsDropdown(false);
-                }}
-                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors duration-150"
-              >
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                  />
-                </svg>
-                <span>Calculator</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowPageDrawing(true);
-                  setShowToolsDropdown(false);
-                }}
-                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors duration-150"
-              >
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-                <span>Draw on Page</span>
-              </button>
-              <button
-                onClick={() => {
-                  setShowAutoNotes(true);
-                  setNoteClickCount(prev => prev + 1);
-                  setShowToolsDropdown(false);
-                }}
-                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors duration-150"
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span>Add Note </span>
-              </button>
-
-              {/* Add more tools here in the future */}
-              <div className="border-t border-gray-200 my-1"></div>
-
-              <button
-                onClick={() => setShowToolsDropdown(false)}
-                className="w-full text-left px-4 py-2 text-gray-500 hover:bg-gray-100 text-sm flex items-center gap-3"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                Close Menu
-              </button>
-            </div>
-          </div>
-        )}
-        </div>
-      </div>
+      {/* Left side: Tools menu (shared with the subjective page) */}
+      <div className="flex items-center gap-2">{toolsButton}</div>
 
       {/* Middle: Answer check buttons */}
       <div className="order-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -1446,32 +1309,6 @@ const savePracticeSession = async () => {
       </div>
     </div>
   );
-
-  /**
-   * Effect to handle click outside for closing dropdowns
-   * Also handles Escape key to close calculator
-   */
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Close tools dropdown if clicked outside
-      if (showToolsDropdown && !event.target.closest('.relative')) {
-        setShowToolsDropdown(false);
-      }
-
-      // Close calculator with Escape key
-      if (showCalculator && event.key === 'Escape') {
-        setShowCalculator(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleClickOutside);
-    };
-  }, [showToolsDropdown, showCalculator]);
 
   // ============================
   // RENDER LOGIC
@@ -1526,15 +1363,7 @@ const savePracticeSession = async () => {
       isComplete: true,
       isEarlyExit: false,
       completionType: 'all_questions',
-      questions: questions.map((q, index) => {
-        const result = firstTryResults[index];
-        return {
-          question: q.question_text || 'Question',
-          answered: answeredQuestions.has(index),
-          correct: result?.isCorrect || false,
-          skipped: !answeredQuestions.has(index)
-        };
-      })
+      questions: buildQuestionReview(questions, firstTryResults, answeredQuestions)
     };
 
     console.log('🚀 Passing COMPLETE results to ResultQuestion:', objectiveResults);
@@ -1543,6 +1372,7 @@ const savePracticeSession = async () => {
       <ResultQuestion
         objectiveResults={objectiveResults}
         onTryAgain={handleRestartQuiz}
+        onRetryWrong={handleRetryWrong}
         quizType="objective"
         subject={subject}
         standard={standard}
@@ -1561,17 +1391,7 @@ const savePracticeSession = async () => {
 
   // Loading State
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading New Questions...</h1>
-            <p className="text-gray-600">Preparing your quiz...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ThemeLoader variant="page" message="Loading new questions…" detail="Preparing your quiz" />;
   }
 
   // No Questions Available State
@@ -1618,90 +1438,8 @@ const savePracticeSession = async () => {
       {/* Auto Notes Modal */}
       {showAutoNotes && <AutoNotes isActive={showAutoNotes} addNoteTrigger={noteClickCount} />}
 
-      {/* Calculator Modal - Draggable */}
-      {showCalculator && (
-        <div
-          className="fixed z-50"
-          style={{
-            left: `${calculatorPosition.x}px`,
-            top: `${calculatorPosition.y}px`
-          }}
-        >
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-300 w-90">
-            {/* Calculator Header - Draggable area */}
-            <div
-              className="flex justify-between items-center p-3 bg-gray-800 text-white rounded-t-xl cursor-move"
-              onMouseDown={(e) => {
-                // Only start dragging if not clicking a button
-                if (e.target.closest('button')) return;
-
-                setIsDragging(true);
-                const rect = e.currentTarget.getBoundingClientRect();
-                setDragOffset({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top
-                });
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                </svg>
-                <h3 className="text-sm font-semibold">Scientific Calculator</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowCalculator(false)}
-                  className="text-gray-300 hover:text-white p-1 rounded-full hover:bg-gray-700 transition-colors"
-                  title="Close Calculator"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Calculator Body */}
-            <div className="p-2 max-h-72 overflow-y-auto">
-              <Calculator />
-            </div>
-
-            {/* Mini Controls */}
-            <div className="border-t border-gray-200 p-2 flex justify-between items-center">
-              <button
-                onClick={() => {
-                  // Copy calculator result to clipboard
-                  const display = document.querySelector('.text-3xl.font-mono');
-                  if (display) {
-                    navigator.clipboard.writeText(display.textContent || '0');
-                  }
-                }}
-                className="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 hover:bg-gray-100 rounded"
-                title="Copy Result"
-              >
-                Copy
-              </button>
-              <button
-                onClick={() => setShowCalculator(false)}
-                className="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Calculator / kamus windows: drag by the header, stay on screen */}
+      {toolWindows}
 
       {/* Main Quiz Layout */}
       <ObjectiveQuestionLayout
@@ -1709,7 +1447,8 @@ const savePracticeSession = async () => {
         standard={standard}
         currentTopic={currentTopic}
         sectionTitle={sectionTitle || getSectionTitle()}
-        progressCircles={<ProgressCircles />}
+        questionStatuses={questionStatuses}
+        currentIndex={currentQuestionIndex}
         timeElapsed={timeElapsed}
         getTimeColor={getTimeColor}
         formatTime={formatTime}

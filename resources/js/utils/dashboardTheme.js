@@ -1,8 +1,13 @@
 const themes = {
+  // The free theme every student owns: no scene picture and no animation, just
+  // a clean indigo-to-cyan gradient look.
+  default: { page: '#f4f6fd', pageGradient: 'linear-gradient(160deg, #eef2ff 0%, #f0f9ff 55%, #fdf4ff 100%)', hero: 'linear-gradient(135deg, #4f46e5, #0ea5e9)', accent: '#4f46e5', ink: '#1e1b4b', card: '#ffffff', background: null },
   'ocean-blue': { page: '#eaf9ff', hero: 'linear-gradient(135deg, #027fc4, #61d0ec)', accent: '#0788c9', ink: '#073f72', card: '#ffffff', background: '/images/themes/ocean-blue.jpg' },
   'space-explorer': { page: '#111238', hero: 'linear-gradient(135deg, #111a4a, #7137b8)', accent: '#8d4cff', ink: '#f7f3ff', card: '#f7f2ff', background: '/images/themes/space-explorer.jpg' },
   'jungle-adventure': { page: '#edf9ec', hero: 'linear-gradient(135deg, #075d47, #4d9f28)', accent: '#188b50', ink: '#083e32', card: '#fffef4', background: '/images/themes/jungle-adventure.jpg' },
-  'gold-champion': { page: '#fff7df', hero: 'linear-gradient(135deg, #8e5300, #d69b13)', accent: '#af7000', ink: '#4c2d00', card: '#fffaf0', background: '/images/themes/gold-champion.jpg' },
+  // Metallic gold: brushed dark-to-light gold for the hero, a deep gold accent
+  // that stays readable as text, and a muted champagne page (not bright yellow).
+  'gold-champion': { page: '#efe9dc', hero: 'linear-gradient(135deg, #3f2d06 0%, #7d5e16 35%, #b08a2a 55%, #7d5e16 75%, #3f2d06 100%)', accent: '#8f6b12', ink: '#3d2c05', card: '#fffdf8', background: '/images/themes/gold-champion.jpg' },
   'candy-garden': { page: '#fff2fa', hero: 'linear-gradient(135deg, #ba3a82, #8e57cd)', accent: '#c53f91', ink: '#6e2156', card: '#fffaff', background: '/images/themes/candy-garden.jpg' },
   'sky-kingdom': { page: '#edf9ff', hero: 'linear-gradient(135deg, #1478c8, #80d7f3)', accent: '#258dcc', ink: '#124c7b', card: '#ffffff', background: '/images/themes/sky-kingdom.jpg' },
   'brick-builders': { page: '#fff7df', hero: 'linear-gradient(135deg, #e33436, #f1ae18)', accent: '#dc3d36', ink: '#173e79', card: '#fffdf6', background: '/images/themes/brick-builders.jpg' },
@@ -32,12 +37,22 @@ export function themeMotifShape(slug = '') {
   if (/candy|gold/.test(slug)) return 'gem';
   if (/brick/.test(slug)) return 'block';
   if (/cat/.test(slug)) return 'paw';
+  if (slug === 'default') return 'gem';
   return 'spark';
 }
 
-/** The bundled scene picture for a theme; the DB preview_image_path points at files that are not shipped. */
+/**
+ * The bundled scene picture for a theme; the DB preview_image_path points at files that are not shipped.
+ * Null for a theme without a picture (Default), which previews as its gradient instead.
+ */
 export function themeSceneImage(theme) {
   return (themes[theme?.slug] || themes['ocean-blue']).background;
+}
+
+/** CSS background for a theme preview: its scene picture, or its hero gradient when it has none. */
+export function themePreviewBackground(theme) {
+  const palette = themes[theme?.slug] || themes['ocean-blue'];
+  return palette.background ? `url(${palette.background}) center / cover` : palette.hero;
 }
 
 /**

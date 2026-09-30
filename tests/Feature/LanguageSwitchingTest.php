@@ -38,6 +38,17 @@ class LanguageSwitchingTest extends TestCase
             ->where('translations.common', trans('common', [], 'ms')));
     }
 
+    public function test_a_guest_can_switch_language_on_the_login_page(): void
+    {
+        $this->from('/login')->post(route('language.change'), ['locale' => 'ms'])
+            ->assertRedirect('/login')
+            ->assertSessionHas('locale', 'ms');
+
+        $this->get('/login')->assertInertia(fn ($page) => $page
+            ->component('Auth/Login')
+            ->where('locale', 'ms'));
+    }
+
     public function test_an_invalid_language_is_rejected(): void
     {
         $user = User::factory()->create();

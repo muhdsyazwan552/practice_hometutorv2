@@ -118,6 +118,7 @@ export default function Dashboard() {
       <Head title="Dashboard" />
 
       <main
+        data-theme-style={dashboardTheme?.slug}
         className={`student-theme-dashboard mx-auto w-full max-w-[1280px] mt-2 px-4 py-4 sm:px-6 lg:px-10 lg:py-4 ${dashboardPalette.background ? 'has-theme-bg' : ''}`}
         style={{
           '--theme-page': dashboardPalette.page,

@@ -1,209 +1,231 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/Contexts/LanguageContext';
+import { lookupWord } from '@/utils/dictionaryLookup';
 
-const Dictionary = () => {
-  const [word, setWord] = useState('');
-  const [definition, setDefinition] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchHistory, setSearchHistory] = useState([]);
+const COPY = {
+  ms: {
+    placeholder: 'Taip perkataan…',
+    search: 'Cari',
+    searching: 'Mencari…',
+    meaning: 'Maksud',
+    about: 'Penerangan',
+    readMore: 'Baca lagi',
+    notFound: 'Tiada maksud dijumpai. Semak ejaan atau cuba bahasa lain.',
+    offline: 'Kamus tidak dapat dihubungi. Semak sambungan internet dan cuba lagi.',
+    foundIn: { ms: 'Dijumpai dalam Bahasa Melayu', en: 'Dijumpai dalam Bahasa Inggeris' },
+    recent: 'Carian terkini',
+    hint: 'Perkataan Inggeris diterangkan dalam Bahasa Inggeris, perkataan Melayu dalam Bahasa Melayu.',
+    source: 'Sumber',
+  },
+  en: {
+    placeholder: 'Type a word…',
+    search: 'Search',
+    searching: 'Searching…',
+    meaning: 'Meaning',
+    about: 'Explanation',
+    readMore: 'Read more',
+    notFound: 'No meaning found. Check the spelling or try the other language.',
+    offline: 'The dictionary could not be reached. Check your internet connection and try again.',
+    foundIn: { ms: 'Found in Malay', en: 'Found in English' },
+    recent: 'Recent searches',
+    hint: 'English words are explained in English, Malay words in Malay.',
+    source: 'Source',
+  },
+};
 
-  const searchWord = async () => {
-    if (!word.trim()) {
-      setError('Please enter a word');
-      return;
-    }
+const LANGUAGES = [['ms', 'BM'], ['en', 'English']];
+const HISTORY_KEY = 'dictionary-history';
 
-    setLoading(true);
-    setError('');
-    setDefinition('');
+const readHistory = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter((item) => typeof item?.word === 'string').slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+};
 
-    try {
-      // Using Free Dictionary API
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-      
-      if (!response.ok) {
-        throw new Error('Word not found');
-      }
+/**
+ * Student kamus: explains a word in its own language (English -> English,
+ * Malay -> Malay) using free Wikimedia sources. See utils/dictionaryLookup.js.
+ */
+export default function Dictionary() {
+  const { locale } = useLanguage();
+  const text = COPY[locale === 'en' ? 'en' : 'ms'];
+  const [language, setLanguage] = useState(locale === 'en' ? 'en' : 'ms');
+  const [query, setQuery] = useState('');
+  const [state, setState] = useState({ status: 'idle' }); // idle | loading | found | notFound | error
+  const [history, setHistory] = useState(readHistory);
+  const request = useRef(null);
+  const inputRef = useRef(null);
 
-      const data = await response.json();
-      
-      if (data && data[0]) {
-        const wordData = data[0];
-        
-        let definitions = '';
-        
-        // Get meanings and definitions
-        if (wordData.meanings && wordData.meanings.length > 0) {
-          wordData.meanings.forEach((meaning, index) => {
-            definitions += `<div class="mb-4">`;
-            definitions += `<h4 class="font-semibold text-blue-600">${meaning.partOfSpeech}</h4>`;
-            
-            if (meaning.definitions && meaning.definitions.length > 0) {
-              meaning.definitions.slice(0, 3).forEach((def, defIndex) => {
-                definitions += `<div class="ml-4 mb-2">`;
-                definitions += `<p class="text-gray-700">${defIndex + 1}. ${def.definition}</p>`;
-                
-                if (def.example) {
-                  definitions += `<p class="text-gray-500 italic ml-4">Example: "${def.example}"</p>`;
-                }
-                
-                definitions += `</div>`;
-              });
-            }
-            definitions += `</div>`;
-          });
-        }
-        
-        // Add to search history
-        const newSearch = {
-          word: word,
-          timestamp: new Date().toLocaleTimeString(),
-          success: true
-        };
-        
-        setSearchHistory(prev => [newSearch, ...prev.slice(0, 4)]);
-        localStorage.setItem('dictionary-history', JSON.stringify([newSearch, ...searchHistory.slice(0, 4)]));
-        
-        setDefinition(definitions);
-        
-        // Show success message
-        const event = new CustomEvent('showToast', {
-          detail: { message: `Found definition for "${word}"`, type: 'success' }
-        });
-        window.dispatchEvent(event);
-      }
-    } catch (error) {
-      setError('Word not found. Please try another word.');
-      
-      // Add failed search to history
-      const newSearch = {
-        word: word,
-        timestamp: new Date().toLocaleTimeString(),
-        success: false
-      };
-      
-      setSearchHistory(prev => [newSearch, ...prev.slice(0, 4)]);
-      localStorage.setItem('dictionary-history', JSON.stringify([newSearch, ...searchHistory.slice(0, 4)]));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      searchWord();
-    }
-  };
-
-  const loadSearchHistory = () => {
-    const saved = localStorage.getItem('dictionary-history');
-    if (saved) {
-      setSearchHistory(JSON.parse(saved));
-    }
-  };
-
-  React.useEffect(() => {
-    loadSearchHistory();
+  useEffect(() => {
+    inputRef.current?.focus({ preventScroll: true });
+    return () => request.current?.abort();
   }, []);
 
-  const clearHistory = () => {
-    if (window.confirm('Clear search history?')) {
-      setSearchHistory([]);
-      localStorage.removeItem('dictionary-history');
+  const remember = (word, foundLanguage) => {
+    const next = [{ word, language: foundLanguage }, ...history.filter((item) => item.word.toLowerCase() !== word.toLowerCase())].slice(0, 8);
+    setHistory(next);
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    } catch {
+      // History is a convenience only.
     }
   };
 
+  const search = async (word = query, preferred = language) => {
+    const clean = word.trim();
+    if (!clean) return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setQuery(clean);
+    setState({ status: 'loading' });
+
+    try {
+      const result = await lookupWord(clean, preferred, controller.signal);
+      if (controller.signal.aborted) return;
+      if (!result) {
+        setState({ status: 'notFound' });
+        return;
+      }
+      setState({ status: 'found', result });
+      remember(clean, result.language);
+    } catch (error) {
+      if (error.name !== 'AbortError') setState({ status: 'error' });
+    }
+  };
+
+  const changeLanguage = (next) => {
+    setLanguage(next);
+    if (query.trim() && state.status !== 'idle') search(query, next);
+  };
+
+  const result = state.result;
+
   return (
-    <div className="w-full">
-      <h2 className="text-lg font-semibold mb-3 text-gray-800">📖 Dictionary</h2>
-      
-      <div className="mb-4">
-        <div className="flex gap-2 mb-3">
-          <input
-            type="text"
-            value={word}
-            onChange={(e) => setWord(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter a word (English)..."
-            disabled={loading}
-          />
+    <div className="w-[min(20rem,calc(100vw-1rem))] bg-white p-3 text-slate-800">
+      <div className="mb-2 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-0.5">
+        {LANGUAGES.map(([key, label]) => (
           <button
-            onClick={searchWord}
-            disabled={loading || !word.trim()}
-            className={`px-4 py-2 rounded-lg font-medium ${loading || !word.trim() 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+            key={key}
+            type="button"
+            onClick={() => changeLanguage(key)}
+            className={`h-7 rounded-md text-xs font-semibold transition ${language === key ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
-            {loading ? 'Searching...' : 'Search'}
+            {label}
           </button>
-        </div>
-        
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
-            <p className="text-red-700">{error}</p>
+        ))}
+      </div>
+
+      <form
+        className="flex gap-1.5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          search();
+        }}
+      >
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={text.placeholder}
+          maxLength={60}
+          autoComplete="off"
+          className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-slate-100 px-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+        <button type="submit" disabled={state.status === 'loading'} className="h-9 flex-none rounded-lg bg-amber-500 px-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-400 disabled:opacity-60">
+          {state.status === 'loading' ? text.searching : text.search}
+        </button>
+      </form>
+
+      <div className="mt-2 max-h-[min(22rem,calc(100dvh-14rem))] overflow-y-auto">
+        {state.status === 'idle' && <p className="py-2 text-xs leading-5 text-slate-500">{text.hint}</p>}
+
+        {state.status === 'loading' && (
+          <div className="flex items-center gap-2 py-4 text-sm text-slate-500">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-amber-500" />
+            {text.searching}
           </div>
         )}
-        
-        {definition && (
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-xl font-bold text-gray-800">{word}</h3>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(definition.replace(/<[^>]*>/g, ''));
-                  const event = new CustomEvent('showToast', {
-                    detail: { message: 'Definition copied!', type: 'success' }
-                  });
-                  window.dispatchEvent(event);
-                }}
-                className="text-sm text-blue-500 hover:text-blue-700"
-              >
-                Copy
-              </button>
+
+        {state.status === 'notFound' && <p className="py-3 text-sm text-slate-600">{text.notFound}</p>}
+        {state.status === 'error' && <p className="py-3 text-sm text-rose-700">{text.offline}</p>}
+
+        {state.status === 'found' && result && (
+          <article className="space-y-3 py-1" lang={result.language}>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <h3 className="text-lg font-bold">{result.word}</h3>
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                {result.language === 'ms' ? 'Bahasa Melayu' : 'English'}
+              </span>
             </div>
-            <div 
-              className="text-gray-700 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: definition }}
-            />
-          </div>
+            {result.language !== language && <p className="-mt-2 text-[11px] text-slate-500">{text.foundIn[result.language]}</p>}
+
+            {result.meanings.length > 0 && (
+              <section>
+                <h4 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">{COPY[result.language].meaning}</h4>
+                <div className="space-y-2">
+                  {result.meanings.map((group, index) => (
+                    <div key={index}>
+                      <p className="text-xs font-semibold italic text-slate-500">{group.partOfSpeech}</p>
+                      <ol className="ml-4 list-decimal space-y-1 text-sm leading-5">
+                        {group.definitions.map((definition, definitionIndex) => <li key={definitionIndex}>{definition}</li>)}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {result.about && (
+              <section>
+                <h4 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">{COPY[result.language].about}: {result.about.title}</h4>
+                <p className="text-sm leading-5 text-slate-700">{result.about.text}</p>
+                {result.about.url && (
+                  <a href={result.about.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-semibold text-amber-700 hover:underline">
+                    {COPY[result.language].readMore} ↗
+                  </a>
+                )}
+              </section>
+            )}
+
+            {/* Wikimedia content is CC BY-SA: credit the source. */}
+            <p className="border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-400">
+              {text.source}:{' '}
+              {result.dictionaryUrl && (
+                <a href={result.dictionaryUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">
+                  {result.language === 'ms' ? 'Wikikamus' : 'Wiktionary'}
+                </a>
+              )}
+              {result.dictionaryUrl && result.about?.url && ', '}
+              {result.about?.url && (
+                <a href={result.about.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Wikipedia</a>
+              )}
+              {' '}(CC BY-SA)
+            </p>
+          </article>
         )}
       </div>
 
-      {searchHistory.length > 0 && (
-        <div className="mt-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-gray-700">Recent Searches</h3>
-            <button
-              onClick={clearHistory}
-              className="text-xs text-red-500 hover:text-red-700"
-            >
-              Clear
-            </button>
-          </div>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
-            {searchHistory.map((search, index) => (
-              <div
-                key={index}
-                className={`p-2 rounded text-sm ${search.success ? 'bg-green-50' : 'bg-red-50'}`}
-                onClick={() => {
-                  setWord(search.word);
-                  searchWord();
-                }}
+      {history.length > 0 && (
+        <div className="mt-2 border-t border-slate-100 pt-2">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{text.recent}</p>
+          <div className="flex flex-wrap gap-1">
+            {history.map((item) => (
+              <button
+                key={item.word}
+                type="button"
+                onClick={() => search(item.word, item.language || language)}
+                className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-200"
               >
-                <div className="flex justify-between">
-                  <span className={`font-medium ${search.success ? 'text-green-700' : 'text-red-700'} cursor-pointer hover:underline`}>
-                    {search.word}
-                  </span>
-                  <span className="text-gray-500 text-xs">{search.timestamp}</span>
-                </div>
-              </div>
+                {item.word}
+              </button>
             ))}
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default Dictionary;
+}

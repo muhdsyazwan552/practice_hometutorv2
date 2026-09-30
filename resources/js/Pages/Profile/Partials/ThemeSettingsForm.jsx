@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { ArrowPathIcon, CheckIcon, PaintBrushIcon, PhotoIcon, RectangleStackIcon, SparklesIcon, SwatchIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/Contexts/LanguageContext';
 import ThemeMotif from '@/Components/ThemeMotif';
-import { MOTIFS, THEME_CHARACTERS, resolveDashboardTheme, resolveLearningCard, shellBackground, themeSceneImage } from '@/utils/dashboardTheme';
+import { MOTIFS, THEME_CHARACTERS, resolveDashboardTheme, resolveLearningCard, shellBackground, themePreviewBackground, themeSceneImage } from '@/utils/dashboardTheme';
 
 const ACCENTS = ['#0788c9', '#8d4cff', '#188b50', '#af7000', '#c53f91', '#dc3d36', '#00aeca', '#f97316'];
 const BACKGROUND_PRESETS = [['#dff4ff', '#fef6e4'], ['#fde2f3', '#e0e7ff'], ['#dcfce7', '#fef9c3'], ['#1e1b4b', '#0f766e'], ['#fff1e6', '#fde68a'], ['#0b1a32', '#312e81']];
@@ -99,7 +99,9 @@ function ThemeTile({ theme, active, onSelect, selectedLabel, fallbackDescription
   return (
     <button type="button" onClick={() => onSelect(theme.id)} aria-pressed={active} className={`group relative overflow-hidden rounded-2xl border-2 bg-white text-left transition ${active ? 'border-cyan-400 ring-4 ring-cyan-100' : 'border-slate-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg'}`}>
       <div className="relative h-28 overflow-hidden bg-slate-100">
-        <img src={themeSceneImage(theme)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {themeSceneImage(theme)
+          ? <img src={themeSceneImage(theme)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          : <div className="h-full w-full" style={{ background: themePreviewBackground(theme) }} />}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
         {character && <img src={character} alt="" className="absolute bottom-0 right-2 h-[6.5rem] max-w-[58%] object-contain object-bottom drop-shadow-lg transition duration-300 group-hover:-translate-y-1" />}
         {active && <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#061a3a] px-2.5 py-1 text-[10px] font-bold text-white shadow-sm"><CheckIcon className="h-3.5 w-3.5 text-cyan-200" /> {selectedLabel}</span>}
@@ -189,7 +191,9 @@ export default function ThemeSettingsForm({ themes = {} }) {
   return (
     <section className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-sm">
       <div className="relative overflow-hidden bg-[#061a3a] px-5 py-6 text-white sm:px-7">
-        {dashboardTheme && <img src={themeSceneImage(dashboardTheme)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />}
+        {dashboardTheme && (themeSceneImage(dashboardTheme)
+          ? <img src={themeSceneImage(dashboardTheme)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+          : <div className="absolute inset-0 opacity-40" style={{ background: themePreviewBackground(dashboardTheme) }} />)}
         <div className="absolute inset-0 bg-gradient-to-r from-[#061a3a] via-[#061a3a]/90 to-[#061a3a]/50" />
         <div className="relative flex items-start gap-3"><span className="rounded-2xl bg-white/10 p-2.5 text-cyan-200 ring-1 ring-white/15"><PaintBrushIcon className="h-5 w-5" /></span><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-200">{text.eyebrow}</p><h2 className="mt-1 text-xl font-extrabold">{text.title}</h2><p className="mt-1 text-sm text-slate-300">{text.intro}</p></div></div>
       </div>

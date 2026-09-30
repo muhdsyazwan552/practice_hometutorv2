@@ -58,7 +58,7 @@ public function index()
         $user = Auth::user();
         $user->load('student');
 
-        $unlockedThemes = $user->unlockedDashboardThemes()
+        $unlockedThemes = $user->availableDashboardThemes()
             ->where('dashboard_themes.is_active', true)
             ->orderBy('dashboard_themes.sort_order')
             ->get();

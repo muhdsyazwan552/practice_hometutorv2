@@ -7,6 +7,26 @@
       "runtimeArgs": ["run", "dev"],
       "port": 5173,
       "url": "http://hometutorv2.test/login"
+    },
+    {
+      "name": "games-vite-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/laragon/www/hometutor-games", "run", "dev", "--", "--config", "C:/Users/user/AppData/Local/Temp/claude/C--laragon-www-hometutorV2/08439d9c-1ccd-4f2e-a197-355c3e1f07b7/scratchpad/vite.games-preview.config.mjs"],
+      "port": 5174,
+      "url": "http://127.0.0.1:5174"
+    },
+    {
+      "name": "practice-php",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Users/user/AppData/Local/Temp/claude/C--laragon-www-hometutorV2/08439d9c-1ccd-4f2e-a197-355c3e1f07b7/scratchpad/serve-practice.mjs"],
+      "port": 8010
+    },
+    {
+      "name": "practice-vite",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--config", "C:/Users/user/AppData/Local/Temp/claude/C--laragon-www-hometutorV2/08439d9c-1ccd-4f2e-a197-355c3e1f07b7/scratchpad/vite.practice-preview.config.mjs"],
+      "port": 5175,
+      "url": "http://127.0.0.1:5175"
     }
   ]
 }

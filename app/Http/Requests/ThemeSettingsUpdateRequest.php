@@ -14,7 +14,7 @@ class ThemeSettingsUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $unlockedSlugs = $this->user()->unlockedDashboardThemes()->pluck('dashboard_themes.slug')->all();
+        $unlockedSlugs = $this->user()->availableDashboardThemes()->pluck('dashboard_themes.slug')->all();
 
         return [
             'dashboard_theme_id' => ['required', 'integer', 'exists:dashboard_themes,id'],
