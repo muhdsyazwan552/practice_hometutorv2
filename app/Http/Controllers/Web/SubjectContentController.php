@@ -57,10 +57,10 @@ class SubjectContentController extends Controller
                 });
             })
             ->whereExists(function ($questions) use ($data) {
-                $questions->selectRaw('1')
+                PracticeQuestionTypes::applyPracticePool($questions, (int) $data['question_type_id'], 'question')
+                    ->selectRaw('1')
                     ->from('questions as question')
                     ->whereColumn('question.topic_id', 'topic.id')
-                    ->whereIn('question.question_type_id', PracticeQuestionTypes::questionTypeIds((int) $data['question_type_id']))
                     ->where('question.is_active', 1)
                     ->where('question.is_published', 1);
             })
@@ -322,17 +322,17 @@ class SubjectContentController extends Controller
             }
         }
 
-        // ✅ STEP 3: Batch get question counts (1 query for all topics)
-        // Comprehension passages are not questions, so they are left out.
-        $questionCounts = DB::table('questions')
-            ->whereIn('topic_id', $allTopicIds)
-            ->where('is_active', 1)
-            ->where('is_published', 1)
-            ->whereNotIn('id', fn ($parents) => $parents->select('parent_id')->from('questions')->where('parent_id', '>', 0))
-            ->selectRaw('topic_id, question_type_id, COUNT(*) as count')
-            ->groupBy('topic_id', 'question_type_id')
-            ->get()
-            ->groupBy('topic_id');
+        // ✅ STEP 3: Batch get question counts (1 query per practice type for all topics)
+        $questionCounts = [];
+        foreach ([PracticeQuestionTypes::OBJECTIVE, PracticeQuestionTypes::SUBJECTIVE] as $practiceType) {
+            $questionCounts[$practiceType] = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), $practiceType)
+                ->whereIn('topic_id', $allTopicIds)
+                ->where('is_active', 1)
+                ->where('is_published', 1)
+                ->selectRaw('topic_id, COUNT(*) as count')
+                ->groupBy('topic_id')
+                ->pluck('count', 'topic_id');
+        }
 
         // ✅ STEP 4: Batch get practice data (1 query for all topics, only if logged in)
         $practiceData = [];
@@ -372,10 +372,8 @@ class SubjectContentController extends Controller
             foreach ($subtopics as $subtopic) {
                 $topicId = $subtopic['id'];
                 
-                // Get counts (from cache)
-                $counts = $questionCounts[$topicId] ?? collect();
-                $objectiveCount = $counts->whereIn('question_type_id', PracticeQuestionTypes::questionTypeIds(PracticeQuestionTypes::OBJECTIVE))->sum('count');
-                $subjectiveCount = $counts->whereIn('question_type_id', PracticeQuestionTypes::questionTypeIds(PracticeQuestionTypes::SUBJECTIVE))->sum('count');
+                $objectiveCount = $questionCounts[PracticeQuestionTypes::OBJECTIVE][$topicId] ?? 0;
+                $subjectiveCount = $questionCounts[PracticeQuestionTypes::SUBJECTIVE][$topicId] ?? 0;
                 
                 // Get practice data (from cache)
                 $objectivePractice = $practiceData[$topicId][1][0] ?? null;

@@ -6,11 +6,18 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Maps the question bank types onto the two practice types students see.
+ * Decides which questions are practised as Objective and which as Subjective.
  *
- * questions.question_type_id: 1 MCQ, 2 CMCQ, 3 ESSAY, 4 CESSAY.
+ * questions.question_type_id can't be trusted for this: the old bank used
+ * 1 MCQ, 2 CMCQ, 3 ESSAY, 4 CESSAY, while the current upload tool saves
+ * essays as 2. So the split goes by content instead:
+ *   - 2+ answer rows (options to choose from)  -> Objective
+ *   - 0-1 answer rows (a model answer)         -> Subjective
+ * Type 1 (MCQ) without options is broken data and is left out of both.
+ *
  * CMCQ/CESSAY are comprehension questions: a passage row (no answers) with
- * child questions pointing at it through parent_id.
+ * child questions pointing at it through parent_id. Passages are never
+ * practised themselves; their text is shown above each child question.
  *
  * practice_session / quiz_attempts keep using 1 = Objective, 2 = Subjective.
  */
@@ -20,45 +27,37 @@ class PracticeQuestionTypes
 
     public const SUBJECTIVE = 2;
 
-    public const MCQ = 1;
+    /** Bank types that can be practised (5 is an old, unused type). */
+    private const BANK_TYPES = [1, 2, 3, 4];
 
-    public const CMCQ = 2;
-
-    public const ESSAY = 3;
-
-    public const CESSAY = 4;
-
-    /** Question bank types shown under a practice type. */
-    public static function questionTypeIds(int $practiceType): array
-    {
-        return $practiceType === self::SUBJECTIVE
-            ? [self::ESSAY, self::CESSAY]
-            : [self::MCQ, self::CMCQ];
-    }
-
-    /** Practice type (Objective/Subjective) a question bank type belongs to. */
-    public static function practiceTypeFor(int $questionTypeId): int
-    {
-        return in_array($questionTypeId, [self::ESSAY, self::CESSAY], true)
-            ? self::SUBJECTIVE
-            : self::OBJECTIVE;
-    }
+    private const MCQ = 1;
 
     /**
-     * Limit a questions query to one practice type and drop the passage rows,
-     * which only hold the comprehension text and have no answers.
-     * questions.parent_id has no index, so the parent ids are collected in one
-     * uncorrelated subquery instead of a NOT EXISTS per row.
+     * Limit a questions query to one practice type.
+     * questions.parent_id and answers.question_id have no index, so both
+     * lookups are uncorrelated subqueries MySQL runs once per query.
      */
     public static function applyPracticePool(Builder $query, int $practiceType, string $table = 'questions'): Builder
     {
-        return $query
-            ->whereIn("{$table}.question_type_id", self::questionTypeIds($practiceType))
+        $query->whereIn("{$table}.question_type_id", self::BANK_TYPES)
             ->whereNotIn("{$table}.id", function ($parents) {
                 $parents->select('parent_id')
                     ->from('questions')
                     ->where('parent_id', '>', 0);
             });
+
+        if ($practiceType === self::SUBJECTIVE) {
+            return $query->where("{$table}.question_type_id", '<>', self::MCQ)
+                ->whereNotIn("{$table}.id", self::questionsWithOptions(...));
+        }
+
+        return $query->whereIn("{$table}.id", self::questionsWithOptions(...));
+    }
+
+    /** Practice type for a question, from how many answer rows it has. */
+    public static function practiceTypeForAnswerCount(int $answerCount): int
+    {
+        return $answerCount >= 2 ? self::OBJECTIVE : self::SUBJECTIVE;
     }
 
     /** Normalized passage HTML for each comprehension parent, keyed by parent id. */
@@ -81,5 +80,13 @@ class PracticeQuestionTypes
                 $parent->id => QuestionContentNormalizer::questionHtml($parent->question_text, $parent->question_file),
             ])
             ->all();
+    }
+
+    private static function questionsWithOptions(Builder $answers): void
+    {
+        $answers->select('question_id')
+            ->from('answers')
+            ->groupBy('question_id')
+            ->havingRaw('count(*) >= 2');
     }
 }

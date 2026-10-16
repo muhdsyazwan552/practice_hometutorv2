@@ -89,7 +89,7 @@ class ObjectiveController extends Controller
         // we need to adjust the filters
 
         // TEMPORARY: For testing, let's see what happens with different filters
-        $questions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE) // MCQ + CMCQ
+        $questions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE) // questions with answer options
             ->select('questions.*')
             ->where('questions.topic_id', $topicId)
             ->where('questions.is_active', 1)

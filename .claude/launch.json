@@ -17,8 +17,8 @@
     },
     {
       "name": "practice-php",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["C:/Users/user/AppData/Local/Temp/claude/C--laragon-www-hometutorV2/08439d9c-1ccd-4f2e-a197-355c3e1f07b7/scratchpad/serve-practice.mjs"],
+      "runtimeExecutable": "C:/laragon/bin/php/php-8.4.17-Win32-vs17-x64/php.exe",
+      "runtimeArgs": ["artisan", "serve", "--host=127.0.0.1", "--port=8010"],
       "port": 8010
     },
     {

@@ -297,21 +297,15 @@ class ReportController extends Controller
         }
 
         // Check direct questions
-        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
-
-        $topicsWithDirectQuestions = DB::table('questions')
+        $topicsWithDirectQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), (int) $questionTypeId)
             ->whereIn('topic_id', $topicIds)
-            ->whereIn('question_type_id', $bankTypeIds)
             ->distinct()
             ->pluck('topic_id')
             ->toArray();
 
         // Check if parent topics have sub-topics with questions
         $topicsWithSubtopics = DB::table('topics as t')
-            ->join('questions as q', function ($join) use ($bankTypeIds) {
-                $join->on('q.topic_id', '=', 't.id')
-                    ->whereIn('q.question_type_id', $bankTypeIds);
-            })
+            ->whereIn('t.id', fn ($pool) => PracticeQuestionTypes::applyPracticePool($pool->from('questions'), (int) $questionTypeId)->select('topic_id'))
             ->whereIn('t.parent_id', $topicIds)
             ->where('t.is_active', 1)
             ->distinct()
@@ -413,11 +407,8 @@ class ReportController extends Controller
     private function topicHasQuestions($topic, $questionTypeId)
     {
         // Cek jika topic sendiri memiliki questions dengan question_type_id
-        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
-
-        $hasDirectQuestions = DB::table('questions')
+        $hasDirectQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), (int) $questionTypeId)
             ->where('topic_id', $topic->id)
-            ->whereIn('question_type_id', $bankTypeIds)
             // ->where('is_active', 1)
             ->exists();
 
@@ -429,11 +420,11 @@ class ReportController extends Controller
         $hasSubTopicsWithQuestions = DB::table('topics')
             ->where('parent_id', $topic->id)
             // ->where('is_active', 1)
-            ->whereExists(function ($query) use ($bankTypeIds) {
-                $query->select(DB::raw(1))
+            ->whereExists(function ($query) use ($questionTypeId) {
+                PracticeQuestionTypes::applyPracticePool($query, (int) $questionTypeId)
+                    ->select(DB::raw(1))
                     ->from('questions')
-                    ->whereColumn('questions.topic_id', 'topics.id')
-                    ->whereIn('questions.question_type_id', $bankTypeIds);
+                    ->whereColumn('questions.topic_id', 'topics.id');
                 // ->where('questions.is_active', 1);
             })
             ->exists();
@@ -687,39 +678,10 @@ class ReportController extends Controller
      */
     private function optimizedBatchCheckTopicsWithQuestions(array $topicIds, $questionTypeId)
     {
-        if (empty($topicIds)) {
-            return [];
-        }
-
-        // Gunakan single query dengan UNION untuk efisiensi
-        $placeholders = implode(',', array_fill(0, count($topicIds), '?'));
-        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
-        $typePlaceholders = implode(',', array_fill(0, count($bankTypeIds), '?'));
-
-        $query = "
-            SELECT DISTINCT topic_id FROM (
-                -- Direct questions
-                SELECT topic_id FROM questions 
-                WHERE topic_id IN ({$placeholders})
-                AND question_type_id IN ({$typePlaceholders})
-                
-                UNION
-                
-                -- Questions in subtopics (untuk parent topics)
-                SELECT t.parent_id as topic_id FROM topics t
-                INNER JOIN questions q ON q.topic_id = t.id
-                WHERE t.parent_id IN ({$placeholders})
-                AND t.is_active = 1
-                AND q.question_type_id IN ({$typePlaceholders})
-            ) as combined
-        ";
-
-        // Prepare parameters: topicIds + bank types + topicIds + bank types
-        $params = array_merge($topicIds, $bankTypeIds, $topicIds, $bankTypeIds);
-
-        $results = DB::select($query, $params);
-
-        return array_column($results, 'topic_id');
+        // Same check as batchCheckTopicsWithQuestions(); the practice pool
+        // (objective vs subjective by answer count) can't be written as the
+        // old single UNION query on question_type_id.
+        return array_values($this->batchCheckTopicsWithQuestions($topicIds, $questionTypeId));
     }
 
     /**
@@ -1217,10 +1179,10 @@ class ReportController extends Controller
 
                 // The session says how the question was practised (older
                 // subjective sessions answered CMCQ questions as essays);
-                // otherwise MCQ/CMCQ are objective and ESSAY/CESSAY subjective.
+                // otherwise a question with options is objective.
                 $practiceType = in_array((int) $session->question_type_id, [PracticeQuestionTypes::OBJECTIVE, PracticeQuestionTypes::SUBJECTIVE], true)
                     ? (int) $session->question_type_id
-                    : PracticeQuestionTypes::practiceTypeFor((int) $attempt->question_type_id);
+                    : PracticeQuestionTypes::practiceTypeForAnswerCount($answers->count());
 
                 // Format answers for objective questions
                 $formattedAnswers = [];

@@ -72,7 +72,7 @@ class SubjectiveController extends Controller
 
         // Temporary: bypass all filters to test
         $query = Question::with('answers');
-        PracticeQuestionTypes::applyPracticePool($query->getQuery(), PracticeQuestionTypes::SUBJECTIVE); // ESSAY + CESSAY
+        PracticeQuestionTypes::applyPracticePool($query->getQuery(), PracticeQuestionTypes::SUBJECTIVE); // questions with a model answer, no options
 
         $questions = $query
             ->where('topic_id', $topicId)
