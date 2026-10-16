@@ -75,6 +75,55 @@ class LevelHelper
     }
     
     /**
+     * Forms a user may switch between: every form for full-access accounts,
+     * otherwise the forms in the student's own category.
+     */
+    public static function getAvailableFormsForUser($user)
+    {
+        if ($user && $user->hasFullAccess()) {
+            return [
+                'Standard 1', 'Standard 2', 'Standard 3',
+                'Standard 4', 'Standard 5', 'Standard 6',
+                'Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5',
+            ];
+        }
+
+        $studentLevelId = $user?->student?->level_id;
+
+        return $studentLevelId
+            ? self::getAvailableForms($studentLevelId)
+            : ['Form 1', 'Form 2', 'Form 3'];
+    }
+
+    /**
+     * Same as getAvailableFormsForUser(), but full-access accounts only get
+     * the forms where this subject exists (e.g. Physics is Form 4/5 only),
+     * so the default form always has content.
+     */
+    public static function getAvailableFormsForSubject($user, $subjectAbbr)
+    {
+        $forms = self::getAvailableFormsForUser($user);
+
+        if (! $user || ! $user->hasFullAccess()) {
+            return $forms;
+        }
+
+        $levelIds = \Illuminate\Support\Facades\DB::table('subject')
+            ->where('abbr', $subjectAbbr)
+            ->where('is_active', 1)
+            ->pluck('level_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $matching = array_values(array_filter(
+            $forms,
+            fn ($form) => in_array(self::formToLevelId($form), $levelIds, true)
+        ));
+
+        return $matching ?: $forms;
+    }
+
+    /**
      * Get category for a level
      */
     public static function getLevelCategory($levelId)

@@ -9,9 +9,10 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, onToggle, varia
 
     const getSubjectUrl = (subject) => {
         const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
-        const form = subject.level_id === 10 ? 'Form 4' : 'Form 5';
 
-        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${subject.level_id}&form=${encodeURIComponent(form)}`;
+        // The backend picks the form from level_id, so full-access accounts
+        // land on the subject's own level instead of a hardcoded Form 4/5.
+        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${subject.level_id}`;
     };
 
     const toggleMenu = () => {

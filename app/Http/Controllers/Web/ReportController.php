@@ -38,9 +38,7 @@ class ReportController extends Controller
         $user = Auth::user();
         $user?->load('student');
         $studentLevelId = $user?->student?->level_id;
-        $availableForms = $studentLevelId
-            ? LevelHelper::getAvailableForms($studentLevelId)
-            : ['Form 1', 'Form 2', 'Form 3'];
+        $availableForms = LevelHelper::getAvailableFormsForSubject($user, $subject);
 
         if (! in_array($form, $availableForms, true)) {
             $form = $availableForms[0];

@@ -112,13 +112,16 @@ class SubjectContentController extends Controller
             
             if ($student && $student->level_id) {
                 $studentLevelId = $student->level_id;
-                
+
                 // ✅ Determine available forms for this student
-                $availableForms = LevelHelper::getAvailableForms($studentLevelId);
+                $availableForms = LevelHelper::getAvailableFormsForSubject(Auth::user(), $subject);
                 
                 // ✅ Set default form if not provided or invalid
                 if (!$form || !in_array($form, $availableForms)) {
-                    $form = $availableForms[0]; // Default to first available form
+                    // Prefer the form of the level_id in the link (the subject
+                    // menu sends the subject's own level), else the first form.
+                    $requestedForm = $levelId ? LevelHelper::getFormName((int) $levelId) : null;
+                    $form = in_array($requestedForm, $availableForms) ? $requestedForm : $availableForms[0];
                 }
                 
                 // ✅ Convert form to level_id
@@ -165,8 +168,8 @@ class SubjectContentController extends Controller
         });
 
         // ✅ Get available forms for the student
-        $availableForms = $studentLevelId 
-            ? LevelHelper::getAvailableForms($studentLevelId)
+        $availableForms = $studentLevelId
+            ? LevelHelper::getAvailableFormsForSubject(Auth::user(), $subject)
             : ['Form 1', 'Form 2', 'Form 3']; // Default for non-logged in users
 
         // ✅ Get subjects for available forms

@@ -184,6 +184,19 @@ class User extends Authenticatable
         return (int) $this->role_id === self::ROLE_CODE_MANAGER;
     }
 
+    /**
+     * Accounts listed in FULL_ACCESS_USERS can open every level and subject,
+     * not just the forms inside their own level category.
+     */
+    public function hasFullAccess(): bool
+    {
+        $allowed = config('licensing.full_access_users', []);
+
+        return collect([$this->username, $this->email])
+            ->filter()
+            ->contains(fn ($value) => in_array(strtolower($value), $allowed, true));
+    }
+
     public function hasRole(string $role): bool
     {
         return match ($role) {
