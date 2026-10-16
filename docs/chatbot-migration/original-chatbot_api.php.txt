@@ -1,0 +1,348 @@
+<?php
+// The chatbot only needs configuration constants. It must remain available even
+// when the application's database is temporarily unreachable.
+define('SKIP_DATABASE_CONNECTION', true);
+require_once __DIR__ . '/config.php';
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+
+function sendReply($reply)
+{
+    echo json_encode(['reply' => $reply], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function sendUnavailableReply()
+{
+    sendReply('Maaf, AI Assistant sedang tidak tersedia. Sila WhatsApp 016-876 5435: https://wa.me/60168765435');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IP RATE LIMITER
+// Uses a single flat JSON file per IP in the system temp directory.
+// Allows RATE_LIMIT_MAX requests within a RATE_LIMIT_WINDOW-second window.
+// No database, no APCu — works on any shared PHP host.
+// ─────────────────────────────────────────────────────────────────────────────
+define('RATE_LIMIT_MAX',    20);   // max requests
+define('RATE_LIMIT_WINDOW', 60);   // per N seconds
+
+function getRateLimitFile($ip)
+{
+    // Store in sys temp so it survives between requests but is never web-accessible.
+    $safe = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $ip);
+    return sys_get_temp_dir() . '/ht_rl_' . $safe . '.json';
+}
+
+function checkRateLimit()
+{
+    // Prefer the real client IP; fall back through common proxy headers.
+    $ip = $_SERVER['HTTP_CF_CONNECTING_IP']       // Cloudflare
+       ?? $_SERVER['HTTP_X_FORWARDED_FOR']         // Load balancer / proxy
+       ?? $_SERVER['REMOTE_ADDR']
+       ?? '0.0.0.0';
+
+    // X-Forwarded-For can be a comma-separated list — take the first (leftmost) entry.
+    if (strpos($ip, ',') !== false) {
+        $ip = trim(explode(',', $ip)[0]);
+    }
+
+    $file = getRateLimitFile($ip);
+    $now  = time();
+
+    // Read existing record, or start fresh.
+    $record = ['window_start' => $now, 'count' => 0];
+    if (file_exists($file)) {
+        $raw = @file_get_contents($file);
+        if ($raw !== false) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $record = $decoded;
+            }
+        }
+    }
+
+    // Reset window if it has expired.
+    if (($now - $record['window_start']) >= RATE_LIMIT_WINDOW) {
+        $record = ['window_start' => $now, 'count' => 0];
+    }
+
+    $record['count']++;
+
+    // Write back atomically.
+    $tmp = $file . '.tmp.' . getmypid();
+    if (@file_put_contents($tmp, json_encode($record), LOCK_EX) !== false) {
+        @rename($tmp, $file);
+    }
+
+    if ($record['count'] > RATE_LIMIT_MAX) {
+        http_response_code(429);
+        sendReply('Terlalu banyak mesej dihantar. Sila tunggu sebentar sebelum cuba lagi.');
+    }
+}
+
+// Run rate limit check before doing anything else.
+checkRateLimit();
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+if (!defined('OPENAI_LUNA_API_KEY') || trim((string) OPENAI_LUNA_API_KEY) === '') {
+    error_log('HomeTutor chatbot: OPENAI_LUNA_API_KEY is missing from config.php.');
+    sendUnavailableReply();
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+$userMessage = isset($input['message']) ? trim((string) $input['message']) : '';
+
+if ($userMessage === '') {
+    sendReply('Sila taip mesej anda. / Please type a message.');
+}
+
+if (strlen($userMessage) > 2000) {
+    sendReply('Mesej terlalu panjang. Sila ringkaskan pertanyaan anda.');
+}
+
+function normalizeMessage($message)
+{
+    $message = function_exists('mb_strtolower')
+        ? mb_strtolower($message, 'UTF-8')
+        : strtolower($message);
+    $message = preg_replace('/[^\p{L}\p{N}\/]+/u', ' ', $message);
+    return trim(preg_replace('/\s+/u', ' ', $message));
+}
+
+function containsKeyword($message, $keyword)
+{
+    $keyword = normalizeMessage($keyword);
+
+    if (strlen($keyword) <= 2) {
+        $words = preg_split('/\s+/u', $message, -1, PREG_SPLIT_NO_EMPTY);
+        return in_array($keyword, $words, true);
+    }
+
+    return strpos($message, $keyword) !== false;
+}
+
+/**
+ * Short-circuit pure greetings before topic scoring.
+ * Returns true if the entire message is one or two greeting words.
+ */
+function isGreeting($normalizedMessage)
+{
+    $greetings = ['hi', 'hello', 'hai', 'hey', 'hye', 'salam', 'assalam', 'assalamualaikum', 'waalaikumsalam'];
+    $words = preg_split('/\s+/u', $normalizedMessage, -1, PREG_SPLIT_NO_EMPTY);
+    return count($words) <= 2 && count(array_diff($words, $greetings)) === 0;
+}
+
+/**
+ * Fetches { instructions, topics } from the Laravel API, with local file
+ * caching so the chatbot doesn't hit the network on every message, and
+ * keeps working even if the Laravel app is temporarily unreachable.
+ */
+function getChatbotConfig()
+{
+    $cacheFile = __DIR__ . '/chatbot_config_cache.json';
+    $cacheTtl = 60; // remote instruction edits become active within one minute
+
+    // 1. Use fresh local cache if still within TTL
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
+        $cached = json_decode(file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['topics']) && !empty($cached['instructions'])) {
+            return $cached;
+        }
+    }
+
+    // 2. Cache expired or missing — try fetching fresh data
+    $ch = curl_init('https://new.hometutor.com.my/api/hometutor/knowledge');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_CONNECTTIMEOUT => 3,
+    ]);
+    $response = curl_exec($ch);
+    $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($response !== false && $httpStatus === 200) {
+        $data = json_decode($response, true);
+        if (is_array($data) && !empty($data['topics']) && !empty($data['instructions'])) {
+            $temporaryCacheFile = $cacheFile . '.tmp.' . getmypid();
+            if (file_put_contents($temporaryCacheFile, $response, LOCK_EX) !== false) {
+                rename($temporaryCacheFile, $cacheFile);
+            }
+            return $data;
+        }
+    }
+
+    // 3. Fetch failed — fall back to last known good cache, even if stale
+    if (file_exists($cacheFile)) {
+        $stale = json_decode(file_get_contents($cacheFile), true);
+        if (is_array($stale) && !empty($stale['topics']) && !empty($stale['instructions'])) {
+            error_log('HomeTutor chatbot: using stale config cache, Laravel API unreachable.');
+            return $stale;
+        }
+    }
+
+    // 4. No cache at all and fetch failed — nothing we can do
+    error_log('HomeTutor chatbot: config unavailable, no cache and API fetch failed.');
+    return null;
+}
+
+$config = getChatbotConfig();
+
+if ($config === null) {
+    sendUnavailableReply();
+}
+
+$knowledge = $config['topics'];
+$instructions = (string) $config['instructions'];
+
+$normalizedMessage = normalizeMessage($userMessage);
+
+// ── Greeting short-circuit — friendly reply, no OpenAI call needed ────────────
+if (isGreeting($normalizedMessage)) {
+    sendReply(
+        'Hi! 👋 Saya HT Bot, pembantu digital HomeTutor.' . "\n\n" .
+        'HomeTutor ialah platform pembelajaran digital untuk pelajar Darjah 1 hingga Tingkatan 5. ' .
+        'Kami menyediakan latihan interaktif, video mengikut topik, kelas tuisyen online dan laporan kemajuan untuk ibu bapa.' . "\n\n" .
+        'Ada soalan tentang pakej, harga, subjek atau cara mendaftar? Saya sedia membantu. ' .
+        'Beritahu saya tahun atau tingkatan anak untuk cadangan pakej yang tepat. 🎓'
+    );
+}
+
+// ── Topic scoring ─────────────────────────────────────────────────────────────
+$scores = [];
+
+foreach ($knowledge as $topic => $section) {
+    $scores[$topic] = 0;
+    if (!isset($section['keywords']) || !is_array($section['keywords'])) {
+        continue;
+    }
+    foreach ($section['keywords'] as $keyword) {
+        if (containsKeyword($normalizedMessage, $keyword)) {
+            $normalizedKeyword = normalizeMessage($keyword);
+            $genericKeywords = ['hello', 'hi', 'hai', 'salam', 'hometutor'];
+            if (strpos($keyword, '/') === 0) {
+                $scores[$topic] += 10;
+            } elseif (in_array($normalizedKeyword, $genericKeywords, true)) {
+                $scores[$topic] += 0.1;
+            } else {
+                $scores[$topic] += 1;
+            }
+        }
+    }
+}
+
+arsort($scores);
+$matchedTopics = [];
+foreach ($scores as $topic => $score) {
+    if ($score > 0) {
+        $matchedTopics[] = $topic;
+    }
+    if (count($matchedTopics) === 2) {
+        break;
+    }
+}
+
+// Unrelated conversations stop here — no OpenAI request made.
+if (!$matchedTopics) {
+    $outOfScopeReply = isset($config['out_of_scope_reply'])
+        ? trim((string) $config['out_of_scope_reply'])
+        : '';
+
+    if ($outOfScopeReply !== '') {
+        sendReply($outOfScopeReply);
+    }
+
+    error_log('HomeTutor chatbot: out_of_scope_reply is missing from knowledge API.');
+    sendReply('Maaf, HT Bot hanya boleh membantu pertanyaan berkaitan HomeTutor.');
+}
+
+$referenceParts = [];
+foreach ($matchedTopics as $topic) {
+    if (isset($knowledge[$topic]['content']) && is_string($knowledge[$topic]['content'])) {
+        $referenceParts[] = strtoupper($topic) . ":\n" . $knowledge[$topic]['content'];
+    }
+}
+$selectedReference = implode("\n\n", $referenceParts);
+
+$modelInput = "CUSTOMER MESSAGE:\n{$userMessage}";
+if ($selectedReference !== '') {
+    $modelInput = "RELEVANT REFERENCE:\n{$selectedReference}\n\n" . $modelInput;
+}
+
+$requestBody = [
+    'model' => 'gpt-5.6-luna',
+    'instructions' => $instructions,
+    'input' => $modelInput,
+    'reasoning' => ['effort' => 'none'],
+    'max_output_tokens' => 500,
+    'store' => false
+];
+
+$url = 'https://api.openai.com/v1/responses';
+$response = false;
+$httpStatus = 0;
+$lastCurlError = '';
+
+for ($attempt = 1; $attempt <= 3; $attempt++) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . OPENAI_LUNA_API_KEY,
+            'Content-Type: application/json'
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    $response = curl_exec($ch);
+    $lastCurlError = curl_error($ch);
+    $httpStatus = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($response !== false && $httpStatus >= 200 && $httpStatus < 300) {
+        break;
+    }
+
+    if (!in_array($httpStatus, [0, 408, 429, 500, 502, 503, 504], true)) {
+        break;
+    }
+
+    usleep(250000 * $attempt);
+}
+
+if ($response === false || $httpStatus < 200 || $httpStatus >= 300) {
+    error_log("HomeTutor OpenAI request failed. HTTP {$httpStatus}; cURL: {$lastCurlError}; response: " . substr((string) $response, 0, 1000));
+    sendUnavailableReply();
+}
+
+$json = json_decode($response, true);
+$reply = '';
+
+if (!empty($json['output_text']) && is_string($json['output_text'])) {
+    $reply = trim($json['output_text']);
+} elseif (!empty($json['output']) && is_array($json['output'])) {
+    foreach ($json['output'] as $outputItem) {
+        if (($outputItem['type'] ?? '') !== 'message' || empty($outputItem['content'])) {
+            continue;
+        }
+        foreach ($outputItem['content'] as $contentItem) {
+            if (($contentItem['type'] ?? '') === 'output_text' && isset($contentItem['text'])) {
+                $reply .= $contentItem['text'];
+            }
+        }
+    }
+    $reply = trim($reply);
+}
+
+if ($reply === '') {
+    error_log('HomeTutor OpenAI response contained no output text: ' . substr($response, 0, 1000));
+    sendUnavailableReply();
+}
+
+sendReply($reply);

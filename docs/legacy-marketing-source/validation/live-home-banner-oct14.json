@@ -1,0 +1,266 @@
+{
+  "checks": [
+    {
+      "width": 1440,
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 78,
+        "bottom": 78,
+        "right": 1440
+      },
+      "copy": {
+        "x": 100,
+        "y": 144.328125,
+        "width": 626.1875,
+        "height": 557.328125,
+        "bottom": 701.65625,
+        "right": 726.1875
+      },
+      "portrait": {
+        "x": 760.1875,
+        "y": 305.125,
+        "width": 579.8125,
+        "height": 426.875,
+        "bottom": 732,
+        "right": 1340
+      },
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 780,
+        "bottom": 780,
+        "right": 1440
+      },
+      "overlaps": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "portraitSource": "/images/landing-practice/hero-students-closeup.jpg",
+      "portraitNatural": [
+        963,
+        709
+      ],
+      "backgroundSource": "/images/landing-practice/hometutor-hero-background.png",
+      "backgroundNatural": [
+        1596,
+        985
+      ],
+      "backgroundOpacity": "1",
+      "headlineSize": "54px",
+      "paragraphSize": "18px",
+      "headlineClipped": false
+    },
+    {
+      "width": 1024,
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 78,
+        "bottom": 78,
+        "right": 1024
+      },
+      "copy": {
+        "x": 30,
+        "y": 149.921875,
+        "width": 488.0625,
+        "height": 492.140625,
+        "bottom": 642.0625,
+        "right": 518.0625
+      },
+      "portrait": {
+        "x": 542.0625,
+        "y": 357.265625,
+        "width": 451.9375,
+        "height": 332.734375,
+        "bottom": 690,
+        "right": 994
+      },
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 730,
+        "bottom": 730,
+        "right": 1024
+      },
+      "overlaps": false,
+      "scrollWidth": 1024,
+      "viewport": 1024,
+      "portraitSource": "/images/landing-practice/hero-students-closeup.jpg",
+      "portraitNatural": [
+        963,
+        709
+      ],
+      "backgroundSource": "/images/landing-practice/hometutor-hero-background.png",
+      "backgroundNatural": [
+        1596,
+        985
+      ],
+      "backgroundOpacity": "1",
+      "headlineSize": "42px",
+      "paragraphSize": "16px",
+      "headlineClipped": false
+    },
+    {
+      "width": 768,
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 78,
+        "bottom": 78,
+        "right": 768
+      },
+      "copy": {
+        "x": 114,
+        "y": 106,
+        "width": 540,
+        "height": 516.4375,
+        "bottom": 622.4375,
+        "right": 654
+      },
+      "portrait": {
+        "x": 109,
+        "y": 652.4375,
+        "width": 550,
+        "height": 404.921875,
+        "bottom": 1057.359375,
+        "right": 659
+      },
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 1079.359375,
+        "bottom": 1079.359375,
+        "right": 768
+      },
+      "overlaps": false,
+      "scrollWidth": 768,
+      "viewport": 768,
+      "portraitSource": "/images/landing-practice/hero-students-closeup.jpg",
+      "portraitNatural": [
+        963,
+        709
+      ],
+      "backgroundSource": "/images/landing-practice/hometutor-hero-background.png",
+      "backgroundNatural": [
+        1596,
+        985
+      ],
+      "backgroundOpacity": "1",
+      "headlineSize": "47.616px",
+      "paragraphSize": "16px",
+      "headlineClipped": false
+    },
+    {
+      "width": 390,
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 78,
+        "bottom": 78,
+        "right": 390
+      },
+      "copy": {
+        "x": 24,
+        "y": 106,
+        "width": 342,
+        "height": 489.375,
+        "bottom": 595.375,
+        "right": 366
+      },
+      "portrait": {
+        "x": 24,
+        "y": 625.375,
+        "width": 342,
+        "height": 251.78125,
+        "bottom": 877.15625,
+        "right": 366
+      },
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 899.15625,
+        "bottom": 899.15625,
+        "right": 390
+      },
+      "overlaps": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "portraitSource": "/images/landing-practice/hero-students-closeup.jpg",
+      "portraitNatural": [
+        963,
+        709
+      ],
+      "backgroundSource": "/images/landing-practice/hometutor-hero-background.png",
+      "backgroundNatural": [
+        1596,
+        985
+      ],
+      "backgroundOpacity": "1",
+      "headlineSize": "36px",
+      "paragraphSize": "16px",
+      "headlineClipped": false
+    },
+    {
+      "width": 320,
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 78,
+        "bottom": 78,
+        "right": 320
+      },
+      "copy": {
+        "x": 18,
+        "y": 106,
+        "width": 284,
+        "height": 528.515625,
+        "bottom": 634.515625,
+        "right": 302
+      },
+      "portrait": {
+        "x": 18,
+        "y": 662.515625,
+        "width": 284,
+        "height": 209.078125,
+        "bottom": 871.59375,
+        "right": 302
+      },
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 893.59375,
+        "bottom": 893.59375,
+        "right": 320
+      },
+      "overlaps": false,
+      "scrollWidth": 320,
+      "viewport": 320,
+      "portraitSource": "/images/landing-practice/hero-students-closeup.jpg",
+      "portraitNatural": [
+        963,
+        709
+      ],
+      "backgroundSource": "/images/landing-practice/hometutor-hero-background.png",
+      "backgroundNatural": [
+        1596,
+        985
+      ],
+      "backgroundOpacity": "1",
+      "headlineSize": "33px",
+      "paragraphSize": "15px",
+      "headlineClipped": false
+    }
+  ],
+  "errors": [],
+  "badResponses": []
+}

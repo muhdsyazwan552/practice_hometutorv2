@@ -1,0 +1,460 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "reports": [
+    {
+      "width": 1920,
+      "scrollWidth": 1920,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 693.328125,
+        "top": 0,
+        "right": 1920,
+        "bottom": 693.328125,
+        "left": 0
+      },
+      "copy": {
+        "x": 340,
+        "y": 100,
+        "width": 626.1875,
+        "height": 557.328125,
+        "top": 100,
+        "right": 966.1875,
+        "bottom": 657.328125,
+        "left": 340
+      },
+      "portrait": {
+        "x": 980.1875,
+        "y": 154.109375,
+        "width": 699.8125,
+        "height": 515.21875,
+        "top": 154.109375,
+        "right": 1680,
+        "bottom": 669.328125,
+        "left": 980.1875
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 78,
+        "top": 0,
+        "right": 1920,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 86.671875,
+      "studentEnlargement": 1.2069634580144444
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 693.328125,
+        "top": 0,
+        "right": 1440,
+        "bottom": 693.328125,
+        "left": 0
+      },
+      "copy": {
+        "x": 100,
+        "y": 100,
+        "width": 626.1875,
+        "height": 557.328125,
+        "top": 100,
+        "right": 726.1875,
+        "bottom": 657.328125,
+        "left": 100
+      },
+      "portrait": {
+        "x": 740.1875,
+        "y": 154.109375,
+        "width": 699.8125,
+        "height": 515.21875,
+        "top": 154.109375,
+        "right": 1440,
+        "bottom": 669.328125,
+        "left": 740.1875
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 78,
+        "top": 0,
+        "right": 1440,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 86.671875,
+      "studentEnlargement": 1.2069634580144444
+    },
+    {
+      "width": 1400,
+      "scrollWidth": 1400,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 689.828125,
+        "top": 0,
+        "right": 1400,
+        "bottom": 689.828125,
+        "left": 0
+      },
+      "copy": {
+        "x": 80,
+        "y": 100,
+        "width": 626.1875,
+        "height": 553.828125,
+        "top": 100,
+        "right": 706.1875,
+        "bottom": 653.828125,
+        "left": 80
+      },
+      "portrait": {
+        "x": 720.1875,
+        "y": 194.78125,
+        "width": 639.8125,
+        "height": 471.046875,
+        "top": 194.78125,
+        "right": 1360,
+        "bottom": 665.828125,
+        "left": 720.1875
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 78,
+        "top": 0,
+        "right": 1400,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png"
+    },
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 680,
+        "top": 0,
+        "right": 1280,
+        "bottom": 680,
+        "left": 0
+      },
+      "copy": {
+        "x": 40,
+        "y": 105.109375,
+        "width": 605.421875,
+        "height": 533.765625,
+        "top": 105.109375,
+        "right": 645.421875,
+        "bottom": 638.875,
+        "left": 40
+      },
+      "portrait": {
+        "x": 659.421875,
+        "y": 199.109375,
+        "width": 620.578125,
+        "height": 456.890625,
+        "top": 199.109375,
+        "right": 1280,
+        "bottom": 656,
+        "left": 659.421875
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 78,
+        "top": 0,
+        "right": 1280,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png"
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 630,
+        "top": 0,
+        "right": 1024,
+        "bottom": 630,
+        "left": 0
+      },
+      "copy": {
+        "x": 30,
+        "y": 99.921875,
+        "width": 488.0625,
+        "height": 492.140625,
+        "top": 99.921875,
+        "right": 518.0625,
+        "bottom": 592.0625,
+        "left": 30
+      },
+      "portrait": {
+        "x": 522.0625,
+        "y": 236.453125,
+        "width": 501.9375,
+        "height": 369.546875,
+        "top": 236.453125,
+        "right": 1024,
+        "bottom": 606,
+        "left": 522.0625
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 78,
+        "top": 0,
+        "right": 1024,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 100,
+      "studentEnlargement": 1.110634766975522
+    },
+    {
+      "width": 820,
+      "scrollWidth": 820,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 820,
+        "height": 654.9375,
+        "top": 0,
+        "right": 820,
+        "bottom": 654.9375,
+        "left": 0
+      },
+      "copy": {
+        "x": 30,
+        "y": 98,
+        "width": 382.140625,
+        "height": 520.9375,
+        "top": 98,
+        "right": 412.140625,
+        "bottom": 618.9375,
+        "left": 30
+      },
+      "portrait": {
+        "x": 416.140625,
+        "y": 333.609375,
+        "width": 403.859375,
+        "height": 297.328125,
+        "top": 333.609375,
+        "right": 820,
+        "bottom": 630.9375,
+        "left": 416.140625
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 820,
+        "height": 78,
+        "top": 0,
+        "right": 820,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png"
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 1069.453125,
+        "top": 0,
+        "right": 768,
+        "bottom": 1069.453125,
+        "left": 0
+      },
+      "copy": {
+        "x": 114,
+        "y": 98,
+        "width": 540,
+        "height": 516.4375,
+        "top": 98,
+        "right": 654,
+        "bottom": 614.4375,
+        "left": 114
+      },
+      "portrait": {
+        "x": 94,
+        "y": 630.4375,
+        "width": 580,
+        "height": 427.015625,
+        "top": 630.4375,
+        "right": 674,
+        "bottom": 1057.453125,
+        "left": 94
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 78,
+        "top": 0,
+        "right": 768,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 9.90625,
+      "studentEnlargement": 1.0545454545454545
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 890.71875,
+        "top": 0,
+        "right": 390,
+        "bottom": 890.71875,
+        "left": 0
+      },
+      "copy": {
+        "x": 24,
+        "y": 98,
+        "width": 342,
+        "height": 489.375,
+        "top": 98,
+        "right": 366,
+        "bottom": 587.375,
+        "left": 24
+      },
+      "portrait": {
+        "x": 8,
+        "y": 603.375,
+        "width": 374,
+        "height": 275.34375,
+        "top": 603.375,
+        "right": 382,
+        "bottom": 878.71875,
+        "left": 8
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 78,
+        "top": 0,
+        "right": 390,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 8.4375,
+      "studentEnlargement": 1.0935672514619883
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "hero": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 881.265625,
+        "top": 0,
+        "right": 320,
+        "bottom": 881.265625,
+        "left": 0
+      },
+      "copy": {
+        "x": 18,
+        "y": 98,
+        "width": 284,
+        "height": 528.515625,
+        "top": 98,
+        "right": 302,
+        "bottom": 626.515625,
+        "left": 18
+      },
+      "portrait": {
+        "x": 6,
+        "y": 642.515625,
+        "width": 308,
+        "height": 226.75,
+        "top": 642.515625,
+        "right": 314,
+        "bottom": 869.265625,
+        "left": 6
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 78,
+        "top": 0,
+        "right": 320,
+        "bottom": 78,
+        "left": 0
+      },
+      "collision": false,
+      "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+      "sections": 8,
+      "heading": "One Platform.\nOnline Classes.\nUnlimited Learning Opportunities.",
+      "background": "/images/landing-practice/hometutor-hero-background.png",
+      "heightReducedBy": 12.328125,
+      "studentEnlargement": 1.0845070422535212
+    }
+  ],
+  "errors": [],
+  "bad": []
+}

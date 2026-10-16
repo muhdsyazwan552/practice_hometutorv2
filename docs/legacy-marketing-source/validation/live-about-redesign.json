@@ -1,0 +1,74 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "reports": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "portraits": 24,
+      "uniquePortraits": 24,
+      "imagesValid": true,
+      "onlyPortraits": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "cloudOverlap": false,
+      "profileLinks": 0,
+      "heading": "Cultivate self-directed learning"
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "portraits": 24,
+      "uniquePortraits": 24,
+      "imagesValid": true,
+      "onlyPortraits": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "cloudOverlap": false,
+      "profileLinks": 0,
+      "heading": "Cultivate self-directed learning"
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "portraits": 24,
+      "uniquePortraits": 24,
+      "imagesValid": true,
+      "onlyPortraits": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "cloudOverlap": false,
+      "profileLinks": 0,
+      "heading": "Cultivate self-directed learning"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "portraits": 24,
+      "uniquePortraits": 24,
+      "imagesValid": true,
+      "onlyPortraits": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "cloudOverlap": false,
+      "profileLinks": 0,
+      "heading": "Cultivate self-directed learning"
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "portraits": 24,
+      "uniquePortraits": 24,
+      "imagesValid": true,
+      "onlyPortraits": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "cloudOverlap": false,
+      "profileLinks": 0,
+      "heading": "Cultivate self-directed learning"
+    }
+  ],
+  "motion": "entrance/parallax/hover pass",
+  "reducedMotion": "pass",
+  "errors": [],
+  "bad": []
+}

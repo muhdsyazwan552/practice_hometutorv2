@@ -17,3 +17,7 @@ Route::prefix('integration/v1')->middleware('throttle:60,1')->group(function () 
         ->middleware('integration.jwt:subscriptions:read')
         ->name('integration.subscriptions');
 });
+
+// Public, stateless HT Bot reply handler: no account/session/database dependency.
+Route::post('/marketing/chatbot', \App\Http\Controllers\Marketing\ChatbotController::class)
+    ->middleware(\App\Http\Middleware\LimitMarketingChatbot::class)->name('marketing.chatbot');

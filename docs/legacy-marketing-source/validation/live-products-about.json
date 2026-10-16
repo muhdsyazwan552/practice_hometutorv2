@@ -1,0 +1,10 @@
+{
+  "production": "https://practice.hometutor.com.my",
+  "checks": [
+    "1440px: four panels, all images and enrollment links, no overflow, Home/FAQ navigation",
+    "390px: four panels, all images and enrollment links, no overflow, Home/FAQ navigation",
+    "All four production query targets"
+  ],
+  "errors": [],
+  "network404": []
+}

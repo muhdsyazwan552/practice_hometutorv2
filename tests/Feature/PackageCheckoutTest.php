@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Package;
 use App\Models\PackageDurationOption;
-use App\Models\PackagePayment;
 use App\Models\PaymentTransaction;
 use App\Models\Student;
 use App\Models\User;
@@ -250,10 +249,16 @@ class PackageCheckoutTest extends TestCase
         $otherParent = User::factory()->create(['role_id' => User::ROLE_PARENT]);
         [$package, $sixMonths] = $this->packageWithOptions();
 
-        $ownPayment = PackagePayment::create(['parent_id' => $parent->id, 'package_id' => $package->id, 'package_duration_option_id' => $sixMonths->id, 'method' => 'checkout_submit', 'provider' => 'internal_submit', 'provider_reference' => 'OWN-RECEIPT-100', 'status' => 'paid', 'amount' => 500, 'currency' => 'MYR', 'paid_at' => now()]);
-        $otherPayment = PackagePayment::create(['parent_id' => $otherParent->id, 'package_id' => $package->id, 'package_duration_option_id' => $sixMonths->id, 'method' => 'checkout_submit', 'provider' => 'internal_submit', 'provider_reference' => 'OTHER-RECEIPT-999', 'status' => 'paid', 'amount' => 500, 'currency' => 'MYR', 'paid_at' => now()]);
-        app(ActivationCodeService::class)->issue($package, $parent, 'package_checkout', $ownPayment, durationDays: 183, purchaseAmount: 500, sendEmail: false);
-        app(ActivationCodeService::class)->issue($package, $otherParent, 'package_checkout', $otherPayment, durationDays: 183, purchaseAmount: 500, sendEmail: false);
+        $ownOrder = Order::create(['parent_id' => $parent->id, 'status' => Order::STATUS_FULFILLED, 'currency' => 'MYR', 'subtotal' => 500, 'total' => 500, 'provider' => 'doku', 'paid_at' => now()]);
+        $ownOrder->items()->create(['item_type' => OrderItem::TYPE_NEW, 'fulfillment_status' => OrderItem::FULFILLMENT_FULFILLED, 'package_id' => $package->id, 'package_duration_option_id' => $sixMonths->id, 'package_name_snapshot' => $package->name, 'duration_days' => 183, 'unit_price' => 500, 'total' => 500, 'currency' => 'MYR', 'new_child_name' => 'Own Child']);
+        PaymentTransaction::create(['order_id' => $ownOrder->id, 'provider' => 'doku', 'provider_order_reference' => 'OWN-RECEIPT-100', 'status' => PaymentTransaction::STATUS_PAID, 'amount' => 500, 'currency' => 'MYR', 'payment_channel' => 'doku_checkout', 'paid_at' => now()]);
+
+        $otherOrder = Order::create(['parent_id' => $otherParent->id, 'status' => Order::STATUS_FULFILLED, 'currency' => 'MYR', 'subtotal' => 500, 'total' => 500, 'provider' => 'doku', 'paid_at' => now()]);
+        $otherOrder->items()->create(['item_type' => OrderItem::TYPE_NEW, 'fulfillment_status' => OrderItem::FULFILLMENT_FULFILLED, 'package_id' => $package->id, 'package_duration_option_id' => $sixMonths->id, 'package_name_snapshot' => $package->name, 'duration_days' => 183, 'unit_price' => 500, 'total' => 500, 'currency' => 'MYR', 'new_child_name' => 'Other Child']);
+        PaymentTransaction::create(['order_id' => $otherOrder->id, 'provider' => 'doku', 'provider_order_reference' => 'OTHER-RECEIPT-999', 'status' => PaymentTransaction::STATUS_PAID, 'amount' => 500, 'currency' => 'MYR', 'payment_channel' => 'doku_checkout', 'paid_at' => now()]);
+
+        app(ActivationCodeService::class)->issue($package, $parent, 'package_checkout', durationDays: 183, purchaseAmount: 500, sendEmail: false);
+        app(ActivationCodeService::class)->issue($package, $otherParent, 'package_checkout', durationDays: 183, purchaseAmount: 500, sendEmail: false);
 
         $this->actingAs($parent)->get(route('parent.payment-log.index'))
             ->assertOk()

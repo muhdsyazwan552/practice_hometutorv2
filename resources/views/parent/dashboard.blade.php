@@ -6,7 +6,7 @@
     <section class="overflow-hidden rounded-2xl bg-[#082c58] p-5 text-white shadow-xl sm:rounded-3xl sm:p-8 lg:p-10">
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-cyan-200 sm:text-sm">Parent account</p>
         <h1 class="mt-2 break-words text-2xl font-bold sm:mt-3 sm:text-3xl">Welcome, {{ $parent->display_name ?: $parent->name }}.</h1>
-        <p class="mt-3 max-w-2xl text-sm text-blue-100 sm:text-base">Buy activation codes and manage each child’s individual learning subscription.</p>
+        <p class="mt-3 max-w-2xl text-sm text-blue-100 sm:text-base">Choose a subscription and manage each child’s account, learning and renewal.</p>
     </section>
 
     <div class="mt-6 grid gap-4 sm:mt-7 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
@@ -23,7 +23,7 @@
                     <span class="inline-flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-700"><span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>{{ $renewalRequiredCount }} need renewal</span>
                 @endif
             </div>
-            <a href="{{ route('parent.subscriptions.index') }}" class="mt-auto inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0788c9] to-[#0876bc] px-5 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:from-[#0678b4] hover:to-[#0868a5]">Buy licence</a>
+            <a href="{{ route('parent.subscriptions.index') }}" class="mt-auto inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0788c9] to-[#0876bc] px-5 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:from-[#0678b4] hover:to-[#0868a5]">Subscribe now</a>
         </article>
 
         <article class="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_35px_rgba(8,44,88,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(8,44,88,0.13)] sm:min-h-[360px] sm:rounded-3xl sm:p-7 lg:p-8">

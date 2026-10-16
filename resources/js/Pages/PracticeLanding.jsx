@@ -1,13 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BanknotesIcon, BoltIcon, GiftIcon, TrophyIcon } from '@heroicons/react/24/outline';
 import SmoothScroll from '@/Components/SmoothScroll';
-import { Aurora, BlurText, Card3D, ease, GridPattern, Magnetic, Marquee, Meteors, ShinyText, SpotlightCard, StickyScroll } from '@/Components/PracticeLanding/Effects';
+import { BlurText, Card3D, ease, GridPattern, Magnetic, Marquee, Meteors, SpotlightCard, StickyScroll } from '@/Components/PracticeLanding/Effects';
 import '../../css/practice-landing.css';
+import '../../css/brand-sections-refresh.css';
+import '../../css/hero-showcase.css';
 
-// three.js loads after the text so the page is readable straight away.
-const HeroScene = lazy(() => import('@/Components/PracticeLanding/HeroScene'));
+import { ProductHero, ProductsSection, AboutSection, FaqSection } from '@/Components/PracticeLanding/BrandSections';
 const VantaWaves = lazy(() => import('@/Components/PracticeLanding/VantaWaves'));
 
 const img = (name) => `/images/landing-practice/${name}.webp`;
@@ -80,7 +81,7 @@ function Nav() {
         window.addEventListener('scroll', on, { passive: true });
         return () => window.removeEventListener('scroll', on);
     }, []);
-    const links = [['Ciri', '#ciri'], ['Cara belajar', '#cara'], ['HomeTutor Play', '#play'], ['Quiz Arena', '#arena'], ['Tahap', '#tahap']];
+    const links = [['Produk', '#produk'], ['Cara belajar', '#cara'], ['HomeTutor Play', '#play'], ['Tentang Kami', '#tentang'], ['FAQ', '#faq']];
 
     return (
         <motion.header initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }} className="fixed inset-x-0 top-0 z-50 px-4 pt-3">
@@ -116,55 +117,6 @@ function Nav() {
                 )}
             </AnimatePresence>
         </motion.header>
-    );
-}
-
-/* ---------------------------------------------------------------- hero + 3D scene */
-
-function Hero() {
-    const reduced = useReducedMotion();
-    const sectionRef = useRef(null);
-
-    return (
-        <section id="top" ref={sectionRef} className="relative isolate flex min-h-[100svh] flex-col justify-center overflow-hidden bg-white pb-16 pt-32 sm:pt-36">
-            <Aurora />
-            <GridPattern />
-            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.4, delay: 0.3, ease }} className="absolute inset-0">
-                <Suspense fallback={null}>
-                    <HeroScene eventSource={sectionRef} reduced={reduced} />
-                </Suspense>
-            </motion.div>
-            <div className="pointer-events-none relative mx-auto max-w-4xl px-6 text-center [&_a]:pointer-events-auto">
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }} className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 py-1.5 pl-1.5 pr-4 text-sm shadow-sm backdrop-blur">
-                    <span className="bg-spectrum rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">Baharu</span>
-                    <ShinyText className="font-medium">HomeTutor Practice · Tahun 1 hingga Tingkatan 5</ShinyText>
-                </motion.div>
-                <h1 className="font-display text-5xl font-extrabold leading-[1.04] text-slate-900 sm:text-6xl lg:text-7xl">
-                    <BlurText text="Satu platform." delay={0.2} />
-                    <br />
-                    <BlurText text="Setiap potensi bersinar." delay={0.45} wordClassName="text-spectrum" />
-                </h1>
-                <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.8, ease }} className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                    Latihan ikut subjek dengan semakan serta-merta, pangkat mastery, Quiz Arena dan permainan HomeTutor Play. Ibu bapa pula nampak perkembangan anak dalam satu laporan.
-                </motion.p>
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 1, ease }} className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                    <PrimaryButton href={route('register')}>Mula sekarang</PrimaryButton>
-                    <a href="#play" className="rounded-full border border-slate-200 bg-white px-7 py-3.5 font-semibold text-slate-800 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">Terokai HomeTutor Play</a>
-                </motion.div>
-            </div>
-
-            <div className="pointer-events-none relative mx-auto mt-20 grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-5 px-6 md:grid-cols-4">
-                {[['Tahun 1 – Tingkatan 5', 'Pakej ikut tahap'], ['Semakan serta-merta', 'Objektif & subjektif'], ['Portal ibu bapa', 'Dashboard & kad laporan'], ['HomeTutor Play', 'Satu akaun, dua platform']].map(([t, s], i) => (
-                    <Reveal key={t} delay={0.9 + i * 0.06} y={16} className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/70 p-3 shadow-sm backdrop-blur">
-                        <Check />
-                        <div>
-                            <p className="font-semibold text-slate-900">{t}</p>
-                            <p className="text-sm text-slate-500">{s}</p>
-                        </div>
-                    </Reveal>
-                ))}
-            </div>
-        </section>
     );
 }
 
@@ -608,9 +560,9 @@ function FinalCta() {
 
 function Footer() {
     const cols = [
-        ['Produk', [['HomeTutor Practice', '#top'], ['HomeTutor Play', '#play'], ['Quiz Arena', '#arena'], ['Tahap & pakej', '#tahap']]],
+        ['Produk', [['Semua produk', '#produk'], ['HomeTutor Practice', '#top'], ['HomeTutor Play', '#play'], ['Quiz Arena', '#arena'], ['Tahap & pakej', '#tahap']]],
         ['Akaun', [['Log masuk', route('login')], ['Daftar', route('register')]]],
-        ['HomeTutor', [['Laman rasmi', 'https://hometutor.com.my/']]],
+        ['HomeTutor', [['Tentang Kami', '#tentang'], ['Soalan lazim', '#faq'], ['Direktori tutor', 'https://xoom.xcelearn.com.my/view-tutors'], ['Hubungi kami', 'mailto:support@hometutor.com.my']]],
     ];
     return (
         <footer className="border-t border-slate-200 bg-white">
@@ -653,7 +605,8 @@ function PracticeLandingPage() {
             <motion.div style={{ scaleX: bar }} className="bg-spectrum fixed inset-x-0 top-0 z-[60] h-[3px] origin-left" />
             <Nav />
             <main>
-                <Hero />
+                <ProductHero />
+                <ProductsSection />
                 <div className="space-y-4 py-6">
                     <Marquee speed={45}>{subjectsA.map((s, i) => <SubjectPill key={s} name={s} i={i} />)}</Marquee>
                     <Marquee speed={55} reverse>{subjectsB.map((s, i) => <SubjectPill key={s} name={s} i={i + 2} />)}</Marquee>
@@ -663,6 +616,8 @@ function PracticeLandingPage() {
                 <PlaySection />
                 <Arena />
                 <Levels />
+                <AboutSection />
+                <FaqSection />
                 <FinalCta />
             </main>
             <Footer />
@@ -686,7 +641,7 @@ export default function PracticeLanding() {
                 <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:500,600,700,800&display=swap" rel="stylesheet" />
                 <meta name="description" content="HomeTutor Practice: latihan subjek Tahun 1 hingga Tingkatan 5 dengan semakan segera, mastery, Quiz Arena, HomeTutor Play dan laporan untuk ibu bapa." />
             </Head>
-            <SmoothScroll>
+            <SmoothScroll anchorOffset={0}>
                 <PracticeLandingPage />
             </SmoothScroll>
         </>

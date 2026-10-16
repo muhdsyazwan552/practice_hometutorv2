@@ -1,0 +1,16 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "widths": [
+    1440,
+    390,
+    320
+  ],
+  "sections": 7,
+  "faqCategories": 4,
+  "faqQuestions": 15,
+  "images": "pass",
+  "navigation": "pass",
+  "faqSearch": "pass",
+  "mobileMenu": "pass",
+  "errors": []
+}

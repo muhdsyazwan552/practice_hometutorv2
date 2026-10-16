@@ -12,7 +12,7 @@
         @forelse ($children as $child)
             @include('parent.children._progress-card', ['child' => $child])
         @empty
-            <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center xl:col-span-2"><p class="font-bold text-slate-700">No child accounts yet</p><p class="mt-2 text-sm text-slate-500">Get an activation code, then create a child username.</p></div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center xl:col-span-2"><p class="font-bold text-slate-700">No child accounts yet</p><p class="mt-2 text-sm text-slate-500">Choose a subscription package and enter your child’s details at checkout. The child account is created after payment confirmation.</p></div>
         @endforelse
     </div>
 @endsection

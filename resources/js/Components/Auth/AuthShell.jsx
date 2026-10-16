@@ -18,6 +18,7 @@ import { AcademicCapIcon, ArrowLeftIcon, CheckIcon, UserGroupIcon } from '@heroi
 import { useLanguage } from '@/Contexts/LanguageContext';
 import { ease, GridPattern } from '@/Components/PracticeLanding/Effects';
 import LoginForm from './LoginForm';
+import LanguageSwitch from './LanguageSwitch';
 import RegisterForm from './RegisterForm';
 import '../../../css/practice-landing.css';
 
@@ -120,26 +121,6 @@ function RolePicker({ role, onChange }) {
                 ))}
             </div>
         </fieldset>
-    );
-}
-
-function LanguageSwitch() {
-    const { locale, changeLanguage, isChangingLanguage } = useLanguage();
-    return (
-        <div role="group" aria-label="Language" className="flex rounded-full border border-slate-200 bg-white/90 p-0.5 text-sm font-semibold shadow-sm backdrop-blur">
-            {[['en', 'EN'], ['ms', 'BM']].map(([code, label]) => (
-                <button
-                    key={code}
-                    type="button"
-                    disabled={isChangingLanguage}
-                    aria-pressed={locale === code}
-                    onClick={() => changeLanguage(code)}
-                    className={`rounded-full px-3 py-1.5 transition ${locale === code ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                >
-                    {label}
-                </button>
-            ))}
-        </div>
     );
 }
 

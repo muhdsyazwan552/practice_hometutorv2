@@ -1,0 +1,174 @@
+<script>
+  loadFile('css/portal_modules/about.css', 'css');
+  loadFile('css/portal_modules/about_revised.css', 'css');
+</script>
+
+<section>
+  <div class="banner-container">
+    <div class="banner-content">
+      <div class="banner-text">
+        <h1>Cultivate self-directed learning</h1>
+        <p>We are committed to create a student with autodidact capability</p>
+      </div>
+      <div class="banner-image">
+        <img src="img/img_revised/metho_image1.png" alt="Image">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-2">
+  <div class="banner-container-section-2">
+    <div class="banner-content-section-2">
+      <div class="banner-image-section-2">
+        <img src="img/img_revised/metho_image2.png" alt="Image">
+      </div>
+      <div class="banner-text-section-2">
+
+        <h3>Assess readiness to learn</h3>
+        <p>Involves students conducting a self-evaluation of their current situation, study habits, family situation, and support network both at school and at home and also involves evaluating past experiences with independent learning.</p>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="three-image-section">
+  <h1>Leveraging Technology for Better Learning</h1>
+
+  <div class="image-container card-grid">
+    <div class="image-card">
+      <img src="img/img_revised/learning01.png" alt="Description 1">
+    </div>
+    <div class="image-card">
+      <img src="img/img_revised/learning02.png" alt="Description 2">
+    </div>
+    <div class="image-card">
+      <img src="img/img_revised/learning03.png" alt="Description 3">
+    </div>
+  </div>
+</section>
+
+
+<section class="feature-section">
+  <h2 class="feature-title">Improve Achievement with Tutors HomeTutor</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-image">
+        <img src="img/img_revised/card1.png" alt="Feature 1">
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="card-image">
+        <img src="img/img_revised/card3.png" alt="Feature 2">
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="card-image">
+        <img src="img/img_revised/card2.png" alt="Feature 3">
+      </div>
+
+
+    </div>
+
+  </div>
+  <div class="floating-teacher">
+    <img src="img/img_revised/Tutor_5.png" alt="Featured Teacher">
+    <label class="floating-label">*Our team of tutors comprise 50 educators serving both primary and secondary levels.</label>
+  </div>
+</section>
+<script>
+  loadFile('js/portal_modules/about.js', 'js');
+</script>
+
+<script>
+  // Initialize slick carousel on mobile
+  $(document).ready(function () {
+    if ($(window).width() < 769) {
+      $('.card-grid').slick({
+        dots: true,
+        arrows: false,
+        infinite: true,
+        speed: 300,
+        slidesToShow: 1,
+        adaptiveHeight: true
+      });
+    }
+
+    // Optional: Re-initialize on window resize
+    $(window).on('resize', function () {
+      if ($(window).width() < 769 && !$('.card-grid').hasClass('slick-initialized')) {
+        $('.card-grid').slick({
+          dots: true,
+          arrows: false,
+          infinite: true,
+          speed: 300,
+          slidesToShow: 1,
+          adaptiveHeight: true
+        });
+        $('.prev-btn').click(function () {
+          $('.card-grid').slick('slickPrev');
+        });
+
+        $('.next-btn').click(function () {
+          $('.card-grid').slick('slickNext');
+        });
+      } else if ($(window).width() >= 769 && $('.card-grid').hasClass('slick-initialized')) {
+        $('.card-grid').slick('unslick');
+      }
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function () {
+    function initSlick() {
+      if ($(window).width() < 769) {
+        if (!$('.card-grid').hasClass('slick-initialized')) {
+         $('.card-grid').slick({
+  dots: true,              // Show navigation dots
+  arrows: true,            // Show prev/next arrows
+  infinite: true,          // Infinite loop
+  speed: 500,              // Slide speed in ms
+  slidesToShow: 2,         // Default: 2 slides at a time
+  slidesToScroll: 1,       // Scroll 1 slide per click
+  adaptiveHeight: true,    // Adjust height per slide
+  prevArrow: '<button class="slick-prev">←</button>',
+  nextArrow: '<button class="slick-next">→</button>',
+  responsive: [
+    {
+      breakpoint: 1024, // Tablet and below
+      settings: {
+        slidesToShow: 2
+      }
+    },
+    {
+      breakpoint: 768, // Mobile and below
+      settings: {
+        slidesToShow: 2
+      }
+    }
+  ]
+});
+
+        }
+      } else {
+        if ($('.card-grid').hasClass('slick-initialized')) {
+          $('.card-grid').slick('unslick');
+        }
+      }
+    }
+
+    // Init on load
+    initSlick();
+
+    // Re-init on resize
+    $(window).on('resize', function () {
+      initSlick();
+    });
+  });
+</script>

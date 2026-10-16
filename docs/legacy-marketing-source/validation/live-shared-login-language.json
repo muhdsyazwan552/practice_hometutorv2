@@ -1,0 +1,7 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "marketingToLogin": "BM persisted",
+  "loginToMarketing": "EN persisted",
+  "policyDeepLink": "preserved on switch",
+  "errors": []
+}

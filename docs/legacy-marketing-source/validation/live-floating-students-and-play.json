@@ -1,0 +1,137 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "reports": [
+    {
+      "width": 1440,
+      "cutout": {
+        "size": [
+          1463,
+          1075
+        ],
+        "transparentRatio": 0.4205910124147578,
+        "opaqueRatio": 0.5571374525107695,
+        "sampleAlpha": [
+          253,
+          253,
+          0
+        ],
+        "cornerAlpha": [
+          0,
+          0,
+          0
+        ],
+        "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+        "blend": "normal",
+        "glow": "none"
+      },
+      "playImages": 5,
+      "menuAnchor": true
+    },
+    {
+      "width": 1024,
+      "cutout": {
+        "size": [
+          1463,
+          1075
+        ],
+        "transparentRatio": 0.4205910124147578,
+        "opaqueRatio": 0.5571374525107695,
+        "sampleAlpha": [
+          253,
+          253,
+          0
+        ],
+        "cornerAlpha": [
+          0,
+          0,
+          0
+        ],
+        "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+        "blend": "normal",
+        "glow": "none"
+      },
+      "playImages": 5,
+      "menuAnchor": true
+    },
+    {
+      "width": 768,
+      "cutout": {
+        "size": [
+          1463,
+          1075
+        ],
+        "transparentRatio": 0.4205910124147578,
+        "opaqueRatio": 0.5571374525107695,
+        "sampleAlpha": [
+          253,
+          253,
+          0
+        ],
+        "cornerAlpha": [
+          0,
+          0,
+          0
+        ],
+        "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+        "blend": "normal",
+        "glow": "none"
+      },
+      "playImages": 5,
+      "menuAnchor": true
+    },
+    {
+      "width": 390,
+      "cutout": {
+        "size": [
+          1463,
+          1075
+        ],
+        "transparentRatio": 0.4205910124147578,
+        "opaqueRatio": 0.5571374525107695,
+        "sampleAlpha": [
+          253,
+          253,
+          0
+        ],
+        "cornerAlpha": [
+          0,
+          0,
+          0
+        ],
+        "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+        "blend": "normal",
+        "glow": "none"
+      },
+      "playImages": 5,
+      "menuAnchor": true
+    },
+    {
+      "width": 320,
+      "cutout": {
+        "size": [
+          1463,
+          1075
+        ],
+        "transparentRatio": 0.4205910124147578,
+        "opaqueRatio": 0.5571374525107695,
+        "sampleAlpha": [
+          253,
+          253,
+          0
+        ],
+        "cornerAlpha": [
+          0,
+          0,
+          0
+        ],
+        "mask": "url(\"https://practice.hometutor.com.my/images/landing-practice/hero-students-cutout.png\")",
+        "blend": "normal",
+        "glow": "none"
+      },
+      "playImages": 5,
+      "menuAnchor": true
+    }
+  ],
+  "errors": [],
+  "bad": []
+}

@@ -1,0 +1,52 @@
+/* Feathered blue and violet around Home's original content and artwork. */
+.legacy-home .lh-features {
+    background: radial-gradient(ellipse at 0% 18%, rgba(124,176,255,.28), transparent 54%), radial-gradient(ellipse at 100% 78%, rgba(173,133,255,.25), transparent 55%), #f7f7ff;
+    border-block: 1px solid #e3e5fb;
+}
+.legacy-home .lh-features .lh-label { color: #7050c9; }
+.legacy-home .lh-fcard { border: 1px solid #e0e4fa; background: #fff; box-shadow: 0 12px 34px -17px rgba(64,74,154,.24), 0 2px 6px rgba(87,81,172,.025); }
+.legacy-home .lh-fcard:hover { box-shadow: 0 20px 40px -15px rgba(84,67,164,.26); }
+
+.legacy-home .lh-process {
+    background: radial-gradient(ellipse at 97% 5%, rgba(184,151,255,.23), transparent 55%), radial-gradient(ellipse at 2% 96%, rgba(128,184,255,.2), transparent 56%), #fcfcff;
+}
+.legacy-home .lh-process .lh-title-line,
+.legacy-home .lh-why .lh-title-line,
+.legacy-home .lh-testi .lh-title-line { background: linear-gradient(90deg, #5386f1, #9a6de9); opacity: .8; }
+.legacy-home .lh-process .lh-step-img { border: 1px solid #d8e5ff; background: radial-gradient(circle at 40% 30%, #fff 4%, #e5efff 85%); box-shadow: 0 9px 28px -12px rgba(64,115,219,.25), inset 0 1px #fff; }
+.legacy-home .lh-process .lh-step:nth-child(4n + 3) .lh-step-img { border-color: #e0d5fc; background: radial-gradient(circle at 40% 30%, #fff 4%, #eee5ff 85%); box-shadow: 0 9px 28px -12px rgba(118,77,199,.25), inset 0 1px #fff; }
+.legacy-home .lh-process .lh-step-num { background: #e0eaff; color: #345ab8; }
+.legacy-home .lh-process .lh-step:nth-child(4n + 3) .lh-step-num { background: #eadfff; color: #7043b5; }
+.legacy-home .lh-process .lh-arrow { color: #8871d2; opacity: .7; }
+
+.legacy-home .lh-stats {
+    background: radial-gradient(ellipse at 14% 45%, rgba(135,183,255,.2), transparent 56%), radial-gradient(ellipse at 86% 64%, rgba(181,142,251,.23), transparent 54%), #fafaff;
+}
+.legacy-home .lh-stats-card { background: linear-gradient(110deg, #fff, #fff 65%, #fbfaff) padding-box, linear-gradient(115deg, #bed9ff, #d5bff8) border-box; border: 2px solid transparent; box-shadow: 0 22px 50px -22px rgba(91,83,172,.25), 0 4px 16px rgba(105,132,204,.04); }
+.legacy-home .lh-stats-card:hover { box-shadow: 0 26px 56px -22px rgba(91,83,172,.3); }
+.legacy-home .lh-stats-card .lh-glow { opacity: .16; filter: blur(70px); }
+.legacy-home .lh-stats-card .lh-glow.blue { background: #568df0; }
+.legacy-home .lh-stats-card .lh-glow.red { background: #9763e6; }
+.legacy-home .lh-stats-card .lh-stat + .lh-stat { border-color: #e9e6f8; }
+.legacy-home .lh-stats-card .lh-stat-icon.red { background: #eee5fc; color: #8956ce; }
+
+.legacy-home .lh-why {
+    background: radial-gradient(ellipse at 0% 48%, rgba(139,187,255,.25), transparent 53%), radial-gradient(ellipse at 100% 16%, rgba(184,154,251,.2), transparent 52%), #fcfcff;
+}
+.legacy-home .lh-wcard { border: 1px solid #dfe5f8; background: #fff; box-shadow: 0 12px 28px -18px rgba(72,92,161,.26); }
+.legacy-home .lh-wcard:hover { box-shadow: 0 18px 34px -18px rgba(83,78,162,.3); }
+
+.legacy-home .lh-testi {
+    background: radial-gradient(ellipse at 99% 40%, rgba(175,139,247,.25), transparent 56%), radial-gradient(ellipse at 5% 90%, rgba(138,189,255,.2), transparent 54%), #f9f9ff;
+}
+.legacy-home .lh-tcard { border-color: #dcdff5; background: #fff; box-shadow: 0 12px 30px -18px rgba(96,72,168,.24); }
+.legacy-home .lh-tcard .lh-tcard-hr { border-color: #ebe8f7; }
+.legacy-home .lh-tcard .lh-tavatar.blue { background: #376be0; }
+.legacy-home .lh-tcard .lh-tavatar.red { background: #8652ca; }
+
+.legacy-home .section.grade-level {
+    background: radial-gradient(ellipse at 10% 4%, rgba(126,181,255,.28), transparent 56%), radial-gradient(ellipse at 94% 84%, rgba(175,130,249,.27), transparent 56%), #f5f6ff;
+    border-top: 1px solid #e5e3fa;
+}
+.legacy-home .grade-level .image-grade { box-shadow: 0 13px 28px -17px rgba(71,71,146,.3); }
+/* Gradients paint inside their sections; no extra layers, motion or overflow. */

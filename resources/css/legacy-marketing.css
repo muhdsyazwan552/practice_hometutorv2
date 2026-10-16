@@ -1,0 +1,75 @@
+.legacy-shell { background:#fff; color:#172033; font-family:'Legacy Home Muli','DM Sans',sans-serif; line-height:1.5; }
+.legacy-shell *, .legacy-shell *::before, .legacy-shell *::after { box-sizing:border-box; }
+.legacy-shell a { text-decoration:none; }
+.legacy-shell a:focus-visible, .legacy-shell button:focus-visible, .legacy-shell input:focus-visible { outline:3px solid #2563eb; outline-offset:4px; }
+.legacy-shell button, .legacy-shell input { font:inherit; }
+.legacy-skip { position:fixed; top:12px; left:12px; z-index:100; padding:12px 20px; background:#fff; color:#164bdd; border-radius:8px; transform:translateY(-150%); }
+.legacy-skip:focus { transform:translateY(0); }
+
+/* The floating navigation used by the original v2 landing page. */
+.legacy-header { position:fixed; inset:0 0 auto; z-index:50; padding:12px 16px 0; font-family:'Inter',ui-sans-serif,system-ui,sans-serif; }
+.legacy-header-inner { display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:1152px; min-height:66px; margin:0 auto; padding:8px 12px; border:1px solid transparent; border-radius:16px; transition:background .5s, border-color .5s, box-shadow .5s, backdrop-filter .5s; }
+.legacy-header.is-solid .legacy-header-inner { background:rgba(255,255,255,.85); border-color:rgba(226,232,240,.8); box-shadow:0 8px 30px -12px rgba(15,23,42,.18); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+.legacy-logo { display:flex; align-items:center; flex-shrink:0; padding:4px 6px; border-radius:12px; }
+.legacy-logo img { display:block; width:auto; height:40px; }
+.legacy-desktop-links { display:flex; align-items:center; gap:4px; }
+.legacy-desktop-links a { display:block; padding:8px 14px; border-radius:999px; color:#475569; font-size:15px; font-weight:500; white-space:nowrap; transition:background .2s, color .2s; }
+.legacy-desktop-links a:hover, .legacy-desktop-links a[aria-current] { color:#0f172a; background:#f1f5f9; }
+.legacy-account-links { display:flex; align-items:center; gap:8px; }
+/* A soft, raised white button with a blue and violet edge for both menu sizes. */
+.legacy-login, .legacy-mobile-links .legacy-mobile-login { position:relative; display:inline-flex; align-items:center; justify-content:center; isolation:isolate; overflow:hidden; min-height:40px; padding:9px 19px; border:1px solid transparent; border-radius:999px; background:linear-gradient(#fff,#fff) padding-box,linear-gradient(120deg,#67b6ff,#7e6aff,#b58cff) border-box; color:#26365e; font-size:14px; font-weight:700; white-space:nowrap; box-shadow:0 5px 0 rgba(65,73,165,.12),0 9px 18px rgba(72,83,185,.17),inset 0 1px 0 #fff; transition:transform .25s ease,box-shadow .25s ease,color .25s ease; }
+.legacy-login::before, .legacy-mobile-links .legacy-mobile-login::before { content:''; position:absolute; inset:0; z-index:-1; border-radius:inherit; background:linear-gradient(110deg,transparent 12%,rgba(107,165,255,.13) 42%,rgba(152,118,249,.16) 60%,transparent 88%); transform:translateX(-120%); transition:transform .7s ease; }
+.legacy-login:hover, .legacy-mobile-links .legacy-mobile-login:hover { color:#34328d; transform:translateY(-3px); box-shadow:0 8px 0 rgba(65,73,165,.09),0 15px 24px rgba(72,83,185,.22),inset 0 1px 0 #fff; }
+.legacy-login:hover::before, .legacy-mobile-links .legacy-mobile-login:hover::before { transform:translateX(120%); }
+.legacy-login:active, .legacy-mobile-links .legacy-mobile-login:active { transform:translateY(2px); box-shadow:0 2px 0 rgba(65,73,165,.12),0 4px 9px rgba(72,83,185,.16); }
+.legacy-menu-toggle { display:none; place-items:center; flex-shrink:0; width:36px; height:36px; border:1px solid #e2e8f0; border-radius:999px; background:transparent; color:#334155; }
+.legacy-menu-toggle svg { width:20px; height:20px; }
+.legacy-mobile-links { display:none; }
+.legacy-main { outline:none; min-height:55vh; animation:legacy-page-enter .35s ease both; }
+.legacy-shell:not(.legacy-shell-home) .legacy-main { padding-top:88px; }
+.legacy-shell #main-content, .legacy-shell #cara { scroll-margin-top:96px; }
+.legacy-page-eyebrow { font-size:12px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#2965c5; }
+.legacy-footer { border-top:1px solid #e7edf7; background:linear-gradient(120deg,#f7faff,#fff 70%); }
+.legacy-footer-inner { max-width:1280px; margin:0 auto; padding:65px 40px 24px; }
+.legacy-footer-top { display:grid; grid-template-columns:2fr 1fr 1fr; gap:80px; padding-bottom:48px; }
+.legacy-footer-story { max-width:500px; }
+.legacy-footer-story img { display:block; width:auto; height:40px; margin-bottom:22px; }
+.legacy-footer-story p { color:#64748b; font-size:14px; line-height:1.8; margin:0 0 12px; }
+.legacy-footer-links { padding-top:8px; display:flex; align-items:flex-start; flex-direction:column; gap:13px; }
+.legacy-footer-links h2 { margin:0 0 8px; font-size:15px; font-weight:800; }
+.legacy-footer-links a { font-size:14px; color:#64748b; }
+.legacy-footer a:hover { color:#1754d1; }
+.legacy-footer-bottom { border-top:1px solid #dfe7f3; padding-top:24px; display:flex; flex-wrap:wrap; gap:14px 24px; color:#6b788f; font-size:11px; }
+.legacy-footer-bottom p { margin:0; }
+.legacy-legal, .legacy-social { display:flex; gap:18px; flex-wrap:wrap; }
+.legacy-social { margin-left:auto; }
+@keyframes legacy-page-enter { from { opacity:.5; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width:1023px) {
+ .legacy-desktop-links { display:none; }
+ .legacy-menu-toggle { display:grid; }
+ .legacy-mobile-links { display:flex; flex-direction:column; max-width:1152px; max-height:calc(100dvh - 102px); overflow-y:auto; overscroll-behavior:contain; margin:8px auto 0; padding:8px; border:1px solid #e2e8f0; border-radius:16px; background:rgba(255,255,255,.95); box-shadow:0 10px 25px -8px rgba(15,23,42,.18); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+ .legacy-mobile-links a { display:block; padding:12px 16px; border-radius:12px; color:#334155; font-size:16px; }
+ .legacy-mobile-links a:hover, .legacy-mobile-links a[aria-current] { background:#f8fafc; }
+ .legacy-mobile-links .legacy-mobile-login { align-self:stretch; margin:8px 6px 5px; }
+}
+@media (max-width:900px) {
+ .legacy-footer-top { gap:35px; }
+ .legacy-footer-inner { padding:45px 24px 24px; }
+}
+@media (max-width:639px) { .legacy-login { display:none; } }
+@media (max-width:600px) {
+ .legacy-footer-top { grid-template-columns:1fr 1fr; gap:25px; padding-bottom:30px; }
+ .legacy-footer-story { grid-column:1 / -1; }
+ .legacy-footer-bottom, .legacy-legal { gap:14px; }
+ .legacy-social { margin-left:0; width:100%; }
+}
+@media (prefers-reduced-motion:reduce) { .legacy-main { animation:none; } .legacy-shell *, .legacy-shell *::before, .legacy-shell *::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
+
+/* Authentication's shared language control, fitted to the public navigation. */
+.legacy-language-control { flex-shrink:0; }
+.legacy-language-control button { padding:6px 10px; font-size:12px; line-height:1.4; }
+@media (min-width:1024px) and (max-width:1152px) {
+ .legacy-desktop-links a { padding-inline:9px; font-size:14px; }
+ .legacy-login { padding-inline:10px; }
+}
+@media (max-width:380px) { .legacy-account-links { gap:6px; } .legacy-language-control button { padding-inline:8px; } }

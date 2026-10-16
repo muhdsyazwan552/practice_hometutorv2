@@ -1,0 +1,21 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "widths": [
+    1440,
+    1024,
+    768,
+    390,
+    320
+  ],
+  "openCloseKeyboard": "pass",
+  "drag": "pass",
+  "quickSelectNavigation": "pass",
+  "conversationAcrossPages": "pass",
+  "typingErrorsRetry": "pass",
+  "bilingual": "pass",
+  "urlButtons": "pass",
+  "htmlEscaping": "pass",
+  "reducedMotionAndOwlStates": "pass",
+  "errors": [],
+  "bad": []
+}

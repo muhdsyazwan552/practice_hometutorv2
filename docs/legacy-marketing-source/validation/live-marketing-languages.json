@@ -1,0 +1,174 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "checks": 32,
+  "reports": [
+    {
+      "locale": "en",
+      "route": "/",
+      "width": 1440
+    },
+    {
+      "locale": "en",
+      "route": "/",
+      "width": 1024
+    },
+    {
+      "locale": "en",
+      "route": "/",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "route": "/",
+      "width": 320
+    },
+    {
+      "locale": "en",
+      "route": "/products",
+      "width": 1440
+    },
+    {
+      "locale": "en",
+      "route": "/products",
+      "width": 1024
+    },
+    {
+      "locale": "en",
+      "route": "/products",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "route": "/products",
+      "width": 320
+    },
+    {
+      "locale": "en",
+      "route": "/about",
+      "width": 1440
+    },
+    {
+      "locale": "en",
+      "route": "/about",
+      "width": 1024
+    },
+    {
+      "locale": "en",
+      "route": "/about",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "route": "/about",
+      "width": 320
+    },
+    {
+      "locale": "en",
+      "route": "/faq",
+      "width": 1440
+    },
+    {
+      "locale": "en",
+      "route": "/faq",
+      "width": 1024
+    },
+    {
+      "locale": "en",
+      "route": "/faq",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "route": "/faq",
+      "width": 320
+    },
+    {
+      "locale": "ms",
+      "route": "/",
+      "width": 1440
+    },
+    {
+      "locale": "ms",
+      "route": "/",
+      "width": 1024
+    },
+    {
+      "locale": "ms",
+      "route": "/",
+      "width": 390
+    },
+    {
+      "locale": "ms",
+      "route": "/",
+      "width": 320
+    },
+    {
+      "locale": "ms",
+      "route": "/products",
+      "width": 1440
+    },
+    {
+      "locale": "ms",
+      "route": "/products",
+      "width": 1024
+    },
+    {
+      "locale": "ms",
+      "route": "/products",
+      "width": 390
+    },
+    {
+      "locale": "ms",
+      "route": "/products",
+      "width": 320
+    },
+    {
+      "locale": "ms",
+      "route": "/about",
+      "width": 1440
+    },
+    {
+      "locale": "ms",
+      "route": "/about",
+      "width": 1024
+    },
+    {
+      "locale": "ms",
+      "route": "/about",
+      "width": 390
+    },
+    {
+      "locale": "ms",
+      "route": "/about",
+      "width": 320
+    },
+    {
+      "locale": "ms",
+      "route": "/faq",
+      "width": 1440
+    },
+    {
+      "locale": "ms",
+      "route": "/faq",
+      "width": 1024
+    },
+    {
+      "locale": "ms",
+      "route": "/faq",
+      "width": 390
+    },
+    {
+      "locale": "ms",
+      "route": "/faq",
+      "width": 320
+    }
+  ],
+  "defaultEnglish": true,
+  "sessionPersistsAcrossMarketingPages": true,
+  "reloadPersistence": true,
+  "faqQuestions": 15,
+  "productPanels": 4,
+  "mobileMenu": "pass",
+  "errors": [],
+  "bad": []
+}

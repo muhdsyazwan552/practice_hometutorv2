@@ -8,7 +8,7 @@
 </div>
 
 <section class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:mt-7">
-    <div class="border-b border-slate-200 p-4 sm:p-6"><h2 class="text-base font-extrabold text-[#082c58] sm:text-lg">Payment history</h2><p class="mt-1 text-sm text-slate-500">Only payments made using your parent account are shown.</p></div>
+    <div class="border-b border-slate-200 p-4 sm:p-6"><h2 class="text-base font-extrabold text-[#082c58] sm:text-lg">Payment history</h2><p class="mt-1 text-sm text-slate-500">DOKU payment attempts made using your parent account are shown, including pending and unsuccessful attempts.</p></div>
 
     {{-- Phone and small-tablet view: one stacked card per payment, so nothing needs sideways scrolling. --}}
     <div class="divide-y divide-slate-100 lg:hidden">
@@ -16,16 +16,17 @@
             <article class="p-4 sm:p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="min-w-0">
-                        <p class="font-bold text-[#082c58]">{{ $payment->package?->name ?? 'Package removed' }}</p>
-                        <p class="mt-1 text-xs capitalize text-slate-500">{{ str_replace('_', ' ', $payment->method) }}</p>
+                        <p class="font-bold text-[#082c58]">{{ $payment->order?->items->pluck('package_name_snapshot')->filter()->unique()->join(', ') ?: 'Package unavailable' }}</p>
+                        <p class="mt-1 text-xs capitalize text-slate-500">{{ str_replace('_', ' ', $payment->payment_channel ?? $payment->provider) }}</p>
                     </div>
                     <p class="shrink-0 text-lg font-extrabold text-sky-700">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</p>
                 </div>
                 <dl class="mt-4 grid gap-3 min-[420px]:grid-cols-2">
                     <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Date</dt><dd class="mt-0.5 text-sm font-semibold text-slate-800">{{ ($payment->paid_at ?? $payment->created_at)->format('d M Y, H:i') }}</dd></div>
-                    <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Duration</dt><dd class="mt-0.5 text-sm font-semibold text-slate-800">@if($payment->durationOption){{ $payment->durationOption->months }} months <span class="font-normal text-slate-500">({{ $payment->durationOption->duration_days }} days)</span>@elseif($payment->activationCode?->duration_days){{ $payment->activationCode->duration_days }} days @else<span class="text-slate-400">—</span>@endif</dd></div>
-                    <div class="min-w-0"><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Reference</dt><dd class="mt-0.5 break-all font-mono text-xs text-slate-600">{{ $payment->provider_reference ?? $payment->manual_reference ?? $payment->uuid }}</dd></div>
-                    <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Code</dt><dd class="mt-0.5 text-sm text-slate-700">@if($payment->activationCode)<span class="font-bold capitalize">{{ $payment->activationCode->status }}</span><span class="block text-xs text-slate-500">Ending {{ $payment->activationCode->code_last_four }}</span>@else<span class="text-slate-400">No code</span>@endif</dd></div>
+                    <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Duration</dt><dd class="mt-0.5 text-sm font-semibold text-slate-800">{{ $payment->order?->items->map(fn ($item) => $item->durationOption ? $item->durationOption->months.' months ('.$item->duration_days.' days)' : $item->duration_days.' days')->unique()->join(', ') ?: '—' }}</dd></div>
+                    <div class="min-w-0"><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Reference</dt><dd class="mt-0.5 break-all font-mono text-xs text-slate-600">{{ $payment->provider_order_reference ?? $payment->provider_transaction_reference ?? $payment->uuid }}</dd></div>
+                    <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Status</dt><dd class="mt-1"><span class="rounded-full px-2.5 py-1 text-xs font-bold capitalize {{ $payment->status === 'paid' ? 'bg-emerald-50 text-emerald-700' : ($payment->status === 'pending' ? 'bg-amber-50 text-amber-700' : ($payment->status === 'failed' ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600')) }}">{{ $payment->status }}</span></dd></div>
+                    <div><dt class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Result</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $payment->status === 'paid' ? 'Subscription activated' : ($payment->status === 'pending' ? 'Awaiting confirmation' : ($payment->status === 'cancelled' ? 'Cancelled or expired' : 'Payment not completed')) }}</dd></div>
                 </dl>
             </article>
         @empty
@@ -35,18 +36,19 @@
 
     <div class="hidden overflow-x-auto lg:block">
         <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-3">Date / reference</th><th class="px-5 py-3">Package</th><th class="px-5 py-3">Duration</th><th class="px-5 py-3">Total</th><th class="px-5 py-3">Code</th></tr></thead>
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-3">Date / reference</th><th class="px-5 py-3">Package</th><th class="px-5 py-3">Duration</th><th class="px-5 py-3">Total</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">Result</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
             @forelse($payments as $payment)
                 <tr class="align-top">
-                    <td class="whitespace-nowrap px-5 py-4"><span class="font-semibold text-slate-800">{{ ($payment->paid_at ?? $payment->created_at)->format('d M Y, H:i') }}</span><span class="mt-1 block font-mono text-xs text-slate-500">{{ $payment->provider_reference ?? $payment->manual_reference ?? $payment->uuid }}</span></td>
-                    <td class="px-5 py-4"><span class="font-bold text-[#082c58]">{{ $payment->package?->name ?? 'Package removed' }}</span><span class="mt-1 block text-xs capitalize text-slate-500">{{ str_replace('_', ' ', $payment->method) }}</span></td>
-                    <td class="whitespace-nowrap px-5 py-4">@if($payment->durationOption)<span class="font-bold">{{ $payment->durationOption->months }} months</span><span class="block text-xs text-slate-500">{{ $payment->durationOption->duration_days }} days</span>@elseif($payment->activationCode?->duration_days)<span class="font-bold">{{ $payment->activationCode->duration_days }} days</span>@else<span class="text-slate-400">—</span>@endif</td>
+                    <td class="whitespace-nowrap px-5 py-4"><span class="font-semibold text-slate-800">{{ ($payment->paid_at ?? $payment->created_at)->format('d M Y, H:i') }}</span><span class="mt-1 block font-mono text-xs text-slate-500">{{ $payment->provider_order_reference ?? $payment->provider_transaction_reference ?? $payment->uuid }}</span><span class="mt-1 block text-xs text-slate-400">{{ $payment->order?->order_number }}</span></td>
+                    <td class="px-5 py-4"><span class="font-bold text-[#082c58]">{{ $payment->order?->items->pluck('package_name_snapshot')->filter()->unique()->join(', ') ?: 'Package unavailable' }}</span><span class="mt-1 block text-xs capitalize text-slate-500">{{ str_replace('_', ' ', $payment->payment_channel ?? $payment->provider) }}</span></td>
+                    <td class="whitespace-nowrap px-5 py-4"><span class="font-bold">{{ $payment->order?->items->map(fn ($item) => $item->durationOption ? $item->durationOption->months.' months' : $item->duration_days.' days')->unique()->join(', ') ?: '—' }}</span><span class="block text-xs text-slate-500">{{ $payment->order?->items->pluck('duration_days')->filter()->unique()->join(', ') }} days</span></td>
                     <td class="whitespace-nowrap px-5 py-4 font-extrabold text-sky-700">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</td>
-                    <td class="px-5 py-4">@if($payment->activationCode)<span class="font-bold capitalize text-slate-700">{{ $payment->activationCode->status }}</span><span class="block text-xs text-slate-500">Code ending {{ $payment->activationCode->code_last_four }}</span>@else<span class="text-slate-400">No code</span>@endif</td>
+                    <td class="px-5 py-4"><span class="rounded-full px-2.5 py-1 text-xs font-bold capitalize {{ $payment->status === 'paid' ? 'bg-emerald-50 text-emerald-700' : ($payment->status === 'pending' ? 'bg-amber-50 text-amber-700' : ($payment->status === 'failed' ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600')) }}">{{ $payment->status }}</span></td>
+                    <td class="px-5 py-4 text-slate-700">{{ $payment->status === 'paid' ? 'Subscription activated' : ($payment->status === 'pending' ? 'Awaiting confirmation' : ($payment->status === 'cancelled' ? 'Cancelled or expired' : 'Payment not completed')) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="px-5 py-8 text-center text-slate-500">No payment records yet.</td></tr>
+                <tr><td colspan="6" class="px-5 py-8 text-center text-slate-500">No payment records yet.</td></tr>
             @endforelse
             </tbody>
         </table>

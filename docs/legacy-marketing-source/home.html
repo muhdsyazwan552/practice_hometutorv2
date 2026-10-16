@@ -1,0 +1,471 @@
+<script>
+    loadFile('css/portal_modules/home_revised.css','css');
+    loadFile('css/portal_modules/home.css','css');
+    loadFile('css/portal_modules/home_new.css','css');
+</script>
+<!-- <style>
+    .header-portal,
+    .i-nav,
+    nav,
+    .navbar {
+        display: none !important;
+    }
+</style> -->
+
+<!-- ── HEADER PORTAL (required for navbar injection) ─────────────────────── -->
+<section class="i-row header-portal for-module"></section>
+
+<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+<section class="ht-hero">
+    <div class="ht-hero-inner">
+        <!-- Desktop image -->
+        <div class="ht-hero-bg desktop-slide">
+            <img src="img/img_revised/banner-1-dekstop.png" alt="Hero Desktop">
+        </div>
+        <!-- Mobile image -->
+        <div class="ht-hero-bg mobile-slide">
+            <img src="img/img_revised/banner-1-responsive.png" alt="Hero Mobile">
+        </div>
+
+        <div class="ht-hero-overlay">
+            <div class="ht-hero-content">
+                <div class="ht-hero-badge">&#11088; Era Baru Pembelajaran Digital</div>
+                <h1 class="ht-hero-title">
+                    Anak Belajar Sendiri,<br>
+                    <span class="ht-gradient">Ibu Bapa Tenang.</span>
+                </h1>
+                <p class="ht-hero-desc">
+                    Platform pembelajaran lengkap untuk Tahun 1 hingga<br>
+                    Tingkatan 5. Akses 24/7, kelas langsung, latihan<br>
+                    interaktif dan laporan kemajuan yang mudah<br>
+                    dipantau oleh ibu bapa.
+                </p>
+                <a href="index_portal.html?page=portal_modules/registration" class="ht-btn-red">
+                    Langgan Sekarang &#8594;
+                </a>
+                <div class="ht-trust-row">
+                    <!-- <div class="ht-trust-pill">
+                                              <img src="img/img_revised/HT+KPM.png" alt="KPM">
+
+                    </div> -->
+                    <div class="ht-trust-pill">
+                        <span class="icon-red">&#128101;</span> 100K+ Pelajar
+                    </div>
+                    <div class="ht-trust-pill">
+                        <span class="icon-yellow">&#9889;</span> Akses 24/7
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</section>
+
+<!-- ── RECOGNITION ───────────────────────────────────────────────────────── -->
+<!-- <div class="ht-recognition">
+    <div class="ht-recognition-inner">
+        <div>
+            <h3>Improve your child's achievement with the HomeTutor app</h3>
+            <p>Previously recognized by the Ministry of Education Malaysia (2016)</p>
+        </div>
+        <img src="img/img_revised/HT_Rectangle.png" alt="MOE Logo">
+    </div>
+</div> -->
+
+<!-- ── FEATURES ──────────────────────────────────────────────────────────── -->
+<section class="ht-features">
+    <div class="ht-wrap">
+        <div class="ht-center">
+            <p class="ht-label">— Apa yang anak anda akan dapat —</p>
+            <h2 class="ht-heading">Empat pengalaman pembelajaran dalam satu ekosistem lengkap.</h2>
+        </div>
+        <div class="ht-grid-4">
+
+            <div class="ht-fcard">
+                <div class="ht-fcard-img"><img src="img/img_revised/practice.png" alt="Practice"></div>
+                <div class="ht-fcard-body">
+                    <small>HomeTutor</small>
+                    <h3 class="c-blue">Practice</h3>
+                    <ul>
+                        <li><span class="ht-chk blue">&#10003;</span> Latih Tubi Interaktif</li>
+                        <li><span class="ht-chk blue">&#10003;</span> Assessment &amp; Kuiz</li>
+                        <li><span class="ht-chk blue">&#10003;</span> Mastery Learning</li>
+                    </ul>
+                    <a href="#" class="ht-btn-outline blue">Terokai Practice</a>
+                </div>
+            </div>
+
+            <div class="ht-fcard">
+                <div class="ht-fcard-img"><img src="img/img_revised/live.png" alt="Live"></div>
+                <div class="ht-fcard-body">
+                    <small>HomeTutor</small>
+                    <h3 class="c-red">Live</h3>
+                    <ul>
+                        <li><span class="ht-chk red">&#10003;</span> Live Teaching Class</li>
+                        <li><span class="ht-chk red">&#10003;</span> Recorded Class</li>
+                        <li><span class="ht-chk red">&#10003;</span> Tutor Interaction</li>
+                    </ul>
+                    <a href="#" class="ht-btn-outline red">Terokai Live</a>
+                </div>
+            </div>
+
+            <div class="ht-fcard">
+                <div class="ht-fcard-img"><img src="img/img_revised/ai.png" alt="AI"></div>
+                <div class="ht-fcard-body">
+                    <small>HomeTutor</small>
+                    <h3 class="c-blue">AI</h3>
+                    <ul>
+                        <li><span class="ht-chk blue">&#10003;</span> AI Tutor</li>
+                        <li><span class="ht-chk blue">&#10003;</span> AI Study Coach</li>
+                        <li><span class="ht-chk blue">&#10003;</span> AI Learning Assistant</li>
+                    </ul>
+                    <a href="#" class="ht-btn-outline blue">Terokai AI</a>
+                </div>
+            </div>
+
+            <div class="ht-fcard">
+                <div class="ht-fcard-img"><img src="img/img_revised/parent.png" alt="Parent"></div>
+                <div class="ht-fcard-body">
+                    <small>HomeTutor</small>
+                    <h3 class="c-red">Parent</h3>
+                    <ul>
+                        <li><span class="ht-chk red">&#10003;</span> Parent Dashboard</li>
+                        <li><span class="ht-chk red">&#10003;</span> Learning Analytics</li>
+                        <li><span class="ht-chk red">&#10003;</span> Progress Tracking</li>
+                    </ul>
+                    <a href="#" class="ht-btn-outline red">Terokai Parent</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── PROCESS ────────────────────────────────────────────────────────────── -->
+<section class="ht-process">
+    <div class="ht-wrap">
+        <div class="ht-title-row">
+            <div class="ht-title-line"></div>
+            <h2>Bagaimana Pembelajaran Berfungsi?</h2>
+            <div class="ht-title-line"></div>
+        </div>
+        <div class="ht-flow">
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-video.png" alt="Video"></div>
+                <div class="ht-step-title"><span class="ht-step-num">1</span> Video Pembelajaran</div>
+                <p class="ht-step-desc">Belajar konsep dengan penerangan yang mudah</p>
+            </div>
+            <div class="ht-arrow">&#8594;</div>
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-notes.png" alt="Nota"></div>
+                <div class="ht-step-title"><span class="ht-step-num">2</span> Nota Interaktif</div>
+                <p class="ht-step-desc">Nota ringkas dan padat untuk rujukan cepat</p>
+            </div>
+            <div class="ht-arrow">&#8594;</div>
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-quiz.png" alt="Kuiz"></div>
+                <div class="ht-step-title"><span class="ht-step-num">3</span> Latihan &amp; Kuiz</div>
+                <p class="ht-step-desc">Latihan interaktif untuk uji kefahaman</p>
+            </div>
+            <div class="ht-arrow">&#8594;</div>
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-assessment.png" alt="Penilaian"></div>
+                <div class="ht-step-title"><span class="ht-step-num">4</span> Penilaian</div>
+                <p class="ht-step-desc">Ujian &amp; peperiksaan mengikut topik</p>
+            </div>
+            <div class="ht-arrow">&#8594;</div>
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-report.png" alt="Laporan"></div>
+                <div class="ht-step-title"><span class="ht-step-num">5</span> Laporan Prestasi</div>
+                <p class="ht-step-desc">Analisis prestasi yang jelas dan terperinci</p>
+            </div>
+            <div class="ht-arrow">&#8594;</div>
+            <div class="ht-step">
+                <div class="ht-step-img"><img src="img/img_revised/step-rocket.png" alt="Keyakinan"></div>
+                <div class="ht-step-title"><span class="ht-step-num">6</span> Peningkatan Keyakinan</div>
+                <p class="ht-step-desc">Pemahaman lebih baik, prestasi meningkat</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── STATS ──────────────────────────────────────────────────────────────── -->
+<section class="ht-stats">
+    <div class="ht-wrap">
+        <div class="ht-stats-card" id="htStatsCard">
+            <div class="ht-glow blue"></div>
+            <div class="ht-glow red"></div>
+            <div class="ht-stats-grid">
+                <div class="ht-stat">
+                    <div class="ht-stat-icon blue">&#127909;</div>
+                    <div class="ht-stat-num"><span class="ht-cnt" data-target="1500">0</span>+</div>
+                    <div class="ht-stat-label">Video HD Interaktif</div>
+                </div>
+                <div class="ht-stat">
+                    <div class="ht-stat-icon red">&#9998;</div>
+                    <div class="ht-stat-num"><span class="ht-cnt" data-target="80000">0</span>+</div>
+                    <div class="ht-stat-label">Bank Soalan Latihan</div>
+                </div>
+                <div class="ht-stat">
+                    <div class="ht-stat-icon blue">&#128101;</div>
+                    <div class="ht-stat-num"><span class="ht-cnt" data-target="120">0</span>K+</div>
+                    <div class="ht-stat-label">Pengguna Aktif</div>
+                </div>
+                <div class="ht-stat">
+                    <div class="ht-stat-icon yellow">&#9733;</div>
+                    <div class="ht-stat-num"><span class="ht-cnt-dec" data-target="4.9">0.0</span>/5</div>
+                    <div class="ht-stat-label">Rating Ibu Bapa</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── WHY US ─────────────────────────────────────────────────────────────── -->
+<section class="ht-why">
+    <div class="ht-wrap">
+        <div class="ht-title-row">
+            <div class="ht-title-line"></div>
+            <h2>Kenapa Ibu Bapa Memilih HomeTutor?</h2>
+            <div class="ht-title-line"></div>
+        </div>
+        <div class="ht-why-grid">
+            <div class="ht-wcard orange">
+                <div class="ht-wcard-img"><img src="img/img_revised/jimat-masa.png" alt="Jimat Masa"></div>
+                <div class="ht-wcard-body">
+                    <h5>Jimat Masa</h5>
+                    <p>Tiada perjalanan ke pusat tuisyen. Belajar dari rumah lebih mudah &amp; selesa.</p>
+                </div>
+            </div>
+            <div class="ht-wcard blue-s">
+                <div class="ht-wcard-img"><img src="img/img_revised/jimat-kos.png" alt="Jimat Kos"></div>
+                <div class="ht-wcard-body">
+                    <h5>Jimat Kos</h5>
+                    <p>Satu langganan untuk semua subjek. Lebih berbaloi &amp; berkesan.</p>
+                </div>
+            </div>
+            <div class="ht-wcard gray">
+                <div class="ht-wcard-img"><img src="img/img_revised/belajar-fleksibel.png" alt="Fleksibel"></div>
+                <div class="ht-wcard-body">
+                    <h5>Belajar Fleksibel</h5>
+                    <p>Belajar ikut masa sendiri. Ulangkaji bila-bila masa yang diperlukan.</p>
+                </div>
+            </div>
+            <div class="ht-wcard purple">
+                <div class="ht-wcard-img"><img src="img/img_revised/pantau-prestasi.png" alt="Pantau"></div>
+                <div class="ht-wcard-body">
+                    <h5>Pantau Prestasi</h5>
+                    <p>Laporan lengkap membantu ibu bapa memantau kemajuan anak.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── TESTIMONIALS ───────────────────────────────────────────────────────── -->
+<section class="ht-testi">
+    <div class="ht-wrap">
+        <div class="ht-title-row">
+            <div class="ht-title-line"></div>
+            <h2>Dipercayai Oleh Ribuan Ibu Bapa</h2>
+            <div class="ht-title-line"></div>
+        </div>
+        <div class="ht-testi-grid">
+            <div class="ht-tcard">
+                <div class="ht-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="ht-tcard-text">"Sistem ni memang life-saver! Anak saya dulu susah nak fokus Math, sekarang dia sendiri yang bukak HomeTutor nak buat kuiz."</p>
+                <hr class="ht-tcard-hr">
+                <div class="ht-tcard-user">
+                    <div class="ht-tavatar blue">F</div>
+                    <div>
+                        <div class="ht-tname">Puan Farah Liyana</div>
+                        <div class="ht-trole">Ibu Pelajar Tingkatan 3</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ht-tcard">
+                <div class="ht-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="ht-tcard-text">"Paling suka fungsi report card dia. Saya kerja luar kawasan pun masih boleh pantau berapa jam anak belajar dan tengok result ujian dia dari fon je."</p>
+                <hr class="ht-tcard-hr">
+                <div class="ht-tcard-user">
+                    <div class="ht-tavatar red">A</div>
+                    <div>
+                        <div class="ht-tname">En. Azman Hashim</div>
+                        <div class="ht-trole">Bapa Pelajar Tahun 6</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ht-tcard">
+                <div class="ht-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="ht-tcard-text">"Video penerangan cikgu sangat jelas dan tak meleret. Anak saya Form 5 guna ni untuk pecutan SPM. Berbaloi sangat dengan harga langganan bulanan."</p>
+                <hr class="ht-tcard-hr">
+                <div class="ht-tcard-user">
+                    <div class="ht-tavatar blue">S</div>
+                    <div>
+                        <div class="ht-tname">Puan Siti Sarah</div>
+                        <div class="ht-trole">Ibu Pelajar Tingkatan 5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── GRADE / PACKAGES ───────────────────────────────────────────────────── -->
+<section id="grade-level" class="section grade-level">
+    <div class="ht-wrap">
+        <div class="ht-center" style="margin-bottom:30px;">
+            <h3 class="title-heading">Terokai Pakej Hometutor</h3>
+        </div>
+        <div class="grade-row">
+            <div class="grade-col">
+                <a href="index_portal.html?page=portal_modules/products&target=productA">
+                    <img src="img/img_revised/3_Level01.png" class="image-grade" alt="Level 1">
+                </a>
+            </div>
+            <div class="grade-col">
+                <a href="index_portal.html?page=portal_modules/products&target=productB">
+                    <img src="img/img_revised/4_Level02.png" class="image-grade" alt="Level 2">
+                </a>
+            </div>
+            <div class="grade-col">
+                <a href="index_portal.html?page=portal_modules/products&target=productC">
+                    <img src="img/img_revised/5_LowerSec.png" class="image-grade" alt="Lower Secondary">
+                </a>
+            </div>
+            <div class="grade-col">
+                <a href="index_portal.html?page=portal_modules/products&target=productD">
+                    <img src="img/img_revised/6_UppSec.png" class="image-grade" alt="Upper Secondary">
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── WA CHAT BOX ────────────────────────────────────────────────────────── -->
+<!-- <div class="ht-wa-box" id="htWaBox">
+    <div class="ht-wa-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="Support">
+        <div class="ht-wa-info">
+            <h4>Customer Support</h4>
+            <p>Biasanya membalas dalam beberapa minit</p>
+        </div>
+    </div>
+    <div class="ht-wa-body">
+        <div class="ht-wa-bubble">Hai! &#128075; Ada apa-apa yang boleh kami bantu hari ini?</div>
+    </div>
+    <div class="ht-wa-footer">
+        <input type="text" id="htWaInput" placeholder="Taip mesej anda di sini...">
+        <button id="htWaSend">&#10148;</button>
+    </div>
+</div> -->
+
+<!-- ── FAB ───────────────────────────────────────────────────────────────── -->
+<!-- <div class="ht-fab" id="htFab">
+    <div class="ht-fab-opts">
+        <button class="ht-fab-sub ai" id="htFabAI">
+            &#129302;
+            <span class="ht-fab-label">Tanya AI Tutor</span>
+        </button>
+        <button class="ht-fab-sub wa" id="htFabWA">
+            &#128172;
+            <span class="ht-fab-label">Sokongan WhatsApp</span>
+        </button>
+    </div>
+    <button class="ht-fab-main" id="htFabToggle">&#43;</button>
+</div> -->
+
+<!-- ── AI MODAL ──────────────────────────────────────────────────────────── -->
+<!-- <div class="ht-modal-overlay" id="htAiModal">
+    <div class="ht-modal">
+        <div class="ht-modal-header">
+            <h5>&#129302; AI Tutor Cerdik</h5>
+            <button class="ht-modal-close" id="htAiClose">&times;</button>
+        </div>
+        <div class="ht-modal-body">
+            Hai! Saya AI Tutor anda. Apa topik atau subjek yang anda ingin belajar atau tanyakan hari ini?
+        </div>
+    </div>
+</div> -->
+
+<script>
+(function () {
+    // ── Stats counter ─────────────────────────────────────────────────────
+    function runCount(el, decimal) {
+        var target  = parseFloat(el.dataset.target);
+        var current = parseFloat(el.innerText);
+        var speed   = target / 80;
+        if (current < target) {
+            el.innerText = decimal
+                ? Math.min(current + 0.1, target).toFixed(1)
+                : Math.min(Math.ceil(current + speed), target);
+            setTimeout(function() { runCount(el, decimal); }, decimal ? 30 : 20);
+        } else {
+            el.innerText = decimal ? target.toFixed(1) : target.toLocaleString();
+        }
+    }
+
+    var statsStarted = false;
+    var statsCard = document.getElementById('htStatsCard');
+    if (statsCard && window.IntersectionObserver) {
+        new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting && !statsStarted) {
+                statsStarted = true;
+                document.querySelectorAll('.ht-cnt').forEach(function(el) { runCount(el, false); });
+                document.querySelectorAll('.ht-cnt-dec').forEach(function(el) { runCount(el, true); });
+            }
+        }, { threshold: 0.3 }).observe(statsCard);
+    }
+
+    // ── FAB ───────────────────────────────────────────────────────────────
+    var fab    = document.getElementById('htFab');
+    var toggle = document.getElementById('htFabToggle');
+    toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fab.classList.toggle('open');
+    });
+    document.addEventListener('click', function(e) {
+        if (!fab.contains(e.target)) fab.classList.remove('open');
+    });
+
+    // ── AI Modal ──────────────────────────────────────────────────────────
+    var aiModal = document.getElementById('htAiModal');
+    document.getElementById('htFabAI').addEventListener('click', function() {
+        aiModal.classList.add('open');
+        fab.classList.remove('open');
+    });
+    document.getElementById('htAiClose').addEventListener('click', function() {
+        aiModal.classList.remove('open');
+    });
+    aiModal.addEventListener('click', function(e) {
+        if (e.target === aiModal) aiModal.classList.remove('open');
+    });
+
+    // ── WA Chat ───────────────────────────────────────────────────────────
+    var waBox   = document.getElementById('htWaBox');
+    var waInput = document.getElementById('htWaInput');
+    var PHONE   = '60123456789'; // ⚠️ TUKAR KEPADA NOMBOR WHATSAPP ANDA
+
+    document.getElementById('htFabWA').addEventListener('click', function() {
+        waBox.style.display = waBox.style.display === 'flex' ? 'none' : 'flex';
+        fab.classList.remove('open');
+    });
+
+    function sendWA() {
+        var msg = waInput.value.trim();
+        if (msg) {
+            window.open('https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg), '_blank');
+            waInput.value = '';
+        }
+    }
+
+    document.getElementById('htWaSend').addEventListener('click', sendWA);
+    waInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendWA(); });
+
+})();
+</script>
+
+<script>
+    loadFile('js/portal_modules/home.js','js');
+</script>

@@ -1,0 +1,16 @@
+{
+  "textParity": "Every active source text token matches (stats normalized to final displayed values)",
+  "sections": 7,
+  "images": 20,
+  "links": [
+    "https://hometutor.com.my/index_portal.html?page=portal_modules/registration",
+    "/products",
+    "/products",
+    "/products",
+    "/products",
+    "/products?target=productA",
+    "/products?target=productB",
+    "/products?target=productC",
+    "/products?target=productD"
+  ]
+}

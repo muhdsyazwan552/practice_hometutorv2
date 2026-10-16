@@ -1,0 +1,22 @@
+[
+  {
+    "image": "/images/about-tutors/formal-01.webp",
+    "mask": "/images/about-tutors/formal-01-mask.png"
+  },
+  {
+    "image": "/images/about-tutors/formal-02.webp",
+    "mask": "/images/about-tutors/formal-02-mask.png"
+  },
+  {
+    "image": "/images/about-tutors/formal-03.webp",
+    "mask": "/images/about-tutors/formal-03-mask.png"
+  },
+  {
+    "image": "/images/about-tutors/formal-04.webp",
+    "mask": "/images/about-tutors/formal-04-mask.png"
+  },
+  {
+    "image": "/images/about-tutors/formal-05.webp",
+    "mask": "/images/about-tutors/formal-05-mask.png"
+  }
+]

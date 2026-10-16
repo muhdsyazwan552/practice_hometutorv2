@@ -1,0 +1,54 @@
+/* Supplied banner artwork and closer student portrait. */
+.legacy-home .lh-hero { background:#eaf2ff; }
+.legacy-home .lh-hero-backdrop { position:absolute; inset:0; pointer-events:none; z-index:-2; }
+.legacy-home .lh-hero-backdrop img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
+.legacy-home .lh-hero-backdrop::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(255,255,255,.5),rgba(255,255,255,.16) 48%,transparent 80%); }
+.legacy-home .lh-hero-inner { z-index:auto; max-width:1320px; padding:100px 40px 24px; min-height:680px; grid-template-columns:1.08fr 1fr; gap:34px; }
+.legacy-home .lh-hero-overlay { z-index:1; padding:0 0 12px; }
+.legacy-home .lh-hero-portrait { position:relative; width:calc(100% + 60px); margin-left:-20px; margin-right:-40px; }
+/* Use the extracted alpha silhouette while keeping the original photo pixels. */
+.legacy-home .lh-hero-portrait::before { display:none; }
+.legacy-home .lh-hero-portrait { mask-image:linear-gradient(to bottom,#000 92%,transparent); -webkit-mask-image:linear-gradient(to bottom,#000 92%,transparent); }
+.legacy-home .lh-hero-portrait img { position:relative; width:100%; max-width:none; height:auto; filter:none; mix-blend-mode:normal; mask-image:url('/images/landing-practice/hero-students-banner-v3-mask.png'); -webkit-mask-image:url('/images/landing-practice/hero-students-banner-v3-mask.png'); mask-size:100% 100%; -webkit-mask-size:100% 100%; mask-repeat:no-repeat; -webkit-mask-repeat:no-repeat; mask-mode:alpha; }
+.legacy-home .lh-hero-ambient { z-index:-1; }
+.legacy-home .lh-hero-ambient span { filter:blur(70px); }
+.legacy-home .lh-ambient-blue { width:510px; height:440px; left:-320px; top:150px; background:rgba(59,130,246,.32); }
+.legacy-home .lh-ambient-purple { width:590px; height:510px; right:-140px; top:100px; background:rgba(139,92,246,.27); }
+.legacy-home .lh-hero-badge { padding:10px 15px; border-radius:14px; background:rgba(237,233,254,.72); border-color:rgba(139,92,246,.22); color:#43328c; font-size:11px; letter-spacing:.09em; line-height:1.6; font-weight:800; }
+.legacy-home .lh-hero-title { font-size:clamp(42px,3.8vw,54px); }
+.legacy-home .lh-hero .lh-btn-red { background:linear-gradient(110deg,#2563eb,#7543df); box-shadow:0 9px 24px -9px rgba(93,67,210,.5); }
+.legacy-home .lh-hero .lh-btn-red:hover { background:linear-gradient(110deg,#1d4ed8,#6635cb); }
+@media (min-width:1440px) {
+ .legacy-home .lh-hero-portrait { width:calc(100% + 120px); margin-left:-20px; margin-right:-100px; }
+}
+@media (max-width:1100px) and (min-width:769px) {
+ .legacy-home .lh-hero-inner { min-height:630px; padding:98px 30px 24px; gap:24px; }
+ .legacy-home .lh-hero-title { font-size:42px; }
+ .legacy-home .lh-hero-portrait { width:calc(100% + 50px); margin-left:-20px; margin-right:-30px; }
+ .legacy-home .lh-hero-badge { font-size:10px; letter-spacing:.06em; }
+ .legacy-home .lh-hero-portrait::before { inset:-40px -38px -20px; }
+}
+@media (max-width:768px) {
+ .legacy-home .lh-hero-inner { grid-template-columns:1fr; min-height:0; padding:98px 24px 12px; gap:16px; }
+ .legacy-home .lh-hero-overlay { padding:0; }
+ .legacy-home .lh-hero-title { font-size:clamp(36px,6.2vw,48px); line-height:1.1; }
+ .legacy-home .lh-hero-badge { font-size:10px; letter-spacing:.07em; padding:9px 12px; max-width:330px; }
+ .legacy-home .lh-hero-portrait { width:calc(100% + 32px); max-width:580px; justify-self:center; margin:0; }
+ .legacy-home .lh-hero-portrait img { width:100%; max-height:none; max-width:none; }
+ .legacy-home .lh-hero-portrait::before { inset:-30px -25px -20px; }
+ .legacy-home .lh-hero-backdrop img { object-position:63% center; }
+ .legacy-home .lh-hero-backdrop::after { background:linear-gradient(to bottom,rgba(255,255,255,.98),rgba(247,249,255,.97) 56%,rgba(243,239,255,.88) 72%,rgba(239,246,255,.12)); }
+ .legacy-home .lh-ambient-purple { top:auto; bottom:10px; right:-330px; background:rgba(139,92,246,.32); }
+ .legacy-home .lh-ambient-blue { left:-390px; top:45px; }
+}
+@media (max-width:380px) {
+ .legacy-home .lh-hero-inner { padding-inline:18px; gap:16px; }
+ .legacy-home .lh-hero-title { font-size:33px; }
+ .legacy-home .lh-hero-portrait { width:calc(100% + 24px); }
+ .legacy-home .lh-hero-badge { font-size:9px; letter-spacing:.05em; }
+}
+
+/* Give the long heading a readable, balanced desktop treatment. */
+@media (min-width:1024px) {
+ .legacy-home .lh-hero-title { font-size:clamp(32px,2.85vw,40px); line-height:1.18; letter-spacing:-.015em; white-space:normal; text-wrap:balance; }
+}

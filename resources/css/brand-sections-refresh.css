@@ -1,0 +1,118 @@
+/* Bring the product, people and FAQ sections into HomeTutor's blue/violet identity. */
+:is(.ht-products, .ht-about, .ht-faq) {
+    --ht-ink: #10182f;
+    --ht-muted: #55627b;
+    --ht-line: #e1e5f7;
+    color: var(--ht-ink);
+}
+:is(.ht-products, .ht-about, .ht-faq) .ht-eyebrow { color: #6344d6; letter-spacing: .16em; }
+:is(.ht-products, .ht-about, .ht-faq) h2 > span {
+    color: #6240ce;
+    background: linear-gradient(100deg, #2457dc, #7b35db);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+:is(.ht-products, .ht-about, .ht-faq) .ht-text-link { color: #4f3bc4; }
+.ht-products .ht-section-heading { margin-bottom: 42px; }
+.ht-product-selector { gap: 12px; margin-bottom: 20px; }
+.ht-product-selector button { background: #fff; border-color: #e0e4f5; border-radius: 18px; color: #56637c; box-shadow: 0 3px 8px #4847a005; transition: background .2s, color .2s, border-color .2s, box-shadow .2s; }
+.ht-product-selector button > span:first-child { color: #7c6aaf; }
+.ht-product-selector button > span:last-child { color: #7551d7; }
+.ht-product-selector button:not(.is-active):hover { background: #f5f2ff; border-color: #c4b5f6; box-shadow: 0 6px 18px #614ac90d; }
+.ht-product-selector button.is-active { background: linear-gradient(115deg, #285ae3, #7135d9); border-color: #6552e1; box-shadow: 0 9px 24px -8px #6545d966, inset 0 1px #ffffff30; color: #fff; }
+.ht-product-selector button.is-active > span { color: #fff; }
+.ht-product-selector button.is-active small { color: #e7e8ff; }
+.ht-product-panel { border: 1px solid #dce1fa; border-radius: 26px; background: #fff; box-shadow: 0 20px 55px -30px #5a45ab45, 0 2px 8px #45478c05; }
+.ht-product-copy { padding: 42px; }
+.ht-product-copy li { align-items: center; }
+.ht-product-copy li span { display: inline-grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; color: #6540d0; background: #f0eaff; font-size: 12px; }
+.ht-products .ht-solid-button { background: linear-gradient(110deg, #2859de, #733cda); border: 1px solid #6352de; border-radius: 12px; box-shadow: 0 7px 18px -8px #583bc57a; }
+.ht-products .ht-solid-button:hover { background: linear-gradient(110deg, #234bc5, #6231c3); }
+.ht-product-note { color: #64728d; }
+.ht-product-visual { padding: 42px; border-left: 1px solid #e4e4fa; background: linear-gradient(135deg, #f1ecff, #f0f8ff); }
+.ht-products .ht-visual-label { color: #6551a4; line-height: 1.8; }
+.ht-products .ht-visual-link { color: #5540bd; }
+.ht-products .ht-learning-path { margin: 28px 0; }
+.ht-products .ht-learning-path > div { column-gap: 22px; }
+.ht-products .ht-learning-path > div > span { border-radius: 14px; color: #fff; background: linear-gradient(140deg, #8260ef, #3769e7); box-shadow: 0 5px 15px -5px #6a4cbb55, inset 0 1px #ffffff55; }
+.ht-products .ht-learning-path > div:not(:last-child)::after { background: #c7bbef; }
+.ht-products .ht-learning-path strong { color: #34345d; }
+.ht-products .ht-learning-path small { color: #626d8b; }
+.ht-products .ht-live-visual { background: linear-gradient(140deg, #f3edff, #fff0f7); }
+.ht-products .ht-live-portraits img { box-shadow: 0 12px 30px -12px #7653ae55; }
+.ht-products .ht-live-visual > p { color: #51446e; }
+.ht-products .ht-ai-visual { background: radial-gradient(ellipse at 50% 35%, #e4dcff, transparent 65%), #f5f2ff; }
+.ht-products .ht-ai-note { border: 1px solid #e7dcff; box-shadow: 0 7px 22px -12px #7154c743; color: #4f3b87; border-radius: 18px; }
+.ht-products .ht-ai-visual > p { color: #6a5e86; }
+.ht-products .ht-parent-visual { background: linear-gradient(145deg, #eff2ff, #eef9ff); }
+.ht-products .ht-parent-visual h3 { color: #2c3e78; }
+.ht-products .ht-report-row { border-color: #d8e1fa; }
+.ht-products .ht-report-row > span { color: #6175b5; }
+.ht-products .ht-report-row strong { color: #354675; }
+.ht-products .ht-report-row p { color: #647494; }
+.ht-play-ribbon { border: 1px solid #e5dbfb; border-radius: 18px; background: linear-gradient(100deg, #f5efff, #f0f6ff); color: #372469; padding: 24px 28px; }
+.ht-play-ribbon:hover { background: linear-gradient(100deg, #efe5ff, #eaf2ff); }
+.ht-play-ribbon .ht-play-star { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; color: #8952e9; background: #fff; border: 1px solid #eadffb; border-radius: 14px; }
+.ht-play-ribbon > span:nth-child(2) > span { color: #6b6186; }
+.ht-play-ribbon .ht-ribbon-arrow { color: #7951d4; }
+.ht-about { background: radial-gradient(ellipse at 0% 12%, #eee9ff 0, transparent 48%), radial-gradient(ellipse at 100% 90%, #e6f5ff 0, transparent 40%), #f8f9ff; border-block: 1px solid #eeecfc; }
+.ht-values { gap: 20px; padding: 0; margin: 42px 0 58px; border: 0; }
+.ht-values > div { padding: 26px; border: 1px solid #e1dffa; border-radius: 20px; background: #ffffffd9; box-shadow: 0 8px 24px -18px #6753a852; }
+.ht-values span { color: #7053c5; }
+.ht-values h3 { line-height: 1.4; }
+.ht-values p { color: #626b88; }
+.ht-tutor-heading { margin-top: 0; }
+.ht-tutor-grid { gap: 22px; }
+.ht-tutor { min-width: 0; padding: 10px 10px 20px; border: 1px solid #e2dff5; border-radius: 22px; background: #ffffffd9; box-shadow: 0 12px 32px -23px #5e4eaa55; transition: border-color .2s, box-shadow .2s; }
+.ht-tutor:hover { border-color: #bdabeb; box-shadow: 0 15px 30px -16px #6751ba44; }
+.ht-tutor-photo { border-radius: 80px 80px 14px 14px; background: #e6e2ff; }
+.ht-tutor-photo-1 { border-radius: 14px 70px 14px 14px; background: #e0edff; }
+.ht-tutor-photo-2 { border-radius: 70px 14px 14px 14px; background: #eee4ff; }
+.ht-tutor-photo-3 { border-radius: 80px 80px 14px 14px; background: #e0f2ff; }
+.ht-tutor-photo > span { color: #6041bd; border: 1px solid #eee8ff; box-shadow: 0 3px 10px #36296d10; }
+.ht-tutor h4 { padding-inline: 7px; }
+.ht-tutor p { padding-inline: 7px; color: #65708a; }
+.ht-tutor-profile { margin-left: 7px; color: #6841ce; }
+.ht-tutor-source { color: #748098; }
+.ht-faq { align-items: start; }
+.ht-faq-categories { gap: 8px; }
+.ht-faq-categories button { background: #fff; border-color: #e0dcf2; color: #625d7c; border-radius: 10px; transition: background .2s, border-color .2s; }
+.ht-faq-categories button:hover { background: #f8f5ff; border-color: #bfadeb; }
+.ht-faq-categories button.is-active { background: linear-gradient(110deg, #3f57d6, #793bd4); color: #fff; border-color: #6750d6; box-shadow: 0 5px 16px -8px #5c45b955; }
+.ht-faq-list { display: grid; gap: 12px; }
+.ht-faq-item { padding: 0 22px; border: 1px solid #e6e2f3; border-radius: 18px; background: #fff; transition: border-color .2s, background .2s; }
+.ht-faq-item.is-open { border-color: #cdc0f3; background: linear-gradient(120deg, #faf7ff, #f7fbff); box-shadow: 0 8px 24px -18px #6541b84d; }
+.ht-faq-item h3 button { padding-block: 22px; gap: 16px; }
+.ht-faq-item h3 button > span:last-child { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; font-size: 22px; border-radius: 50%; color: #794ad2; background: #f1eaff; }
+.ht-faq-item.is-open h3 button > span:last-child { background: #7a46d9; color: #fff; }
+.ht-faq-item [role="region"] { padding-right: 10px; }
+@media (max-width: 1023px) {
+    .ht-product-copy, .ht-product-visual { padding: 30px; }
+    .ht-values { gap: 15px; }
+    .ht-values > div { padding: 22px; }
+    .ht-tutor-grid { gap: 15px; }
+    .ht-tutor { padding: 8px 8px 18px; }
+}
+@media (max-width: 767px) {
+    .ht-products .ht-section-heading { margin-bottom: 30px; }
+    .ht-product-selector { gap: 10px; margin-bottom: 16px; }
+    .ht-product-selector button { border-radius: 14px; }
+    .ht-product-panel { border-radius: 22px; }
+    .ht-product-copy, .ht-product-visual { padding: 25px; }
+    .ht-product-visual { border-left: 0; border-top: 1px solid #e4e4fa; }
+    .ht-play-ribbon { padding: 20px 17px; gap: 12px; }
+    .ht-play-ribbon .ht-play-star { width: 36px; height: 36px; font-size: 26px; border-radius: 11px; }
+    .ht-values { gap: 14px; margin: 32px 0 38px; padding: 0; }
+    .ht-values > div { padding: 23px; }
+    .ht-tutor-grid { gap: 16px 12px; }
+    .ht-tutor { border-radius: 17px; padding: 7px 7px 16px; }
+    .ht-tutor :is(h4, p) { padding-inline: 4px; }
+    .ht-tutor h4 { font-size: 14px; }
+    .ht-tutor-profile { margin-left: 4px; }
+    .ht-faq-item { padding-inline: 17px; }
+    .ht-faq-categories { gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ht-product-selector button, .ht-products .ht-solid-button, .ht-tutor, .ht-faq-categories button, .ht-faq-item { transition: none; }
+}

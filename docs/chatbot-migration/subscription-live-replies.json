@@ -1,0 +1,20 @@
+[
+  {
+    "locale": "en",
+    "message": "How do I subscribe to HomeTutor? Do I need to buy an activation code first?",
+    "status": 200,
+    "reply": "You don’t need to buy a separate activation code for the standard HomeTutor online subscription. After payment is confirmed, your child’s account and subscription are activated automatically.\n\nTo subscribe:\n\n1. Register a parent account at https://practice.hometutor.com.my/register\n2. Enter the six-digit email verification code sent to your email on the verification screen. This code only verifies your email.\n3. In the parent dashboard, open Packages & Codes and select the package matching your child’s year/form, with a 6- or 12-month duration.\n4. Enter your child’s details and complete checkout.\n5. Check Children and Payment Log after payment. A receipt will also be emailed to you.\n6. Your child can sign in at https://practice.hometutor.com.my/login using the username and password created during checkout.\n\nIf you already have a parent account, sign in at https://practice.hometutor.com.my/login instead of registering again."
+  },
+  {
+    "locale": "ms",
+    "message": "Saya sudah bayar langganan. Perlu tunggu kod pengaktifan atau macam mana anak mula belajar?",
+    "status": 200,
+    "reply": "Tidak perlu tunggu atau masukkan kod pengaktifan berasingan. Selepas bayaran disahkan, sistem akan mencipta akaun anak dan mengaktifkan langganan secara automatik.\n\nCara anak mula belajar:\n1. Log masuk di https://practice.hometutor.com.my/login menggunakan nama pengguna dan kata laluan anak yang dipilih semasa checkout.\n2. Ibu bapa boleh semak status di bahagian Children dan Payment Log.\n3. Resit juga akan dihantar melalui e-mel.\n\nKod enam digit yang diterima semasa pendaftaran hanya untuk mengesahkan e-mel ibu bapa, bukan kod pengaktifan. Jika langganan atau akaun anak belum muncul selepas bayaran, sila hubungi support@hometutor.com.my."
+  },
+  {
+    "locale": "en",
+    "message": "What is the subscription price and do you automatically charge me every month?",
+    "status": 200,
+    "reply": "HomeTutor currently offers 6- and 12-month subscriptions, paid upfront for the selected term. The exact price, currency and any available options are shown in your parent dashboard and at checkout.\n\nThere is no documented monthly subscription, instalment plan or automatic recurring monthly charge. To check the current price, register or sign in here:\n\nNew parent: https://practice.hometutor.com.my/register  \nExisting parent: https://practice.hometutor.com.my/login  \nPackage overview: https://practice.hometutor.com.my/products"
+  }
+]

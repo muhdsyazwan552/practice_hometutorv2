@@ -1,0 +1,150 @@
+[
+    {
+        "id": "aboutHomeTutor",
+        "title": "About HomeTutor",
+        "items": [
+            {
+                "question": "What is HomeTutor?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor brings together interactive practice, learning resources, online classes where available, and progress reports for parents. It supports students from Year 1 to Form 5.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor menghimpunkan latihan interaktif, sumber pembelajaran, kelas dalam talian yang tersedia dan laporan kemajuan untuk ibu bapa. Ia menyokong pelajar Tahun 1 hingga Tingkatan 5.</p></div>"
+            },
+            {
+                "question": "How does HomeTutor help my child learn?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Students can practise by subject and topic, receive feedback, build mastery and explore educational games in HomeTutor Play. Parents can follow learning activity and progress through their own dashboard.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Pelajar boleh berlatih mengikut subjek dan topik, menerima maklum balas, membina penguasaan dan meneroka permainan pendidikan dalam HomeTutor Play. Ibu bapa boleh memantau aktiviti dan kemajuan melalui dashboard sendiri.</p></div>"
+            },
+            {
+                "question": "Which package suits my child?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Level 1 covers Years 1–3, Level 2 covers Years 4–6, Lower Secondary covers Forms 1–3, and Upper Secondary covers Forms 4–5. Choose the package matching your child’s current school level.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">Explore the packages on the <a href=\"/products\">Products page</a>. Available subjects and resources depend on the selected level and package.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Level 1 meliputi Tahun 1–3, Level 2 meliputi Tahun 4–6, Lower Secondary meliputi Tingkatan 1–3 dan Upper Secondary meliputi Tingkatan 4–5. Pilih pakej mengikut tahap persekolahan semasa anak.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">Terokai pakej di <a href=\"/products\">halaman Produk</a>. Subjek dan sumber yang tersedia bergantung pada tahap dan pakej pilihan.</p></div>"
+            },
+            {
+                "question": "Do parents and children use the same account?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Parents manage subscriptions, children and payments using their own email account. Each child has a separate learning account with a username and password.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Ibu bapa mengurus langganan, anak dan pembayaran menggunakan akaun e-mel sendiri. Setiap anak mempunyai akaun pembelajaran berasingan dengan nama pengguna dan kata laluan.</p></div>"
+            }
+        ]
+    },
+    {
+        "id": "aboutJoinUs",
+        "title": "Getting started & subscriptions",
+        "items": [
+            {
+                "question": "How do I subscribe to HomeTutor?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">1. <a href=\"/register\">Register a parent account</a> and verify your email with the six-digit code sent to you.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">2. In the parent dashboard, open Packages &amp; Codes, choose your child’s package and an available 6- or 12-month duration.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">3. Enter your child’s name, school level, username and password, then complete checkout. You can also add several child packages to the cart and pay together.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">4. Once payment is confirmed, the system creates the child account and activates the subscription automatically. Check Children and Payment Log in your parent dashboard.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">1. <a href=\"/register\">Daftar akaun ibu bapa</a> dan sahkan e-mel menggunakan kod enam digit yang dihantar.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">2. Dalam dashboard ibu bapa, buka Packages &amp; Codes, pilih pakej anak dan tempoh 6 atau 12 bulan yang tersedia.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">3. Masukkan nama anak, tahap persekolahan, nama pengguna dan kata laluan, kemudian lengkapkan pembayaran. Anda juga boleh menambah beberapa pakej anak ke troli dan membayar sekali.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">4. Selepas pembayaran disahkan, sistem mencipta akaun anak dan mengaktifkan langganan secara automatik. Semak Children dan Payment Log dalam dashboard ibu bapa.</p></div>"
+            },
+            {
+                "question": "Do I need to buy an activation code first?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">For a standard online subscription, access is activated automatically after confirmed payment. You do not need to buy, wait for or manually enter a separate activation code.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">The six-digit email code used during parent registration only verifies your email. Enter it on the verification screen; never share it in chat.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Bagi langganan dalam talian biasa, akses diaktifkan secara automatik selepas pembayaran disahkan. Anda tidak perlu membeli, menunggu atau memasukkan kod pengaktifan berasingan secara manual.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">Kod e-mel enam digit semasa pendaftaran ibu bapa hanya mengesahkan e-mel anda. Masukkannya pada skrin pengesahan; jangan kongsikan dalam chat.</p></div>"
+            },
+            {
+                "question": "I already have a parent account. Should I register again?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">No. <a href=\"/login\">Log in</a> with your existing parent email and password to subscribe for another child or renew an existing child.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Tidak. <a href=\"/login\">Log masuk</a> menggunakan e-mel dan kata laluan ibu bapa sedia ada untuk melanggan bagi anak lain atau memperbaharui langganan anak.</p></div>"
+            },
+            {
+                "question": "How much does a subscription cost?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">The parent dashboard shows the current price for each available 6- or 12-month option. Review the duration, price and total at checkout before completing payment. Each subscription is for one child account.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Dashboard ibu bapa memaparkan harga semasa bagi setiap pilihan 6 atau 12 bulan yang tersedia. Semak tempoh, harga dan jumlah semasa checkout sebelum membayar. Setiap langganan adalah untuk satu akaun anak.</p></div>"
+            },
+            {
+                "question": "Can I subscribe for more than one child?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Yes. Choose a package and enter separate details for each child. Add the child packages to the cart and complete one combined checkout. Each child receives their own account and subscription after payment is confirmed.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Ya. Pilih pakej dan masukkan maklumat berasingan bagi setiap anak. Tambahkan pakej anak ke troli dan lengkapkan satu pembayaran bersama. Setiap anak menerima akaun dan langganan sendiri selepas pembayaran disahkan.</p></div>"
+            },
+            {
+                "question": "How does my child start learning after payment?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">After payment confirmation, check Children in the parent dashboard. Your child can <a href=\"/login\">log in</a> using the child username and password chosen at checkout. A receipt is also sent to the parent’s email.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Selepas pembayaran disahkan, semak Children dalam dashboard ibu bapa. Anak boleh <a href=\"/login\">log masuk</a> menggunakan nama pengguna dan kata laluan anak yang dipilih semasa checkout. Resit juga dihantar ke e-mel ibu bapa.</p></div>"
+            },
+            {
+                "question": "How do I renew, and will my child keep the same account?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Log in as the parent, open Children and choose Renew for the existing child. Select an available term and complete payment. The same child account and learning history remain; you do not need to create another account.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Log masuk sebagai ibu bapa, buka Children dan pilih Renew untuk anak sedia ada. Pilih tempoh yang tersedia dan lengkapkan pembayaran. Akaun serta sejarah pembelajaran anak kekal; anda tidak perlu mencipta akaun lain.</p></div>"
+            },
+            {
+                "question": "Is this a monthly or automatically renewing subscription?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">The current checkout offers a selected 6- or 12-month term paid at checkout. It is not monthly instalment billing. Renew the existing child through the parent dashboard when needed; the current flow does not automatically charge for renewal.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Checkout semasa menawarkan tempoh pilihan 6 atau 12 bulan yang dibayar semasa checkout. Ia bukan bil ansuran bulanan. Perbaharui langganan anak melalui dashboard ibu bapa apabila diperlukan; aliran semasa tidak mengenakan caj pembaharuan secara automatik.</p></div>"
+            }
+        ]
+    },
+    {
+        "id": "aboutContent",
+        "title": "Learning & HomeTutor Play",
+        "items": [
+            {
+                "question": "What learning content is available?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Learning is organised by school level, subject and topic. Resources include interactive objective practice and written-answer activities where available. Check the selected package for its subjects, videos, notes and other learning resources.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Pembelajaran disusun mengikut tahap persekolahan, subjek dan topik. Sumber termasuk latihan objektif interaktif dan aktiviti jawapan bertulis yang tersedia. Semak pakej pilihan untuk subjek, video, nota dan sumber pembelajarannya.</p></div>"
+            },
+            {
+                "question": "Does my child need to follow a fixed study timetable?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Self-paced practice and educational games can be used while the subscription is active. Online classes follow their own announced schedule. Class availability, recordings and supporting materials depend on the selected package and current programme.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Latihan kendiri dan permainan pendidikan boleh digunakan semasa langganan aktif. Kelas dalam talian mengikut jadual yang diumumkan. Ketersediaan kelas, rakaman dan bahan sokongan bergantung pada pakej pilihan dan program semasa.</p></div>"
+            },
+            {
+                "question": "What is HomeTutor Play?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor Play offers educational games that help students practise through challenges and interactive activities. Children access it through their HomeTutor learning account.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor Play menawarkan permainan pendidikan yang membantu pelajar berlatih melalui cabaran dan aktiviti interaktif. Anak mengaksesnya melalui akaun pembelajaran HomeTutor.</p></div>"
+            },
+            {
+                "question": "Can I track my child’s learning progress?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Yes. The parent dashboard shows linked child accounts, learning activity, progress and reports. Use this information to see what your child has practised and where they may need more support.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Ya. Dashboard ibu bapa memaparkan akaun anak yang dipautkan, aktiviti pembelajaran, kemajuan dan laporan. Gunakan maklumat ini untuk melihat latihan yang telah dibuat dan bahagian yang memerlukan lebih sokongan.</p></div>"
+            },
+            {
+                "question": "Which devices can we use?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor can be used through a web browser on a computer, tablet or smartphone. A stable internet connection and a current browser help with classes, games and learning resources.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">HomeTutor boleh digunakan melalui pelayar web pada komputer, tablet atau telefon pintar. Sambungan internet yang stabil dan pelayar terkini membantu penggunaan kelas, permainan dan sumber pembelajaran.</p></div>"
+            }
+        ]
+    },
+    {
+        "id": "accountSupport",
+        "title": "Account & payment help",
+        "items": [
+            {
+                "question": "My email verification code has not arrived. What should I do?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Check Inbox and Spam/Junk, confirm the email address you entered and use Resend when the verification screen allows it. Use the latest six-digit code on that screen. Never share it in chat.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Semak Inbox dan Spam/Junk, pastikan alamat e-mel yang dimasukkan betul dan gunakan Resend apabila skrin pengesahan membenarkannya. Gunakan kod enam digit terkini pada skrin tersebut. Jangan kongsikannya dalam chat.</p></div>"
+            },
+            {
+                "question": "My payment is pending or access has not appeared. What should I do?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Check Payment Log and Children in the parent dashboard. Subscription access starts after payment confirmation, rather than just after submitting checkout.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">If money was deducted but the payment is not confirmed, email <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a> with the registered parent email, order or payment reference, and a redacted screenshot. Check the status before paying again.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Semak Payment Log dan Children dalam dashboard ibu bapa. Akses langganan bermula selepas pengesahan pembayaran, bukan sekadar selepas menghantar checkout.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">Jika wang telah ditolak tetapi pembayaran belum disahkan, e-mel <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a> bersama e-mel ibu bapa berdaftar, rujukan pesanan atau pembayaran dan tangkap layar yang disunting. Semak status sebelum membayar lagi.</p></div>"
+            },
+            {
+                "question": "I cannot log in. How can I recover access?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Parents sign in with their own email and password; children use the child username and password chosen at checkout. Check that you are using the correct account.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">For a parent account, use <a href=\"/forgot-password\">password recovery</a> with the registered parent email. For a forgotten child password, contact <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a>. Never share passwords in chat.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Ibu bapa log masuk dengan e-mel dan kata laluan sendiri; anak menggunakan nama pengguna dan kata laluan yang dipilih semasa checkout. Pastikan akaun yang digunakan betul.</p></div><div class=\"fsd-row\"><p class=\"fsd-text-row\">Bagi akaun ibu bapa, gunakan <a href=\"/forgot-password\">pemulihan kata laluan</a> dengan e-mel ibu bapa berdaftar. Jika terlupa kata laluan anak, hubungi <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a>. Jangan kongsikan kata laluan dalam chat.</p></div>"
+            },
+            {
+                "question": "What if a lesson, practice activity or game will not load?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Check your connection, refresh the page and try another current browser or device. Confirm that the correct child account is signed in and its subscription is active. If the issue remains, send support a short description and a screenshot.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Semak sambungan, muat semula halaman dan cuba pelayar terkini atau peranti lain. Pastikan akaun anak yang betul telah log masuk dan langganannya aktif. Jika masalah berterusan, hantarkan penerangan ringkas dan tangkap layar kepada sokongan.</p></div>"
+            },
+            {
+                "question": "How do I contact HomeTutor support?",
+                "answerHtml": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Use HT Bot for general product and subscription questions. For account-specific issues, email <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a> with your registered parent email and a short description. Include an order reference for payment issues. Do not send passwords, verification codes or full payment-card details.</p></div>",
+                "answerHtmlMs": "<div class=\"fsd-row\"><p class=\"fsd-text-row\">Gunakan HT Bot untuk soalan umum tentang produk dan langganan. Bagi masalah akaun khusus, e-mel <a href=\"mailto:help@hometutor.com.my\">help@hometutor.com.my</a> bersama e-mel ibu bapa berdaftar dan penerangan ringkas. Sertakan rujukan pesanan bagi isu pembayaran. Jangan hantar kata laluan, kod pengesahan atau maklumat penuh kad pembayaran.</p></div>"
+            }
+        ]
+    },
+    {
+        "id": "returnPolicy",
+        "title": "Refunds & cancellations",
+        "items": [
+            {
+                "question": "Our return policy is stated below:",
+                "answerHtml": "<div class=\"fsd-row\">\n                        <div class=\"fsd-text-row i-y-top x-center\">\n                            <p class=\"d-5 m-10\">1.</p>\n                            <p class=\"d-90 m-90\">This policy applies to HomeTutor subscription purchases made online or offline.</p>\n                        </div>\n                        <div class=\"fsd-text-row i-y-top x-center\">\n                            <p class=\"d-5 m-10\">2.</p>\n                            <p class=\"d-90 m-90\">Request for refund. <br>\n                                - Complete refund within 30 days from the purchased date.<br>\n                                - No refund after 30 days from the purchased date.\n                            </p>\n                        </div>\n                        <div class=\"fsd-text-row i-y-top x-center\">\n                            <p class=\"d-5 m-10\">3.</p>\n                            <p class=\"d-90 m-90\">Once your request for refund has been received and checked, please allow 30 working days for payment to be made.</p>\n                        </div>\n                        <div class=\"fsd-text-row i-y-top x-center\">\n                            <p class=\"d-5 m-10\">4.</p>\n                            <p class=\"d-90 m-90\">Request for cancellation. <br>\n                                - No refund after 30 days from the purchased date.\n                            </p>\n                        </div>\n                    </div>"
+            },
+            {
+                "question": "How to request for refund?",
+                "answerHtml": "<div class=\"fsd-row\">\n                        <p class=\"fsd-text-row\">Send email to help@hometutor.com.my with the subject heading “Request for refund”. State the username and your contact number. Our customer service representative will contact you within 3 working days for further details.</p>\n                    </div>"
+            }
+        ]
+    }
+]

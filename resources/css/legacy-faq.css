@@ -1,0 +1,39 @@
+.legacy-faq { padding-bottom: 100px; background: linear-gradient(180deg, #f2f6ff, #fff 420px); }
+.legacy-faq-intro { padding: 64px 24px 46px; text-align: center; }
+.legacy-faq-intro h1 { font-size: clamp(30px, 4vw, 50px); font-weight: 750; letter-spacing: -.045em; color: #182945; line-height: 1.2; margin: 14px 0 26px; }
+.legacy-faq-search { display: flex; align-items: center; gap: 12px; max-width: 570px; margin: auto; padding: 4px 19px; border: 1px solid #d7e1f5; border-radius: 16px; background: white; box-shadow: 0 8px 30px #254ea30a; }
+.legacy-faq-search svg { width: 21px; flex-shrink: 0; color: #4679df; }
+.legacy-faq-search input { width: 100%; border: 0; background: transparent; box-shadow: none; font-size: 14px; padding: 14px 0; color: #263a57; }
+.legacy-faq-search input:focus { outline: none; box-shadow: none; }
+.legacy-faq-search:focus-within { outline: 2px solid #286be3; outline-offset: 3px; }
+.legacy-faq-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); align-items: start; gap: 46px; max-width: 1160px; padding: 0 26px; margin: auto; }
+.legacy-faq-categories { display: grid; gap: 9px; position: sticky; top: 116px; }
+.legacy-faq-categories button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px; border: 1px solid #e2e7f1; border-radius: 12px; background: white; text-align: left; font-size: 13px; font-weight: 600; color: #5c6b80; }
+.legacy-faq-categories button[aria-pressed="true"] { color: #fff; background: linear-gradient(105deg, #176af5, #4859da); border-color: transparent; box-shadow: 0 8px 18px -10px #2868ee90; }
+.legacy-faq-categories button:hover:not([aria-pressed="true"]) { color: #2469df; border-color: #acc8fc; }
+.legacy-faq-content { min-width: 0; }
+.legacy-faq-content > h2 { font-size: 27px; font-weight: 700; letter-spacing: -.025em; color: #192d4b; margin: 8px 0 26px; }
+.legacy-faq-item { padding: 25px 0; border-top: 1px solid #e1e7f0; }
+.legacy-faq-item h3 { font-size: 17px; font-weight: 650; line-height: 1.6; color: #223f68; margin: 0 0 14px; }
+.legacy-faq-answer { font-size: 14px; line-height: 1.9; color: #64738a; overflow-wrap: anywhere; }
+.legacy-faq-answer p { margin: 0 0 14px; }
+.legacy-faq-answer p:last-child { margin-bottom: 0; }
+.legacy-faq-answer .fsd-row + .fsd-row { margin-top: 14px; }
+.legacy-faq-answer a { color: #1466df; text-decoration: underline; text-underline-offset: 3px; }
+.legacy-faq-answer .i-y-top { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; margin-bottom: 17px; }
+.legacy-faq-answer table { margin: 10px 0; }
+.legacy-faq-answer td { padding: 3px 14px 3px 0; }
+.legacy-faq-result-category { font-size: 11px; color: #3780e4; margin-bottom: 10px; font-weight: 700; }
+.legacy-faq-empty { padding: 25px; color: #687b93; background: #f3f7fd; border-radius: 15px; }
+@media (max-width: 767px) {
+ .legacy-faq { padding-bottom: 60px; }
+ .legacy-faq-intro { padding: 45px 20px 30px; }
+ .legacy-faq-layout { grid-template-columns: 1fr; gap: 20px; padding: 0 22px; }
+ .legacy-faq-categories { position: static; grid-template-columns: 1fr 1fr; gap: 8px; }
+ .legacy-faq-categories button { padding: 14px 12px; font-size: 11px; }
+ .legacy-faq-content > h2 { font-size: 24px; }
+ .legacy-faq-item h3 { font-size: 16px; }
+ .legacy-faq-answer { font-size: 13px; }
+}
+
+.legacy-faq-categories button small { display:block; margin-top:4px; font-size:11px; font-weight:400; color:#6b7b95; }

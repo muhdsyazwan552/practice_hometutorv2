@@ -1,0 +1,15 @@
+.legacy-policy { max-width:1000px; margin:24px auto 60px; padding:38px 48px; border:1px solid #e5e8f7; border-radius:24px; background:linear-gradient(145deg,rgba(239,246,255,.85),#fff 24%,#fff 85%,rgba(245,240,255,.7)); box-shadow:0 16px 44px -32px rgba(65,63,135,.22); color:#475569; font-size:16px; line-height:1.85; overflow-wrap:anywhere; }
+.legacy-policy #tosTitle { margin:0 0 16px; color:#172033; font-size:clamp(27px,3vw,38px); font-weight:800; line-height:1.2; letter-spacing:-.025em; }
+.legacy-policy #tosTableContent { margin:32px 0 12px; color:#34315e; font-size:21px; font-weight:750; }
+.legacy-policy .tos-content { margin:20px 0; }
+.legacy-policy .tos-section { color:#172033; font-weight:750; }
+.legacy-policy .table-group, .legacy-policy .content-group { display:flex; align-items:baseline; gap:10px; padding:3px 0; }
+.legacy-policy .no { flex:0 0 32px; }
+.legacy-policy .content { min-width:0; }
+.legacy-policy .tos-group > .tos-group { padding-left:22px; }
+.legacy-policy a { color:#5144b4; text-decoration:underline; text-underline-offset:3px; }
+.legacy-policy a:hover { color:#2563eb; }
+.legacy-policy [id], .legacy-faq #legacy-faq-content { scroll-margin-top:108px; }
+.legacy-policy .back-to-top { font-size:13px; }
+@media(max-width:1050px) { .legacy-policy { margin-inline:24px; } }
+@media(max-width:600px) { .legacy-policy { margin:14px 14px 35px; padding:26px 20px; border-radius:18px; font-size:15px; line-height:1.8; } .legacy-policy .tos-group > .tos-group { padding-left:10px; } .legacy-policy .no { flex-basis:26px; } }

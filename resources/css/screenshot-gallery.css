@@ -1,0 +1,102 @@
+/* Actual product screens, gently moving beside the stationary practice demo. */
+.ht-screens {
+    --screen-width: 460px;
+    --screen-gap: 16px;
+    min-width: 0;
+    position: relative;
+    padding: 20px 0 14px;
+    border: 1px solid rgba(180, 172, 255, .4);
+    border-radius: 28px;
+    background: linear-gradient(140deg, rgba(236, 239, 255, .9), rgba(244, 239, 255, .83) 52%, rgba(225, 246, 255, .9));
+    box-shadow: inset 0 1px 0 #fff, 0 24px 65px -38px rgba(97, 62, 231, .42);
+    isolation: isolate;
+}
+.ht-screens-heading { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 0 24px 15px; }
+.ht-screens-heading p { margin: 0 0 7px; color: #6d50d9; font-size: 10px; letter-spacing: .16em; font-weight: 800; }
+.ht-screens-heading h2 { margin: 0; color: #182344; font-size: clamp(17px, 1.4vw, 21px); letter-spacing: -.035em; line-height: 1.2; font-weight: 750; }
+.ht-screens-pause { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 5px; min-height: 36px; padding: 6px 11px; border: 1px solid #dcd7fa; border-radius: 30px; background: rgba(255, 255, 255, .8); color: #5f49b1; font-size: 11px; font-weight: 700; cursor: pointer; }
+.ht-screens-pause svg { width: 14px; height: 14px; }
+.ht-screens-pause:disabled { cursor: default; }
+.ht-screens-reels { display: grid; gap: var(--screen-gap); overflow: hidden; padding: 3px 0 12px; mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent); }
+.ht-screen-row { min-width: 0; overflow: hidden; padding: 0 0 2px; }
+.ht-screen-track { display: flex; width: max-content; animation: ht-screen-drift 66s linear infinite; will-change: transform; }
+.ht-screen-row-2 .ht-screen-track { animation-duration: 78s; animation-direction: reverse; }
+.ht-screen-group { display: flex; gap: var(--screen-gap); padding-right: var(--screen-gap); }
+.ht-screen-card { display: block; flex: 0 0 var(--screen-width); width: var(--screen-width); padding: 0; overflow: hidden; border: 1px solid #dedcf1; border-radius: 13px; background: #fff; color: #27304d; text-align: left; box-shadow: 0 4px 10px -5px rgba(56, 45, 130, .18); }
+.ht-screen-card { cursor: zoom-in; }
+.ht-screen-card:hover { border-color: #a08cff; }
+.ht-screen-browser { display: flex; align-items: center; justify-content: space-between; height: 23px; padding: 0 11px; border-bottom: 1px solid #eeebf8; background: #fcfbff; color: #8a84a3; font-size: 8px; font-weight: 600; letter-spacing: .025em; }
+.ht-screen-dots { display: flex; gap: 3px; }
+.ht-screen-dots i { width: 4px; height: 4px; border-radius: 100%; background: #d4c8ff; }
+.ht-screen-dots i:nth-child(2) { background: #b5c8ff; }
+.ht-screen-dots i:nth-child(3) { background: #a6dcf6; }
+.ht-screen-expand { font-size: 12px; color: #9b83e8; }
+.ht-screen-image { height: 174px; overflow: hidden; background: #f5f1ff; }
+.ht-screen-image img { display: block; width: 100%; height: auto; user-select: none; }
+.ht-screen-image-dashboard img { transform: translateY(-2px); }
+.ht-screen-caption { display: flex; justify-content: space-between; align-items: center; height: 32px; gap: 12px; padding: 0 12px; border-top: 1px solid #edeafa; }
+.ht-screen-caption > span:first-child { display: flex; align-items: center; gap: 9px; }
+.ht-screen-caption strong { font-size: 11px; font-weight: 750; }
+.ht-screen-number { color: #9474d8; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ht-screen-caption > span:last-child { color: #7754d9; font-size: 14px; }
+.ht-screens:has(:focus-visible) .ht-screen-track, .ht-screens.is-paused .ht-screen-track { animation-play-state: paused; }
+@media (hover: hover) and (pointer: fine) {
+    .ht-screens:hover .ht-screen-track { animation-play-state: paused; }
+}
+.ht-screens-index { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 0 21px; }
+.ht-screens-index-label { font-size: 8px; font-weight: 800; color: #8c80a8; letter-spacing: .12em; margin-right: 3px; }
+.ht-screens-index button { display: inline-flex; justify-content: center; align-items: center; gap: 5px; min-height: 34px; padding: 6px 9px; border: 1px solid rgba(205, 199, 236, .8); border-radius: 8px; color: #52436e; background: rgba(255, 255, 255, .77); font-size: 10px; font-weight: 650; cursor: zoom-in; }
+.ht-screens-index button:hover { border-color: #a28bea; background: #fff; color: #6534ca; }
+.ht-screens-index-number { color: #9784b5; font-size: 8px; }
+.ht-screens-index-arrow { color: #9976df; font-size: 12px; }
+.ht-screens-note { margin: 10px 24px 0; color: #81728f; font-size: 9px; line-height: 1.6; }
+.ht-screens button:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 3px; }
+@keyframes ht-screen-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+.ht-screen-dialog { width: min(1240px, calc(100% - 40px)); max-width: none; max-height: calc(100dvh - 40px); margin: auto; padding: 0; overflow: auto; border: 1px solid #dcd2fb; border-radius: 21px; background: #fff; color: #1c2541; box-shadow: 0 30px 120px rgba(21, 17, 69, .4); overscroll-behavior: contain; }
+.ht-screen-dialog::backdrop { background: rgba(17, 15, 43, .75); backdrop-filter: blur(9px); }
+.ht-screen-dialog-panel { display: flex; flex-direction: column; max-height: calc(100dvh - 42px); }
+.ht-screen-dialog header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; gap: 20px; padding: 20px 25px; background: linear-gradient(110deg, #fbfaff, #f3f1ff 60%, #ecf8ff); }
+.ht-screen-dialog header p { margin: 0 0 5px; color: #7557b8; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.ht-screen-dialog header h2 { margin: 0; font-size: clamp(18px, 2vw, 24px); font-weight: 750; line-height: 1.2; letter-spacing: -.025em; }
+.ht-screen-close { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border: 1px solid #d9d1f4; border-radius: 50%; background: white; font-size: 27px; line-height: 1; color: #675181; cursor: pointer; }
+.ht-screen-dialog-image { min-height: 0; overflow: auto; background: #f5f2fc; border-block: 1px solid #eae4fa; overscroll-behavior: contain; }
+.ht-screen-dialog-image img { display: block; width: 100%; height: auto; }
+.ht-screen-dialog footer { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 25px; padding: 17px 25px; }
+.ht-screen-dialog footer p { margin: 0 0 3px; color: #565875; font-size: 12px; line-height: 1.55; }
+.ht-screen-dialog footer > div > span { color: #8f849f; font-size: 10px; }
+.ht-screen-dialog-controls { display: flex; align-items: center; flex-shrink: 0; gap: 15px; }
+.ht-screen-dialog-controls button { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #dbd2ef; border-radius: 50%; background: #f8f5ff; color: #784cb5; font-size: 20px; cursor: pointer; }
+.ht-screen-dialog-controls > span { font-size: 11px; font-weight: 700; color: #796392; font-variant-numeric: tabular-nums; }
+.ht-screen-dialog button:hover { background: #f0e9ff; }
+@media (max-width: 640px) {
+    .ht-screens { --screen-width: 310px; --screen-gap: 12px; padding: 21px 0 14px; border-radius: 21px; }
+    .ht-screens-heading { padding: 0 17px 17px; gap: 7px; }
+    .ht-screens-heading p { font-size: 8px; }
+    .ht-screens-heading h2 { font-size: 16px; max-width: 210px; }
+    .ht-screens-pause { padding: 6px 8px; gap: 3px; font-size: 9px; }
+    .ht-screens-pause:disabled span { max-width: 47px; }
+    .ht-screen-image { height: 137px; }
+    .ht-screen-browser { height: 22px; }
+    .ht-screen-caption { height: 33px; }
+    .ht-screens-index { padding: 0 16px; gap: 6px; }
+    .ht-screens-index-label { flex-basis: 100%; margin-bottom: 1px; }
+    .ht-screens-index button { flex: 1 0 calc(50% - 6px); justify-content: flex-start; min-height: 36px; }
+    .ht-screens-index-arrow { margin-left: auto; }
+    .ht-screens-note { margin: 9px 17px 0; font-size: 8px; }
+    .ht-screen-dialog { width: calc(100% - 18px); max-height: calc(100dvh - 24px); border-radius: 17px; }
+    .ht-screen-dialog-panel { max-height: calc(100dvh - 26px); }
+    .ht-screen-dialog header { gap: 10px; padding: 18px 16px; }
+    .ht-screen-dialog header p { font-size: 8px; }
+    .ht-screen-dialog header h2 { font-size: 18px; }
+    .ht-screen-close { width: 35px; height: 35px; }
+    .ht-screen-dialog-image img { min-width: 660px; }
+    .ht-screen-dialog footer { gap: 15px; align-items: flex-start; flex-direction: column; padding: 15px 16px; }
+    .ht-screen-dialog-controls { align-self: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ht-screen-track { animation: none; transform: none; will-change: auto; }
+    .ht-screen-group-copy { display: none; }
+    .ht-screen-row { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c4aff8 transparent; padding: 0 14px 7px; }
+    .ht-screens-reels { mask-image: none; }
+}

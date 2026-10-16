@@ -1,0 +1,78 @@
+[
+  {
+    "width": 1440,
+    "path": "/terms-of-use",
+    "sameText": true,
+    "sections": 7,
+    "links": [
+      "/terms-of-use",
+      "/faq?tab=returnPolicy#legacy-faq-content",
+      "/privacy-policy"
+    ],
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "path": "/privacy-policy",
+    "sameText": true,
+    "sections": 5,
+    "links": [
+      "/terms-of-use",
+      "/faq?tab=returnPolicy#legacy-faq-content",
+      "/privacy-policy"
+    ],
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "refundRepeat": 0,
+    "heading": "Refunds & cancellations",
+    "query": "",
+    "top": 108
+  },
+  {
+    "width": 1440,
+    "refundRepeat": 1,
+    "heading": "Refunds & cancellations",
+    "query": "",
+    "top": 108
+  },
+  {
+    "width": 390,
+    "path": "/terms-of-use",
+    "sameText": true,
+    "sections": 7,
+    "links": [
+      "/terms-of-use",
+      "/faq?tab=returnPolicy#legacy-faq-content",
+      "/privacy-policy"
+    ],
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "path": "/privacy-policy",
+    "sameText": true,
+    "sections": 5,
+    "links": [
+      "/terms-of-use",
+      "/faq?tab=returnPolicy#legacy-faq-content",
+      "/privacy-policy"
+    ],
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "refundRepeat": 0,
+    "heading": "Refunds & cancellations",
+    "query": "",
+    "top": 108
+  },
+  {
+    "width": 390,
+    "refundRepeat": 1,
+    "heading": "Refunds & cancellations",
+    "query": "",
+    "top": 108
+  }
+]

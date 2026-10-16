@@ -41,14 +41,20 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
-// Main page: the practice landing page for guests; signed-in users go to their own home.
+// Public HomeTutor pages; signed-in users retain their account home redirect.
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route(Auth::user()->homeRouteName());
     }
 
-    return Inertia::render('PracticeLanding');
+    return Inertia::render('LegacyMarketing', ['section' => 'home']);
 })->name('home');
+
+Route::get('/products', fn () => Inertia::render('LegacyMarketing', ['section' => 'products']))->name('marketing.products');
+Route::get('/about', fn () => Inertia::render('LegacyMarketing', ['section' => 'about']))->name('marketing.about');
+Route::get('/faq', fn () => Inertia::render('LegacyMarketing', ['section' => 'faq']))->name('marketing.faq');
+Route::get('/terms-of-use', fn () => Inertia::render('LegacyMarketing', ['section' => 'terms']))->name('marketing.terms');
+Route::get('/privacy-policy', fn () => Inertia::render('LegacyMarketing', ['section' => 'privacy']))->name('marketing.privacy');
 
 // The landing page used to be previewed at /landing; keep old links working.
 Route::permanentRedirect('/landing', '/')->name('landing.practice');

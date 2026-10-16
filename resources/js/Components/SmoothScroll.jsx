@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 /** Site-level Lenis driver with one requestAnimationFrame render loop. */
-export default function SmoothScroll({ children }) {
+export default function SmoothScroll({ children, anchorOffset = 24 }) {
     const lenisRef = useRef(null);
 
     useEffect(() => {
@@ -24,11 +24,11 @@ export default function SmoothScroll({ children }) {
             const target = document.querySelector(anchor.getAttribute('href'));
             if (!target) return;
             event.preventDefault();
-            lenis.scrollTo(target, { offset: -24, duration: 1.15 });
+            lenis.scrollTo(target, { offset: -anchorOffset, duration: 1.15 });
         };
         document.addEventListener('click', onAnchorClick);
         return () => { cancelAnimationFrame(frameId); lenis.off('scroll', updateScrollTrigger); document.removeEventListener('click', onAnchorClick); lenis.destroy(); lenisRef.current = null; };
-    }, []);
+    }, [anchorOffset]);
 
     return children;
 }

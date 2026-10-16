@@ -21,6 +21,8 @@ export const LanguageProvider = ({ children, pageProps = {} }) => {
     });
     const [isChangingLanguage, setIsChangingLanguage] = useState(false);
 
+    useEffect(() => { document.documentElement.lang = language.locale; }, [language.locale]);
+
     // The provider sits outside <App>, so follow the locale each Inertia page is served with.
     useEffect(() => router.on('navigate', (event) => {
         const props = event.detail.page.props;

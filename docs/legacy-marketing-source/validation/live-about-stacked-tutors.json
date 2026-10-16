@@ -1,0 +1,80 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "reports": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "portraits": 5,
+      "uniquePortraits": 5,
+      "overlaps": 5,
+      "unframed": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "heroCollision": false,
+      "headingColor": "rgb(23, 32, 51)",
+      "profileLinks": 0,
+      "heroImage": "/images/landing-practice/about-students.png"
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "portraits": 5,
+      "uniquePortraits": 5,
+      "overlaps": 5,
+      "unframed": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "heroCollision": false,
+      "headingColor": "rgb(23, 32, 51)",
+      "profileLinks": 0,
+      "heroImage": "/images/landing-practice/about-students.png"
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "portraits": 5,
+      "uniquePortraits": 5,
+      "overlaps": 5,
+      "unframed": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "heroCollision": false,
+      "headingColor": "rgb(23, 32, 51)",
+      "profileLinks": 0,
+      "heroImage": "/images/landing-practice/about-students.png"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "portraits": 5,
+      "uniquePortraits": 5,
+      "overlaps": 8,
+      "unframed": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "heroCollision": false,
+      "headingColor": "rgb(23, 32, 51)",
+      "profileLinks": 0,
+      "heroImage": "/images/landing-practice/about-students.png"
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "portraits": 5,
+      "uniquePortraits": 5,
+      "overlaps": 8,
+      "unframed": true,
+      "bitmapBackgrounds": 0,
+      "headerOverlap": false,
+      "heroCollision": false,
+      "headingColor": "rgb(23, 32, 51)",
+      "profileLinks": 0,
+      "heroImage": "/images/landing-practice/about-students.png"
+    }
+  ],
+  "alphaMasks": "five masks load and contain actual transparent pixels",
+  "motion": "hero parallax and staggered tutor entrances pass",
+  "reducedMotion": "pass",
+  "errors": [],
+  "bad": []
+}

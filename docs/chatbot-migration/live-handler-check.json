@@ -1,0 +1,12 @@
+{
+  "base": "https://practice.hometutor.com.my",
+  "greetingThroughWidget": "pass",
+  "statelessDirectRequests": "pass",
+  "englishAndBM": "pass",
+  "outOfScope": "pass",
+  "lengthValidation": "pass",
+  "externalKnowledgeApi": false,
+  "instructionCache": false,
+  "liveModelReply": "validated 2026-10-14: English and Malay product questions returned AI answers, HTTP 200",
+  "errors": []
+}

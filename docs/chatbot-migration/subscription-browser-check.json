@@ -1,0 +1,70 @@
+[
+  {
+    "width": 1440,
+    "locale": "en",
+    "headings": [
+      "About HomeTutor",
+      "Getting started & subscriptions",
+      "Learning & HomeTutor Play",
+      "Account & payment help",
+      "Refunds & cancellations"
+    ],
+    "questions": 24,
+    "searchResults": 10,
+    "overflow": false,
+    "oldUrls": [],
+    "supportHref": "/faq?tab=accountSupport",
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "locale": "ms",
+    "headings": [
+      "Tentang HomeTutor",
+      "Pendaftaran & langganan",
+      "Pembelajaran & HomeTutor Play",
+      "Bantuan akaun & pembayaran",
+      "Bayaran balik & pembatalan"
+    ],
+    "questions": 24,
+    "searchResults": 9,
+    "overflow": false,
+    "oldUrls": [],
+    "supportHref": "/faq?tab=accountSupport",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "locale": "en",
+    "headings": [
+      "About HomeTutor",
+      "Getting started & subscriptions",
+      "Learning & HomeTutor Play",
+      "Account & payment help",
+      "Refunds & cancellations"
+    ],
+    "questions": 24,
+    "searchResults": 10,
+    "overflow": false,
+    "oldUrls": [],
+    "supportHref": "/faq?tab=accountSupport",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "locale": "ms",
+    "headings": [
+      "Tentang HomeTutor",
+      "Pendaftaran & langganan",
+      "Pembelajaran & HomeTutor Play",
+      "Bantuan akaun & pembayaran",
+      "Bayaran balik & pembatalan"
+    ],
+    "questions": 24,
+    "searchResults": 9,
+    "overflow": false,
+    "oldUrls": [],
+    "supportHref": "/faq?tab=accountSupport",
+    "errors": []
+  }
+]
