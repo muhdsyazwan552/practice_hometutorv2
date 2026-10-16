@@ -8,6 +8,7 @@ import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ThemeLoader from '@/Components/ThemeLoader';
 import { useQuestionTools } from '@/Components/QuestionTools';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import QuestionPassage from '@/Components/QuestionPassage';
 
 /**
  * QuestionDisplay Component
@@ -83,6 +84,7 @@ const QuestionDisplay = ({ question }) => {
 
   return (
     <div className="question-content">
+      <QuestionPassage html={question.passage} />
       {renderQuestionContent()}
     </div>
   );

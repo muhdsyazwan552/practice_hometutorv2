@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Services\StreakService;
+use App\Support\PracticeQuestionTypes;
 use App\Support\QuestionContentNormalizer;
 
 class SubjectiveController extends Controller
@@ -70,9 +71,11 @@ class SubjectiveController extends Controller
         Log::info("🚨 DEBUG MODE - Fetching subjective questions for topic: {$topicId}");
 
         // Temporary: bypass all filters to test
-        $questions = Question::with('answers')
+        $query = Question::with('answers');
+        PracticeQuestionTypes::applyPracticePool($query->getQuery(), PracticeQuestionTypes::SUBJECTIVE); // ESSAY + CESSAY
+
+        $questions = $query
             ->where('topic_id', $topicId)
-            ->where('question_type_id', 2) // 2 for subjective questions
             // ->active()
             ->where('questions.is_active', 1)
             // ->where('questions.is_published', 1) // COMMENT OUT for now
@@ -156,10 +159,9 @@ class SubjectiveController extends Controller
         }
 
         // Get questions for this topic
-        $questions = DB::table('questions')
+        $questions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::SUBJECTIVE)
             ->select('questions.*')
             ->where('questions.topic_id', $topic->id)
-            ->where('questions.question_type_id', 2)
             ->where('questions.is_active', 1)
             // ->where('questions.is_published', 1)
             // ->where('questions.approval_status', 'approved')
@@ -192,9 +194,8 @@ class SubjectiveController extends Controller
             $questionsWithAnswers[] = $question;
         }
 
-        $totalQuestions = DB::table('questions')
+        $totalQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::SUBJECTIVE)
             ->where('topic_id', $topic->id)
-            ->where('question_type_id', 2)
             ->where('is_active', 1)
             ->where('is_published', 1)
             ->where('approval_status', 'approved')
@@ -211,9 +212,8 @@ class SubjectiveController extends Controller
      */
     private function getTotalAvailableQuestions($topicId)
     {
-        return DB::table('questions')
+        return PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::SUBJECTIVE)
             ->where('topic_id', $topicId)
-            ->where('question_type_id', 2)
             ->where('is_active', 1)
             ->where('is_published', 1)
             ->where('approval_status', 'approved')
@@ -226,6 +226,7 @@ class SubjectiveController extends Controller
     private function formatQuestions($questions)
     {
         $formattedQuestions = [];
+        $passages = PracticeQuestionTypes::passagesFor($questions);
 
         foreach ($questions as $index => $question) {
             // Get topic name
@@ -242,6 +243,8 @@ class SubjectiveController extends Controller
 
             $formattedQuestions[] = [
                 'id' => $question->id,
+                // CESSAY: the comprehension passage shown above the question.
+                'passage' => $passages[$question->parent_id ?? 0] ?? null,
                 'question_text' => QuestionContentNormalizer::questionHtml($question->question_text, $question->question_file),
                 'question_file' => QuestionContentNormalizer::questionFileUrl($question->question_file),
                 'question_type' => $this->determineQuestionType($question),

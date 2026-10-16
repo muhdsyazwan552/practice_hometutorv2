@@ -1,26 +1,44 @@
 import React, { useEffect, useRef } from 'react';
 
+// Question images: click to zoom, plus a fallback to the legacy backup host.
+// The names (ImagePathLabel / addImagePathLabels) are kept because every
+// question view already calls them next to its images; they used to print the
+// image URL, which is now hidden from students.
+
 const LEGACY_PRIMARY_BASE = 'https://hometutor.com.my/main/simpana/images/';
 const LEGACY_BACKUP_BASE = 'https://asset.cloudhub.my/files/simpana/images/';
 
-const STATUS_STYLES = {
-    checking: 'bg-amber-100 text-amber-700',
-    found: 'bg-emerald-100 text-emerald-700',
-    missing: 'bg-rose-100 text-rose-700',
-};
+// Shown only for images inside an answer option button, where clicking the
+// image itself must still select the answer.
+const ZOOM_TRIGGER_HTML = '<span data-image-zoom-trigger role="button" aria-label="Zoom image" title="Zoom image">'
+    + '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M11 8v6M8 11h6"/></svg></span>';
 
-const STATUS_TEXT = {
-    checking: 'Checking…',
-    found: 'Found',
-    missing: 'Not found',
-};
-
-const escapeHtml = (value) => String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+const STYLES = `
+img[data-zoomable] { cursor: zoom-in; }
+button img[data-zoomable], [role="button"] img[data-zoomable] { cursor: inherit; }
+[data-image-zoom-trigger] { display: none; }
+button [data-image-zoom-trigger] {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; margin: 0 4px; vertical-align: middle; flex-shrink: 0;
+    border-radius: 9999px; background: rgba(15, 23, 42, .75); color: #fff; cursor: zoom-in;
+}
+button [data-image-zoom-trigger]:hover { background: rgba(15, 23, 42, .9); }
+[data-image-zoom-overlay] {
+    position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(15, 23, 42, .85); overflow: auto; cursor: zoom-out;
+}
+[data-image-zoom-overlay] img {
+    max-width: 95vw; max-height: 88vh; object-fit: contain; border-radius: 12px;
+    background: #fff; padding: 8px; box-shadow: 0 20px 50px rgba(0, 0, 0, .4); cursor: zoom-in;
+}
+[data-image-zoom-overlay][data-zoomed] { align-items: flex-start; justify-content: flex-start; }
+[data-image-zoom-overlay][data-zoomed] img { max-width: none; max-height: none; margin: auto; cursor: zoom-out; }
+[data-image-zoom-close] {
+    position: fixed; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 9999px; border: 0;
+    background: rgba(255, 255, 255, .95); color: #0f172a; font-size: 24px; line-height: 1; cursor: pointer;
+}
+`;
 
 const getBackupPath = (source) => {
     if (!source?.startsWith(LEGACY_PRIMARY_BASE)) return null;
@@ -32,24 +50,6 @@ const getBackupPath = (source) => {
     return `${LEGACY_BACKUP_BASE}${digitMatch[1].split('').join('/')}/${filename}`;
 };
 
-const getLabelForImage = (image) => {
-    const label = image?.nextElementSibling;
-    return label?.matches?.('[data-image-path-label]') ? label : null;
-};
-
-const updateLabel = (label, status, path, statusText = STATUS_TEXT[status]) => {
-    if (!label) return;
-
-    const pathValue = label.querySelector('[data-image-path-value]');
-    const statusBadge = label.querySelector('[data-image-path-status]');
-
-    if (pathValue && path) pathValue.textContent = path;
-    if (!statusBadge) return;
-
-    statusBadge.className = `ml-2 inline-flex rounded-full px-2 py-0.5 font-sans text-[10px] font-semibold ${STATUS_STYLES[status]}`;
-    statusBadge.textContent = statusText;
-};
-
 const tryLegacyBackup = (image) => {
     if (!image || image.dataset.legacyBackupTried === 'true') return false;
 
@@ -57,64 +57,133 @@ const tryLegacyBackup = (image) => {
     if (!backupPath) return false;
 
     image.dataset.legacyBackupTried = 'true';
-    updateLabel(getLabelForImage(image), 'checking', backupPath, 'Trying backup…');
     image.src = backupPath;
 
     return true;
 };
 
-const handleImageLoad = (image) => {
-    updateLabel(getLabelForImage(image), 'found', image.currentSrc || image.src);
+const closeZoom = () => {
+    document.querySelector('[data-image-zoom-overlay]')?.remove();
+    document.removeEventListener('keydown', closeOnEscape);
 };
 
-const handleImageError = (image) => {
-    if (!tryLegacyBackup(image)) {
-        updateLabel(getLabelForImage(image), 'missing', image.currentSrc || image.src);
-    }
+function closeOnEscape(event) {
+    if (event.key === 'Escape') closeZoom();
+}
+
+const openZoom = (image) => {
+    closeZoom();
+
+    const overlay = document.createElement('div');
+    overlay.dataset.imageZoomOverlay = '';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+
+    const zoomed = document.createElement('img');
+    zoomed.src = image.currentSrc || image.src;
+    zoomed.alt = image.alt || 'Question image';
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.dataset.imageZoomClose = '';
+    close.setAttribute('aria-label', 'Close');
+    close.textContent = '×';
+
+    // Small images (e.g. 28px inline pictures) are scaled up to fill most of
+    // the screen, up to 4x their real size so they don't turn to mush.
+    let fitWidth = 0;
+    const fitToScreen = () => {
+        const scale = Math.min(
+            (window.innerWidth * 0.9) / zoomed.naturalWidth,
+            (window.innerHeight * 0.85) / zoomed.naturalHeight,
+            4,
+        );
+        fitWidth = Math.round(zoomed.naturalWidth * scale);
+        zoomed.style.width = `${fitWidth}px`;
+    };
+    zoomed.addEventListener('load', fitToScreen);
+
+    // Clicking the image toggles between "fit to screen" and 2x that size;
+    // clicking anywhere else closes the viewer.
+    zoomed.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (overlay.hasAttribute('data-zoomed')) {
+            overlay.removeAttribute('data-zoomed');
+            zoomed.style.width = `${fitWidth}px`;
+        } else {
+            overlay.setAttribute('data-zoomed', '');
+            zoomed.style.width = `${fitWidth * 2}px`;
+        }
+    });
+    overlay.addEventListener('click', closeZoom);
+
+    overlay.append(zoomed, close);
+    document.body.appendChild(overlay);
+    document.addEventListener('keydown', closeOnEscape);
 };
 
-if (typeof document !== 'undefined' && !window.__imagePathStatusListenersAdded) {
-    document.addEventListener('load', (event) => {
-        if (event.target instanceof HTMLImageElement) handleImageLoad(event.target);
-    }, true);
+if (typeof document !== 'undefined' && !window.__questionImageListenersAdded) {
+    const style = document.createElement('style');
+    style.textContent = STYLES;
+    document.head.appendChild(style);
 
     document.addEventListener('error', (event) => {
-        if (event.target instanceof HTMLImageElement) handleImageError(event.target);
+        if (event.target instanceof HTMLImageElement) tryLegacyBackup(event.target);
     }, true);
 
-    window.__imagePathStatusListenersAdded = true;
+    // Capture phase so the zoom button wins over the answer button's onClick.
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest?.('[data-image-zoom-trigger]');
+        if (trigger) {
+            const image = trigger.previousElementSibling;
+            if (image instanceof HTMLImageElement) {
+                event.preventDefault();
+                event.stopPropagation();
+                openZoom(image);
+            }
+            return;
+        }
+
+        const image = event.target.closest?.('img[data-zoomable]');
+        if (image && !image.closest('button, [role="button"]')) {
+            event.preventDefault();
+            event.stopPropagation();
+            openZoom(image);
+        }
+    }, true);
+
+    window.__questionImageListenersAdded = true;
 }
 
 export const addImagePathLabels = (html) => {
     if (!html) return html;
 
     return html.replace(
-        /(<img\b[^>]*?\bsrc\s*=\s*(["'])([^"']+)\2[^>]*>)/gi,
-        (imageTag, _fullTag, _quote, source) => `${imageTag}<span data-image-path-label class="mt-1 mb-3 block break-all rounded-md bg-slate-100 px-2 py-1 font-mono text-[10px] leading-4 text-slate-600"><strong class="font-semibold text-slate-700">Full path:</strong> <span data-image-path-value>${escapeHtml(source)}</span><span data-image-path-status class="ml-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[10px] font-semibold text-amber-700">Checking…</span></span>`,
+        /<img\b([^>]*?\bsrc\s*=\s*(["'])[^"']+\2[^>]*)>/gi,
+        (_imageTag, attributes) => `<img data-zoomable${attributes}>${ZOOM_TRIGGER_HTML}`,
     );
 };
 
-export default function ImagePathLabel({ path, className = '' }) {
-    const labelRef = useRef(null);
+export default function ImagePathLabel({ path }) {
+    const triggerRef = useRef(null);
 
     useEffect(() => {
-        const image = labelRef.current?.previousElementSibling;
-        if (!(image instanceof HTMLImageElement) || !image.complete) return;
+        const image = triggerRef.current?.previousElementSibling;
+        if (!(image instanceof HTMLImageElement)) return;
 
-        if (image.naturalWidth > 0) {
-            handleImageLoad(image);
-        } else {
-            handleImageError(image);
-        }
+        image.dataset.zoomable = '';
+
+        // The image may have failed before this effect ran.
+        if (image.complete && image.naturalWidth === 0) tryLegacyBackup(image);
     }, [path]);
 
     if (!path) return null;
 
     return (
-        <div ref={labelRef} data-image-path-label className={`mt-1 break-all rounded-md bg-slate-100 px-2 py-1 font-mono text-[10px] leading-4 text-slate-600 ${className}`}>
-            <strong className="font-semibold text-slate-700">Full path:</strong>{' '}
-            <span data-image-path-value>{path}</span>
-            <span data-image-path-status className="ml-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[10px] font-semibold text-amber-700">Checking…</span>
-        </div>
+        <span ref={triggerRef} data-image-zoom-trigger role="button" aria-label="Zoom image" title="Zoom image">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5M11 8v6M8 11h6" />
+            </svg>
+        </span>
     );
 }

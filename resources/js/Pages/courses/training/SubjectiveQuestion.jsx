@@ -4,6 +4,7 @@ import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { Head, usePage, router } from '@inertiajs/react'; // Added router import
 import QuestionReportButton from '@/Components/QuestionReportButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import QuestionPassage from '@/Components/QuestionPassage';
 import { useQuestionTools } from '@/Components/QuestionTools';
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
@@ -26,8 +27,6 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
 
 
 
-  const [open, setOpen] = useState(false);
-  const [zoomedImage, setZoomedImage] = useState("");
 
   // Add missing state variables
   const [practiceStartTime, setPracticeStartTime] = useState(new Date().toISOString());
@@ -112,6 +111,7 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       // Transform controller questions to match component format
       const transformedQuestions = controllerQuestions.map((q, index) => ({
         id: q.id || index,
+        passage: q.passage || null,
         question: q.question_text || 'No question available',
         schema: q.schema || 'No schema answer available',
         explanation: q.explanation || '',
@@ -193,27 +193,6 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       setTimerRunning(false);
     };
   }, []);
-
-  // Handle image clicks in HTML content
-  useEffect(() => {
-    const handleImageClick = (e) => {
-      if (e.target.tagName === 'IMG') {
-        setZoomedImage(e.target.src);
-        setOpen(true);
-      }
-    };
-
-    const questionContent = document.querySelector('.question-content');
-    if (questionContent) {
-      questionContent.addEventListener('click', handleImageClick);
-    }
-
-    return () => {
-      if (questionContent) {
-        questionContent.removeEventListener('click', handleImageClick);
-      }
-    };
-  }, [currentIndex, questions]);
 
   // Format time function
   const formatTime = (totalSeconds) => {
@@ -542,6 +521,8 @@ const processHtmlContent = (html) => {
     </h2>
   </div>
 
+  <QuestionPassage html={questions[currentIndex]?.passage} />
+
   {/* Question content with HTML rendering */}
   <div className="text-gray-700 mb-4 md:mb-6 text-base md:text-lg question-content">
     {questions[currentIndex]?.question ? (
@@ -717,20 +698,6 @@ const processHtmlContent = (html) => {
 </div>
 
       </div>
-
-      {/* Zoom Modal */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <img
-            src={zoomedImage}
-            alt="Zoomed question image"
-            className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-lg cursor-zoom-out"
-          />
-        </div>
-      )}
     </div>
   );
 

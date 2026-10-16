@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\Topic;
 use App\Models\Level;
 use App\Helpers\LevelHelper;
+use App\Support\PracticeQuestionTypes;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +60,7 @@ class SubjectContentController extends Controller
                 $questions->selectRaw('1')
                     ->from('questions as question')
                     ->whereColumn('question.topic_id', 'topic.id')
-                    ->where('question.question_type_id', $data['question_type_id'])
+                    ->whereIn('question.question_type_id', PracticeQuestionTypes::questionTypeIds((int) $data['question_type_id']))
                     ->where('question.is_active', 1)
                     ->where('question.is_published', 1);
             })
@@ -322,10 +323,12 @@ class SubjectContentController extends Controller
         }
 
         // ✅ STEP 3: Batch get question counts (1 query for all topics)
+        // Comprehension passages are not questions, so they are left out.
         $questionCounts = DB::table('questions')
             ->whereIn('topic_id', $allTopicIds)
             ->where('is_active', 1)
             ->where('is_published', 1)
+            ->whereNotIn('id', fn ($parents) => $parents->select('parent_id')->from('questions')->where('parent_id', '>', 0))
             ->selectRaw('topic_id, question_type_id, COUNT(*) as count')
             ->groupBy('topic_id', 'question_type_id')
             ->get()
@@ -371,8 +374,8 @@ class SubjectContentController extends Controller
                 
                 // Get counts (from cache)
                 $counts = $questionCounts[$topicId] ?? collect();
-                $objectiveCount = $counts->where('question_type_id', 1)->sum('count');
-                $subjectiveCount = $counts->where('question_type_id', 2)->sum('count');
+                $objectiveCount = $counts->whereIn('question_type_id', PracticeQuestionTypes::questionTypeIds(PracticeQuestionTypes::OBJECTIVE))->sum('count');
+                $subjectiveCount = $counts->whereIn('question_type_id', PracticeQuestionTypes::questionTypeIds(PracticeQuestionTypes::SUBJECTIVE))->sum('count');
                 
                 // Get practice data (from cache)
                 $objectivePractice = $practiceData[$topicId][1][0] ?? null;

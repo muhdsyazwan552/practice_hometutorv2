@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
 use App\Traits\InertiaLocaleTrait;
+use App\Support\PracticeQuestionTypes;
 use App\Support\QuestionContentNormalizer;
 use App\Helpers\LevelHelper;
 
@@ -296,18 +297,20 @@ class ReportController extends Controller
         }
 
         // Check direct questions
+        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
+
         $topicsWithDirectQuestions = DB::table('questions')
             ->whereIn('topic_id', $topicIds)
-            ->where('question_type_id', $questionTypeId)
+            ->whereIn('question_type_id', $bankTypeIds)
             ->distinct()
             ->pluck('topic_id')
             ->toArray();
 
         // Check if parent topics have sub-topics with questions
         $topicsWithSubtopics = DB::table('topics as t')
-            ->join('questions as q', function ($join) use ($questionTypeId) {
+            ->join('questions as q', function ($join) use ($bankTypeIds) {
                 $join->on('q.topic_id', '=', 't.id')
-                    ->where('q.question_type_id', $questionTypeId);
+                    ->whereIn('q.question_type_id', $bankTypeIds);
             })
             ->whereIn('t.parent_id', $topicIds)
             ->where('t.is_active', 1)
@@ -410,9 +413,11 @@ class ReportController extends Controller
     private function topicHasQuestions($topic, $questionTypeId)
     {
         // Cek jika topic sendiri memiliki questions dengan question_type_id
+        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
+
         $hasDirectQuestions = DB::table('questions')
             ->where('topic_id', $topic->id)
-            ->where('question_type_id', $questionTypeId)
+            ->whereIn('question_type_id', $bankTypeIds)
             // ->where('is_active', 1)
             ->exists();
 
@@ -424,11 +429,11 @@ class ReportController extends Controller
         $hasSubTopicsWithQuestions = DB::table('topics')
             ->where('parent_id', $topic->id)
             // ->where('is_active', 1)
-            ->whereExists(function ($query) use ($questionTypeId) {
+            ->whereExists(function ($query) use ($bankTypeIds) {
                 $query->select(DB::raw(1))
                     ->from('questions')
                     ->whereColumn('questions.topic_id', 'topics.id')
-                    ->where('questions.question_type_id', $questionTypeId);
+                    ->whereIn('questions.question_type_id', $bankTypeIds);
                 // ->where('questions.is_active', 1);
             })
             ->exists();
@@ -688,13 +693,15 @@ class ReportController extends Controller
 
         // Gunakan single query dengan UNION untuk efisiensi
         $placeholders = implode(',', array_fill(0, count($topicIds), '?'));
+        $bankTypeIds = PracticeQuestionTypes::questionTypeIds((int) $questionTypeId);
+        $typePlaceholders = implode(',', array_fill(0, count($bankTypeIds), '?'));
 
         $query = "
             SELECT DISTINCT topic_id FROM (
                 -- Direct questions
                 SELECT topic_id FROM questions 
-                WHERE topic_id IN ({$placeholders}) 
-                AND question_type_id = ?
+                WHERE topic_id IN ({$placeholders})
+                AND question_type_id IN ({$typePlaceholders})
                 
                 UNION
                 
@@ -703,12 +710,12 @@ class ReportController extends Controller
                 INNER JOIN questions q ON q.topic_id = t.id
                 WHERE t.parent_id IN ({$placeholders})
                 AND t.is_active = 1
-                AND q.question_type_id = ?
+                AND q.question_type_id IN ({$typePlaceholders})
             ) as combined
         ";
 
-        // Prepare parameters: topicIds + questionTypeId + topicIds + questionTypeId
-        $params = array_merge($topicIds, [$questionTypeId], $topicIds, [$questionTypeId]);
+        // Prepare parameters: topicIds + bank types + topicIds + bank types
+        $params = array_merge($topicIds, $bankTypeIds, $topicIds, $bankTypeIds);
 
         $results = DB::select($query, $params);
 
@@ -1208,9 +1215,16 @@ class ReportController extends Controller
                     $chosenAnswer = $answers->firstWhere('id', $attempt->choosen_answer_id);
                 }
 
+                // The session says how the question was practised (older
+                // subjective sessions answered CMCQ questions as essays);
+                // otherwise MCQ/CMCQ are objective and ESSAY/CESSAY subjective.
+                $practiceType = in_array((int) $session->question_type_id, [PracticeQuestionTypes::OBJECTIVE, PracticeQuestionTypes::SUBJECTIVE], true)
+                    ? (int) $session->question_type_id
+                    : PracticeQuestionTypes::practiceTypeFor((int) $attempt->question_type_id);
+
                 // Format answers for objective questions
                 $formattedAnswers = [];
-                if ($attempt->question_type_id == 1) { // Objective
+                if ($practiceType === PracticeQuestionTypes::OBJECTIVE) {
                     $formattedAnswers = $answers->map(function ($answer) use ($attempt, $chosenAnswer, $hideMissionCorrection) {
                         return $this->formatAnswer($answer, $attempt, $chosenAnswer, ! $hideMissionCorrection);
                     })->toArray();
@@ -1218,7 +1232,7 @@ class ReportController extends Controller
 
                 // Get schema answer for subjective questions
                 $schemaAnswer = null;
-                if ($attempt->question_type_id == 2) { // Subjective
+                if ($practiceType === PracticeQuestionTypes::SUBJECTIVE) {
                     $sampleAnswer = $answers->first(function ($answer) {
                         return !empty($answer->sample_answer);
                     });
@@ -1232,8 +1246,8 @@ class ReportController extends Controller
                     'question_id' => $questionId,
                     'question_text' => QuestionContentNormalizer::questionHtml($attempt->question_text, $attempt->question_file),
                     'question_file' => QuestionContentNormalizer::questionFileUrl($attempt->question_file),
-                    'question_type' => $attempt->question_type_id == 1 ? 'objective' : 'subjective',
-                    'question_type_id' => $attempt->question_type_id,
+                    'question_type' => $practiceType === PracticeQuestionTypes::OBJECTIVE ? 'objective' : 'subjective',
+                    'question_type_id' => $practiceType,
                     'answers' => $formattedAnswers,
                     'chosen_answer_id' => $attempt->choosen_answer_id,
                     'answer_status' => $attempt->answer_status,

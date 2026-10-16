@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\StreakService;
+use App\Support\PracticeQuestionTypes;
 use App\Support\QuestionContentNormalizer;
 
 class ObjectiveController extends Controller
@@ -88,10 +89,9 @@ class ObjectiveController extends Controller
         // we need to adjust the filters
 
         // TEMPORARY: For testing, let's see what happens with different filters
-        $questions = DB::table('questions')
+        $questions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE) // MCQ + CMCQ
             ->select('questions.*')
             ->where('questions.topic_id', $topicId)
-            ->where('questions.question_type_id', 1) // Objective questions
             ->where('questions.is_active', 1)
             // ->where('questions.is_published', 1) // COMMENT OUT for now
             // ->where('questions.approval_status', 'approved') // COMMENT OUT for now
@@ -168,7 +168,7 @@ class ObjectiveController extends Controller
         }
 
         // Get questions for this topic
-        $questions = DB::table('questions')
+        $questions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE)
             ->select('questions.*')
             ->where('questions.topic_id', $topic->id)
             ->where('questions.is_active', 1)
@@ -178,7 +178,7 @@ class ObjectiveController extends Controller
             ->limit($limit)
             ->get();
 
-        $totalQuestions = DB::table('questions')
+        $totalQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE)
             ->where('topic_id', $topic->id)
             ->where('is_active', 1)
             // ->where('is_published', 1)
@@ -216,7 +216,7 @@ class ObjectiveController extends Controller
      */
     private function getTotalAvailableQuestions($topicId)
     {
-        return DB::table('questions')
+        return PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE)
             ->where('topic_id', $topicId)
             ->where('is_active', 1)
             // ->where('is_published', 1)
@@ -229,7 +229,9 @@ class ObjectiveController extends Controller
      */
     private function formatQuestions($questions)
     {
-        return $questions->map(function ($question, $index) {
+        $passages = PracticeQuestionTypes::passagesFor($questions);
+
+        return $questions->map(function ($question, $index) use ($passages) {
             // Get topic name
             $topicName = 'General';
             if ($question->topic_id) {
@@ -239,6 +241,8 @@ class ObjectiveController extends Controller
 
             return [
                 'id' => $question->id,
+                // CMCQ: the comprehension passage shown above the question.
+                'passage' => $passages[$question->parent_id ?? 0] ?? null,
                 'question_text' => QuestionContentNormalizer::questionHtml($question->question_text, $question->question_file),
                 'question_file' => QuestionContentNormalizer::questionFileUrl($question->question_file),
                 'question_type' => $this->determineQuestionType($question),
