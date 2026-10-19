@@ -25,6 +25,7 @@ export default function SubjectPage({ selectedStandard }) {
     availableSubjects,
     studentTheme,
   } = props;
+  const showDevelopmentIds = props.auth?.user?.email === 'tasya@children.hometutor.local';
 
   const themeSlug = studentTheme?.slug || 'ocean-blue';
   const themeCardRadius = themeSlug === 'brick-builders' ? 'rounded-xl' : themeSlug === 'robo-lab' ? 'rounded-2xl' : themeSlug === 'cat-club' || themeSlug === 'candy-garden' ? 'rounded-[2rem]' : 'rounded-3xl';
@@ -141,7 +142,7 @@ export default function SubjectPage({ selectedStandard }) {
                 <header className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-5 sm:flex-row sm:items-center sm:px-6">
                   <div className="flex items-center gap-4">
                     <span className="flex h-11 w-11 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ background: 'var(--theme-hero)' }}>{String(sectionIndex + 1).padStart(2, '0')}</span>
-                    <div><p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--theme-accent)' }}>Bab {sectionIndex + 1}</p><h2 className="mt-1 text-lg font-extrabold tracking-tight text-slate-900">{section.title}</h2></div>
+                    <div><p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--theme-accent)' }}>Bab {sectionIndex + 1}</p><h2 className="mt-1 text-lg font-extrabold tracking-tight text-slate-900">{section.title}</h2>{showDevelopmentIds && <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 font-mono text-xs text-amber-900">ID topik: {section.topicId}</span>}</div>
                   </div>
                   <span className="w-fit rounded-full px-3 py-1.5 text-xs font-bold" style={{ background: 'color-mix(in srgb, var(--theme-accent) 12%, white)', color: 'var(--theme-accent)' }}>{section.subSections?.length || 0} topik latihan</span>
                 </header>
@@ -156,7 +157,7 @@ export default function SubjectPage({ selectedStandard }) {
                         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                           <div className="flex items-start gap-3">
                             <span className={`mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg ${completed ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>{completed ? <CheckCircleIcon className="h-5 w-5" /> : <span className="text-xs font-bold">{moduleIndex + 1}</span>}</span>
-                            <div><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Topik {moduleIndex + 1}</p><h3 className="mt-0.5 font-extrabold text-slate-900">{subSection.title}</h3><p className="mt-1 text-xs text-slate-500">{subSection.questionCounts?.objective || 0} soalan objektif · {subSection.questionCounts?.subjective || 0} soalan bertulis</p></div>
+                            <div><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Topik {moduleIndex + 1}</p><h3 className="mt-0.5 font-extrabold text-slate-900">{subSection.title}</h3>{showDevelopmentIds && subSection.isSubtopic && <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 font-mono text-xs text-amber-900">ID subtopik: {subSection.id}</span>}<p className="mt-1 text-xs text-slate-500">{subSection.questionCounts?.objective || 0} soalan objektif · {subSection.questionCounts?.subjective || 0} soalan bertulis</p></div>
                           </div>
                           {completed && <span className="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">✓ Sudah dikuasai</span>}
                         </div>

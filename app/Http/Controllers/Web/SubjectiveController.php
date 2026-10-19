@@ -24,6 +24,7 @@ class SubjectiveController extends Controller
         // Get questions from database based on topic_id
         $questions = [];
         $topicName = 'General';
+        $parentTopicId = null;
 
         // Focus on topic_id only
         $topicId = $request->query('topic_id');
@@ -38,6 +39,7 @@ class SubjectiveController extends Controller
             $topic = DB::table('topics')->where('id', $topicId)->first();
             if ($topic) {
                 $topicName = $topic->name;
+                $parentTopicId = $topic->parent_id ?: null;
                 Log::info("Found topic: {$topic->name} (ID: {$topicId})");
             }
         } else {
@@ -55,6 +57,7 @@ class SubjectiveController extends Controller
             'contentId' => $request->query('contentId'),
             'topic' => $topicName,
             'topic_id' => $topicId,
+            'parent_topic_id' => $parentTopicId,
             'questions' => $questions,
             'subject_id' => $request->subject_id,
             'level_id' => $request->level_id,

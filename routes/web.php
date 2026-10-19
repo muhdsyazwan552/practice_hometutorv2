@@ -31,6 +31,7 @@ use App\Http\Controllers\Web\MissionController;
 use App\Http\Controllers\Web\ObjectiveController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\QuestionReportController;
+use App\Http\Controllers\Web\QuestionInspectorController;
 use App\Http\Controllers\Web\QuizArenaController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SubjectContentController;
@@ -140,6 +141,11 @@ Route::middleware(['auth', 'verified', 'role:parent'])
 Route::get('/subscription-required', function () {
     return view('child.subscription-required');
 })->middleware(['auth', 'verified', 'role:child'])->name('child.subscription-required');
+
+// Private, read-only question diagnostics for the designated child account.
+Route::get('/question-inspector', QuestionInspectorController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('question-inspector');
 Route::post('/subscription-required/renew', [ChildRenewalController::class, 'store'])
     ->middleware(['auth', 'verified', 'role:child', 'throttle:10,1'])
     ->name('child.subscription.renew');

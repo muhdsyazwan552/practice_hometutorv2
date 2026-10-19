@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { usePage } from '@inertiajs/react';
 
 // "TEMA 1 : KAEDAH SAINTIFIK" -> "Tema 1: Kaedah Saintifik". Titles that are
 // already mixed case are left alone so acronyms (SPM, DNA) keep their capitals.
@@ -18,6 +19,8 @@ const readableTitle = (text = '') => {
  * false = wrong first try, null = not answered yet.
  */
 export default function QuestionHeader({ title, topic, statuses = [], current = 0, timeText, timeClass = 'text-slate-600', onBack, backLabel = 'Back' }) {
+  const { auth, topic_id, parent_topic_id } = usePage().props;
+  const showDevelopmentIds = auth?.user?.email === 'tasya@children.hometutor.local';
   const dotsRef = useRef(null);
   const total = statuses.length;
   const answered = statuses.filter((status) => status !== null && status !== undefined).length;
@@ -52,6 +55,9 @@ export default function QuestionHeader({ title, topic, statuses = [], current = 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-base font-bold text-slate-800 sm:text-lg" title={title}>{readableTitle(title)}</h1>
           {topic && <p className="truncate text-xs text-slate-500 sm:text-sm" title={topic}>{topic}</p>}
+          {showDevelopmentIds && topic_id && <p className="mt-1 font-mono text-xs text-amber-800">
+            {parent_topic_id ? `ID topik: ${parent_topic_id} · ID subtopik: ${topic_id}` : `ID topik: ${topic_id}`}
+          </p>}
         </div>
 
         {timeText && (

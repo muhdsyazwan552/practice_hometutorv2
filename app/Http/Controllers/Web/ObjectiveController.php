@@ -23,6 +23,7 @@ class ObjectiveController extends Controller
         // Get questions from database based on topic_id
         $questions = [];
         $topicName = 'General';
+        $parentTopicId = null;
 
         // Focus on topic_id only
         $topicId = $request->query('topic_id');
@@ -37,6 +38,7 @@ class ObjectiveController extends Controller
             $topic = DB::table('topics')->where('id', $topicId)->first();
             if ($topic) {
                 $topicName = $topic->name;
+                $parentTopicId = $topic->parent_id ?: null;
                 Log::info("Found topic: {$topic->name} (ID: {$topic->id})");
             }
         } else {
@@ -46,6 +48,7 @@ class ObjectiveController extends Controller
         // Simplified logging - just show the essential info
         Log::info("🎯 Sending to frontend:", [
             'topic_id' => $topicId,
+            'parent_topic_id' => $parentTopicId,
             'topic_name' => $topicName,
             'questions_count' => count($questions),
             'questions_sample' => count($questions) > 0 ? [

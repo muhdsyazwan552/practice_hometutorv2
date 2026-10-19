@@ -360,6 +360,7 @@ class SubjectContentController extends Controller
         foreach ($groupedTopics as $parent) {
             $section = [
                 'id' => count($sections) + 1,
+                'topicId' => $parent['id'],
                 'title' => $parent['name'],
                 'subSections' => []
             ];
@@ -381,6 +382,8 @@ class SubjectContentController extends Controller
                 
                 $section['subSections'][] = [
                     'id' => $topicId,
+                    'parentTopicId' => $parent['id'],
+                    'isSubtopic' => $topicId != $parent['id'],
                     'title' => $subtopic['name'],
                     'practiceTitle' => $subtopic['name'],
                     'videos' => [],
