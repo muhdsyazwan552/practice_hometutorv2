@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
 import StandardModules from './interactive/StandardModules';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 function InteractiveGameModal({ game, onClose }) {
+    const { locale } = useLanguage();
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
     const [loading, setLoading] = useState(true);
     const isReactGame = game.type === 'react_literasi';
 
@@ -30,14 +33,14 @@ function InteractiveGameModal({ game, onClose }) {
                         rel="noreferrer"
                         className="rounded-lg border border-white/20 px-3 py-2 text-sm font-medium hover:bg-white/10"
                     >
-                        Open new tab
+                        {tr('Open new tab', 'Buka tab baharu')}
                     </a>
                     <button
                         type="button"
                         onClick={onClose}
                         className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-700"
                     >
-                        Close
+                        {tr('Close', 'Tutup')}
                     </button>
                 </div>
             </div>
@@ -46,7 +49,7 @@ function InteractiveGameModal({ game, onClose }) {
                 {loading && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950 text-white">
                         <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-cyan-400" />
-                        <p>Loading {game.title}...</p>
+                        <p>{tr(`Loading ${game.title}…`, `Sedang memuatkan ${game.title}…`)}</p>
                     </div>
                 )}
                 <iframe
@@ -66,6 +69,8 @@ function InteractiveGameModal({ game, onClose }) {
 }
 
 export default function SubjectInteractivePage() {
+    const { locale } = useLanguage();
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
     const { props } = usePage();
     const {
         subject,
@@ -108,9 +113,9 @@ export default function SubjectInteractivePage() {
             <div className="px-4 py-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-5">
-                        <h1 className="text-xl font-bold text-gray-800">Interactive Learning</h1>
+                        <h1 className="text-xl font-bold text-gray-800">{tr('Interactive Learning', 'Pembelajaran Interaktif')}</h1>
                         <p className="mt-1 text-sm text-gray-500">
-                            {subject} · {form} · {interactiveModules.length} activities
+                            {subject} · {locale === 'ms' ? form.replace(/^Form\s+(\d+)$/i, 'Tingkatan $1') : form} · {interactiveModules.length} {tr('activities', 'aktiviti')}
                         </p>
                     </div>
 
@@ -123,9 +128,9 @@ export default function SubjectInteractivePage() {
                     ) : (
                         <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
                             <div className="mb-4 text-6xl">🎮</div>
-                            <h2 className="text-xl font-semibold text-gray-800">No interactive games available</h2>
+                            <h2 className="text-xl font-semibold text-gray-800">{tr('No interactive games available', 'Tiada permainan interaktif tersedia')}</h2>
                             <p className="mt-2 text-gray-500">
-                                No active interactive game is assigned to {subject} for {form}.
+                                {tr(`No active interactive game is assigned to ${subject} for ${form}.`, `Tiada permainan interaktif aktif untuk ${subject}, ${form.replace(/^Form\s+(\d+)$/i, 'Tingkatan $1')}.`)}
                             </p>
                         </div>
                     )}

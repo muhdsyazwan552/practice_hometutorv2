@@ -3,11 +3,12 @@ import { useLanguage } from '@/Contexts/LanguageContext';
 const LanguageSwitcher = ({ type = 'buttons', variant = 'default' }) => {
     const { locale, changeLanguage, isChangingLanguage } = useLanguage();
     const compact = variant === 'compact';
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
 
     if (type === 'dropdown') {
         return (
             <label className="relative block">
-                <span className="sr-only">Choose language</span>
+                <span className="sr-only">{tr('Choose language', 'Pilih bahasa')}</span>
                 <select
                     value={locale}
                     onChange={(event) => changeLanguage(event.target.value)}
@@ -23,7 +24,7 @@ const LanguageSwitcher = ({ type = 'buttons', variant = 'default' }) => {
     }
 
     return (
-        <div className={`inline-flex h-10 items-center rounded-xl border p-1 shadow-sm ${compact ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-slate-50'}`} aria-label="Choose language">
+        <div className={`inline-flex h-10 items-center rounded-xl border p-1 shadow-sm ${compact ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-slate-50'}`} aria-label={tr('Choose language', 'Pilih bahasa')}>
             {[
                 { value: 'en', label: 'EN', name: 'English' },
                 { value: 'ms', label: 'BM', name: 'Bahasa Melayu' },
@@ -44,7 +45,7 @@ const LanguageSwitcher = ({ type = 'buttons', variant = 'default' }) => {
                     </button>
                 );
             })}
-            {isChangingLanguage && <span className={`mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 ${compact ? 'border-slate-500 border-t-cyan-300' : 'border-sky-200 border-t-[#087bb8]'}`} aria-label="Changing language" />}
+            {isChangingLanguage && <span className={`mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 ${compact ? 'border-slate-500 border-t-cyan-300' : 'border-sky-200 border-t-[#087bb8]'}`} aria-label={tr('Changing language', 'Sedang menukar bahasa')} />}
         </div>
     );
 };

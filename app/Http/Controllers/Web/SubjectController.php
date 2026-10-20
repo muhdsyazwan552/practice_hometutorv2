@@ -33,42 +33,7 @@ class SubjectController extends Controller
             return response()->json(['error' => 'Missing required parameters'], 400);
         }
 
-        // Build the topic/mastery tree once and reuse it for both the cache
-        // rebuild and the sidebar list — this used to call
-        // getTopicsWithMastery() twice per request (once inside
-        // updateProgressCache, once here), which was half of why this
-        // endpoint felt slow.
-        $topics = $this->masteryService->getTopicsWithMastery($userId, $subjectId, $levelId);
-
-        // Rebuild from the current topic/subtopic tree so old flat caches do not leak into Mission.
-        $this->masteryService->updateProgressCache($userId, $subjectId, $levelId, $topics);
-
-        // Get overall progress
-        $progress = $this->masteryService->getUserProgress($userId, $subjectId, $levelId);
-
-        $topicsFormatted = $topics->map(function ($topic) {
-            return [
-                'id' => $topic['id'],
-                'title' => $topic['name'],
-                'color' => $topic['mastery_color'],
-                'mastery_level' => $topic['mastery_level'],
-                'current_score' => $topic['current_score'],
-                'total_attempts' => $topic['total_attempts'],
-                'subtopic_count' => count($topic['subtopics']),
-            ];
-        });
-
-        return response()->json([
-            'percentage' => $progress ? round($progress->overall_percentage) : 0,
-            'skills' => [
-                'mastered' => $progress->mastered_count ?? 0,
-                'proficient' => $progress->proficient_count ?? 0,
-                'familiar' => $progress->familiar_count ?? 0,
-                'practiced' => $progress->practiced_count ?? 0,
-                'needPractice' => $progress->need_practice_count ?? 0,
-            ],
-            'topics' => $topicsFormatted
-        ]);
+        return response()->json($this->masteryService->getMissionProgress($userId, $subjectId, $levelId));
     }
 
     /**

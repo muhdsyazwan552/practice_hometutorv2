@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const formatTitle = (value = '') => value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+const displayStandard = (value, locale) => locale === 'ms' ? value.replace(/^Form\s+(\d+)$/i, 'Tingkatan $1') : value;
 
 export default function SubjectLayout({
   children,
@@ -21,13 +22,14 @@ export default function SubjectLayout({
   onStandardChange,
   selectedStandard: propSelectedStandard,
   isLoading = false,
-  loadingMessage = 'Loading your course…',
+  loadingMessage,
 }) {
   const { props } = usePage();
   const { form, level_id, subject_id, studentTheme, availableForms } = props;
   const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
   const { t, locale } = useLanguage();
   const [internalLoading, setInternalLoading] = useState(false);
+  const [navigationMessage, setNavigationMessage] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [internalStandard, setInternalStandard] = useState(propSelectedStandard || form || 'Form 4');
   const selectedStandard = propSelectedStandard ?? internalStandard;
@@ -36,16 +38,38 @@ export default function SubjectLayout({
     : ['Form 4', 'Form 5'];
 
   const tabs = useMemo(() => [
-    { key: 'practice', label: t('practice', 'Learn'), icon: AcademicCapIcon, routeName: 'subject-page' },
-    { key: 'mission', label: t('mission', 'Practice'), icon: SparklesIcon, routeName: 'subject-mission-page' },
-    { key: 'report', label: t('report', 'Progress'), icon: ChartBarIcon, routeName: 'subject-report-page' },
+    { key: 'practice', label: t('practice', 'Practice'), icon: AcademicCapIcon, routeName: 'subject-page' },
+    { key: 'mission', label: t('mission', 'Mission'), icon: SparklesIcon, routeName: 'subject-mission-page' },
+    { key: 'report', label: t('report', 'Report'), icon: ChartBarIcon, routeName: 'subject-report-page' },
   ], [t, locale]);
 
   useEffect(() => {
-    const stopStart = router.on('start', () => setInternalLoading(true));
+    const stopStart = router.on('start', (event) => {
+      const path = new URL(String(event.detail.visit.url), window.location.origin).pathname;
+      const tr = (en, ms) => locale === 'ms' ? ms : en;
+      const message = path.includes('/change-language')
+        ? tr('Changing language…', 'Sedang menukar bahasa…')
+        : path.includes('/mission')
+          ? tr('Loading missions…', 'Sedang memuatkan misi…')
+        : path.includes('/report')
+          ? tr('Loading progress report…', 'Sedang memuatkan laporan kemajuan…')
+          : path.includes('/interact')
+            ? tr('Loading interactive activities…', 'Sedang memuatkan aktiviti interaktif…')
+            : path.includes('/objective-page') || path.includes('/subjective-page')
+              ? tr('Loading practice questions…', 'Sedang memuatkan soalan latihan…')
+              : path.includes('/dashboard')
+                ? tr('Loading dashboard…', 'Sedang memuatkan papan pemuka…')
+                : path.includes('/logout')
+                  ? tr('Signing out…', 'Sedang log keluar…')
+            : path.includes('/subject/')
+              ? tr('Loading course topics…', 'Sedang memuatkan topik kursus…')
+              : tr('Loading…', 'Sedang memuatkan…');
+      setNavigationMessage(message);
+      setInternalLoading(true);
+    });
     const stopFinish = router.on('finish', () => setInternalLoading(false));
     return () => { stopStart(); stopFinish(); };
-  }, []);
+  }, [locale]);
 
   const selectStandard = (standard) => {
     setInternalStandard(standard);
@@ -55,10 +79,13 @@ export default function SubjectLayout({
 
   const title = formatTitle(subject);
   const showLoading = isLoading || internalLoading;
+  const activeLoadingMessage = internalLoading
+    ? navigationMessage
+    : loadingMessage || (locale === 'ms' ? 'Sedang memuatkan topik kursus…' : 'Loading course topics…');
 
   return (
     <div className="student-theme-shell min-h-screen text-slate-900" data-theme-style={studentTheme?.slug} style={{ '--theme-page': palette.page, '--theme-card': palette.card, '--theme-accent': palette.accent, '--theme-hero': palette.hero, '--theme-ink': palette.ink }}>
-      {showLoading && <ThemeLoader variant="overlay" message={loadingMessage} />}
+      {showLoading && <ThemeLoader variant="overlay" message={activeLoadingMessage} />}
 
       <SubjectNavbar title={title} />
 
@@ -74,20 +101,20 @@ export default function SubjectLayout({
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div>
               <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300">
-                <AcademicCapIcon className="h-4 w-4" /> Course workspace
+                <AcademicCapIcon className="h-4 w-4" /> {locale === 'ms' ? 'Ruang kursus' : 'Course workspace'}
               </div>
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">Learn each topic at your pace, practise your skills, and track every milestone.</p>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{locale === 'ms' ? 'Pelajari setiap topik mengikut kemampuan anda, buat latihan dan ikuti kemajuan anda.' : 'Learn each topic at your pace, practise your skills, and track every milestone.'}</p>
             </div>
             <div className="relative">
               <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex min-w-[150px] items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold backdrop-blur-sm transition hover:bg-white/15">
-                <span>{selectedStandard}</span><ChevronDownIcon className={`h-4 w-4 transition ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <span>{displayStandard(selectedStandard, locale)}</span><ChevronDownIcon className={`h-4 w-4 transition ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl">
                   {standardOptions.map((standard) => (
                     <button key={standard} onClick={() => selectStandard(standard)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm ${selectedStandard === standard ? 'bg-indigo-50 font-semibold text-indigo-700' : 'hover:bg-slate-50'}`}>
-                      {standard}{selectedStandard === standard && <CheckIcon className="h-4 w-4" />}
+                      {displayStandard(standard, locale)}{selectedStandard === standard && <CheckIcon className="h-4 w-4" />}
                     </button>
                   ))}
                 </div>
@@ -98,7 +125,7 @@ export default function SubjectLayout({
       </header>
 
       <div className="sticky top-[68px] z-40 border-b sm:top-[76px] bg-white/90 backdrop-blur-xl" style={{ borderColor: `${palette.accent}55` }}>
-        <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8" aria-label="Course sections">
+        <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8" aria-label={locale === 'ms' ? 'Bahagian kursus' : 'Course sections'}>
           {tabs.map((tab) => {
             const active = route().current(tab.routeName);
             const TabIcon = tab.icon;

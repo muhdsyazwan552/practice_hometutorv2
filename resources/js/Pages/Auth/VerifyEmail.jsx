@@ -1,8 +1,14 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function VerifyEmail({ status }) {
+    const alert = useThemedAlert();
+    const handleLogout = async () => {
+        const result = await alert.confirm({ title: alert.tr('Sign out?', 'Log keluar?'), text: alert.tr('You can verify your email after signing in again.', 'Anda boleh mengesahkan e-mel selepas log masuk semula.'), confirmText: alert.tr('Sign out', 'Log keluar'), icon: 'warning' });
+        if (result.isConfirmed) router.post(route('logout'));
+    };
     const { post, processing } = useForm({});
 
     const submit = (e) => {
@@ -35,14 +41,13 @@ export default function VerifyEmail({ status }) {
                         Resend Verification Email
                     </PrimaryButton>
 
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
+                    <button
+                        type="button"
+                        onClick={handleLogout}
                         className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                        Log Out
-                    </Link>
+                        {alert.tr('Sign out', 'Log keluar')}
+                    </button>
                 </div>
             </form>
         </GuestLayout>

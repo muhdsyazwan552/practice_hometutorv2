@@ -231,6 +231,9 @@ class SubjectContentController extends Controller
             }
         }
 
+        // Keep the chosen level when the student opens another subject.
+        Session::put('current_course_form', $form);
+
         // ✅ Get content data
         $contentData = $this->getOptimizedContent($subjectId, $levelId, $userId);
 

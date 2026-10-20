@@ -1,6 +1,7 @@
 import React from 'react';
 import { usePage } from '@inertiajs/react';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 import StandardFooter from '@/Components/StandardFooter';
 import QuestionHeader from '@/Components/QuestionHeader';
@@ -24,6 +25,7 @@ const ObjectiveQuestionLayout = ({
   onExitWithResults
 }) => {
   const { studentTheme } = usePage().props;
+  const alert = useThemedAlert();
   const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
 
   const formatSubjectName = (subject) => {
@@ -34,13 +36,20 @@ const ObjectiveQuestionLayout = ({
   };
 
    // Handle back/exit logic
-  const handleBackButtonClick = () => {
+  const handleBackButtonClick = async () => {
     if (answeredQuestions && answeredQuestions.size > 0) {
       if (onExitWithResults) {
         // Use custom exit handler that shows results
         onExitWithResults();
-      } else if (window.confirm('Exit quiz? Answered questions will be saved. Unanswered questions will be marked as skipped.')) {
-        handleExitQuiz && handleExitQuiz();
+      } else {
+        const result = await alert.confirm({
+          title: alert.tr('Exit practice?', 'Keluar daripada latihan?'),
+          text: alert.tr('Answered questions will be saved. Remaining questions will be marked as skipped.', 'Soalan yang telah dijawab akan disimpan. Soalan selebihnya ditanda sebagai dilangkau.'),
+          confirmText: alert.tr('Save & exit', 'Simpan & keluar'),
+          cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+          icon: 'warning',
+        });
+        if (result.isConfirmed) handleExitQuiz?.();
       }
     } else {
       handleBackNavigation ? handleBackNavigation() : window.history.back();
@@ -57,7 +66,7 @@ const ObjectiveQuestionLayout = ({
         timeText={formatTime(timeElapsed)}
         timeClass={getTimeColor()}
         onBack={handleBackButtonClick}
-        backLabel={answeredQuestions && answeredQuestions.size > 0 ? 'Exit & save' : 'Back'}
+        backLabel={answeredQuestions && answeredQuestions.size > 0 ? alert.tr('Exit & save', 'Keluar & simpan') : alert.tr('Back', 'Kembali')}
       />
 
       <div className="student-theme-content relative pb-0 pt-0">

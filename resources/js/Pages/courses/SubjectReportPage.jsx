@@ -3,8 +3,11 @@ import { usePage, router } from "@inertiajs/react";
 import SubjectLayout from "@/Layouts/SubjectLayout";
 import DonutChart from "@/Components/ChartJsDonut";
 import SubtopicDetailModal from "@/Components/SubtopicDetailModal";
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function SubjectReportPage() {
+    const { locale } = useLanguage();
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
     const { props } = usePage();
 
     const {
@@ -157,7 +160,7 @@ export default function SubjectReportPage() {
                             percentage={averageScore || 0}
                             size={36}
                             strokeWidth={4}
-                            label="Accuracy"
+                            label={tr('Accuracy', 'Ketepatan')}
                         />
                     </div>
                 )}
@@ -165,12 +168,12 @@ export default function SubjectReportPage() {
 
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 sm:hidden">
                 <span>
-                    {totalSessions || 0} session{totalSessions === 1 ? "" : "s"}
+                    {totalSessions || 0} {tr(totalSessions === 1 ? 'session' : 'sessions', 'sesi')}
                 </span>
                 {activeTab === "Objective" && (
-                    <span>Score: {scoreStatistic || "—"}</span>
+                    <span>{tr('Score', 'Markah')}: {scoreStatistic || "—"}</span>
                 )}
-                <span>Last: {lastSession || "-"}</span>
+                <span>{tr('Last', 'Terakhir')}: {lastSession || "-"}</span>
             </div>
 
             <div className="hidden text-center text-sm text-gray-600 sm:block">
@@ -190,7 +193,7 @@ export default function SubjectReportPage() {
                             percentage={averageScore || 0}
                             size={40}
                             strokeWidth={4}
-                            label="Accuracy"
+                            label={tr('Accuracy', 'Ketepatan')}
                         />
                     </div>
                     <div className="hidden text-center text-sm text-gray-600 sm:block">
@@ -214,19 +217,17 @@ export default function SubjectReportPage() {
             selectedStandard={currentStandard}
             onStandardChange={handleStandardChange}
             isLoading={isLoading}
-            loadingMessage={`Loading ${activeTab.toLowerCase()} progress…`}
+            loadingMessage={tr(`Loading ${activeTab.toLowerCase()} progress…`, `Sedang memuatkan kemajuan ${activeTab === 'Objective' ? 'objektif' : 'subjektif'}…`)}
         >
             <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
                 {/* Header */}
                 <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                            {activeTab} Analysis
+                            {tr(activeTab, activeTab === 'Objective' ? 'Objektif' : 'Subjektif')} {tr('Analysis', 'Analisis')}
                         </h2>
                         <p className="mt-1 text-sm text-gray-500 sm:text-base">
-                            A look back at the {activeTab.toLowerCase()}{" "}
-                            practice you've done, so you can see where you're
-                            improving.
+                            {tr(`Review your ${activeTab.toLowerCase()} practice and see where you are improving.`, `Semak latihan ${activeTab === 'Objective' ? 'objektif' : 'subjektif'} anda dan lihat perkembangan anda.`)}
                         </p>
                     </div>
 
@@ -238,7 +239,7 @@ export default function SubjectReportPage() {
                             onClick={() => handleTabChange("Objective")}
                             disabled={isLoading}
                         >
-                            Objective
+                            {tr('Objective', 'Objektif')}
                         </button>
 
                         <button
@@ -247,7 +248,7 @@ export default function SubjectReportPage() {
                             onClick={() => handleTabChange("Subjective")}
                             disabled={isLoading}
                         >
-                            Subjective
+                            {tr('Subjective', 'Subjektif')}
                         </button>
                     </div>
                 </div>
@@ -256,13 +257,13 @@ export default function SubjectReportPage() {
                 <div className={`border shadow-sm ${themeCardRadius}`} style={themeSurface}>
                     <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                         <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
-                            Progress Details
+                            {tr('Progress Details', 'Butiran Kemajuan')}
                         </h3>
 
                         {/* Time range */}
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-gray-500">
-                                Activity from:
+                                {tr('Activity from:', 'Aktiviti sejak:')}
                             </span>
                             <select
                                 value={timeRange}
@@ -272,10 +273,10 @@ export default function SubjectReportPage() {
                                 className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm"
                                 disabled={isLoading}
                             >
-                                <option>Last 7 Days</option>
-                                <option>Last 30 Days</option>
-                                <option>Last 3 Months</option>
-                                <option>All Time</option>
+                                <option value="Last 7 Days">{tr('Last 7 Days', '7 Hari Terakhir')}</option>
+                                <option value="Last 30 Days">{tr('Last 30 Days', '30 Hari Terakhir')}</option>
+                                <option value="Last 3 Months">{tr('Last 3 Months', '3 Bulan Terakhir')}</option>
+                                <option value="All Time">{tr('All Time', 'Sepanjang Masa')}</option>
                             </select>
                         </div>
                     </div>
@@ -300,8 +301,7 @@ export default function SubjectReportPage() {
                                     />
                                 </svg>
                                 <p className="text-gray-500">
-                                    No {activeTab.toLowerCase()} topics with
-                                    questions available
+                                    {tr(`No ${activeTab.toLowerCase()} topics with questions available`, `Tiada topik ${activeTab === 'Objective' ? 'objektif' : 'subjektif'} dengan soalan tersedia`)}
                                 </p>
                             </div>
                         ) : (
@@ -339,26 +339,26 @@ export default function SubjectReportPage() {
                                             <div
                                                 className={`mb-2 hidden text-xs font-semibold uppercase tracking-wide text-gray-400 sm:grid sm:gap-4 sm:px-6 ${gridColsClass}`}
                                             >
-                                                <div>Subtopics</div>
+                                                <div>{tr('Subtopics', 'Subtopik')}</div>
                                                 <div className="text-center">
-                                                    Total Session
+                                                    {tr('Total Sessions', 'Jumlah Sesi')}
                                                 </div>
                                                 {activeTab === "Objective" && (
                                                     <>
                                                         <div className="text-center">
-                                                            Score Statistic
+                                                            {tr('Score Statistic', 'Statistik Markah')}
                                                         </div>
                                                         <div className="text-center">
-                                                            Average Score
+                                                            {tr('Average Score', 'Purata Markah')}
                                                         </div>
                                                         <div className="text-center">
-                                                            Last Session
+                                                            {tr('Last Session', 'Sesi Terakhir')}
                                                         </div>
                                                     </>
                                                 )}
                                                 {activeTab === "Subjective" && (
                                                     <div className="text-center">
-                                                        Last Session
+                                                        {tr('Last Session', 'Sesi Terakhir')}
                                                     </div>
                                                 )}
                                             </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { addImagePathLabels } from '@/Components/ImagePathLabel';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 /**
  * Comprehension passage (CMCQ / CESSAY) shown above the question.
@@ -7,6 +8,7 @@ import { addImagePathLabels } from '@/Components/ImagePathLabel';
  * instead of pushing the question and answers off screen.
  */
 export default function QuestionPassage({ html }) {
+    const { locale } = useLanguage();
     // Some passages are only an image, so an <img> counts as content.
     const hasContent = html && (/<img\b/i.test(html) || html.replace(/<[^>]*>|&nbsp;|\s/g, '') !== '');
     if (!hasContent) return null;
@@ -18,7 +20,7 @@ export default function QuestionPassage({ html }) {
 
     return (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-amber-700">Petikan</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-amber-700">{locale === 'ms' ? 'Petikan' : 'Passage'}</p>
             <div
                 className="max-h-80 overflow-y-auto pr-1 text-gray-800 leading-relaxed prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: processedHtml }}

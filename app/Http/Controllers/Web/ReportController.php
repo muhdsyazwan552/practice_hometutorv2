@@ -122,6 +122,8 @@ class ReportController extends Controller
             abort(404, 'Subject not found');
         }
 
+        Session::put('current_course_form', $form);
+
         // Map question type to ID
         $questionTypeId = $this->getQuestionTypeId($questionType);
 

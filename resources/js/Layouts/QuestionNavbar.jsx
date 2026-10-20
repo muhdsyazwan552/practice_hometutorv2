@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function QuestionNavbar({ title, visible = true }) {
+  const alert = useThemedAlert();
+  const handleLogout = async () => {
+    const result = await alert.confirm({ title: alert.tr('Sign out?', 'Log keluar?'), text: alert.tr('You will need to sign in again to continue learning.', 'Anda perlu log masuk semula untuk meneruskan pembelajaran.'), confirmText: alert.tr('Sign out', 'Log keluar'), icon: 'warning' });
+    if (result.isConfirmed) router.post(route('logout'));
+  };
   const { auth } = usePage().props;
   const user = auth?.user;
   const [isOpen, setIsOpen] = useState(false);
@@ -116,9 +122,9 @@ export default function QuestionNavbar({ title, visible = true }) {
                 </Dropdown.Trigger>
                 <Dropdown.Content>
                   <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                  <Dropdown.Link href={route('logout')} method="post" as="button">
-                    Log 
-                  </Dropdown.Link>
+                  <button type="button" onClick={handleLogout} className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100">
+                    {alert.tr('Sign out', 'Log keluar')}
+                  </button>
                 </Dropdown.Content>
               </Dropdown>
             </div>

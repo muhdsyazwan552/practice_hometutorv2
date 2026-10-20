@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function Lobby({ conversations: initialConversations, friends, user }) {
+    const alert = useThemedAlert();
     const [conversations, setConversations] = useState(initialConversations || []);
     const [activeConversation, setActiveConversation] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -145,13 +147,13 @@ export default function Lobby({ conversations: initialConversations, friends, us
                     setNewMessage('');
                 },
                 onError: (errors) => {
-                    alert('Failed to send message: ' + (errors.message || 'Unknown error'));
+                    void alert.message({ title: alert.tr('Message not sent', 'Mesej tidak dihantar'), text: errors.message || alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
                 }
             });
 
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again.');
+            void alert.message({ title: alert.tr('Message not sent', 'Mesej tidak dihantar'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
         } finally {
             setSending(false);
         }
@@ -173,7 +175,7 @@ export default function Lobby({ conversations: initialConversations, friends, us
 
         } catch (error) {
             console.error('Error starting conversation:', error);
-            alert('Failed to start conversation. Please try again.');
+            void alert.message({ title: alert.tr('Could not start conversation', 'Tidak dapat memulakan perbualan'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
         } finally {
             setLoading(false);
         }
@@ -196,7 +198,7 @@ export default function Lobby({ conversations: initialConversations, friends, us
 
         } catch (error) {
             console.error('Error starting quick chat:', error);
-            alert('Failed to start chat. Please try again.');
+            void alert.message({ title: alert.tr('Could not start chat', 'Tidak dapat memulakan sembang'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
         } finally {
             setLoading(false);
         }

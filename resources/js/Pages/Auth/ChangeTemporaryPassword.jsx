@@ -3,8 +3,14 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthCardLayout from '@/Layouts/AuthCardLayout';
 import { router, useForm } from '@inertiajs/react';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function ChangeTemporaryPassword({ name }) {
+    const alert = useThemedAlert();
+    const handleLogout = async () => {
+        const result = await alert.confirm({ title: alert.tr('Sign out?', 'Log keluar?'), text: alert.tr('You can set your new password the next time you sign in.', 'Anda boleh menetapkan kata laluan baharu apabila log masuk semula.'), confirmText: alert.tr('Sign out', 'Log keluar'), icon: 'warning' });
+        if (result.isConfirmed) router.post(route('logout'));
+    };
     const { data, setData, put, processing, errors, reset } = useForm({
         password: '',
         password_confirmation: '',
@@ -42,8 +48,8 @@ export default function ChangeTemporaryPassword({ name }) {
                 </PrimaryButton>
             </form>
 
-            <button type="button" onClick={() => router.post(route('logout'))} className="mt-6 w-full text-center text-sm font-medium text-slate-500 hover:text-slate-700">
-                Log out
+            <button type="button" onClick={handleLogout} className="mt-6 w-full text-center text-sm font-medium text-slate-500 hover:text-slate-700">
+                {alert.tr('Sign out', 'Log keluar')}
             </button>
         </AuthCardLayout>
     );

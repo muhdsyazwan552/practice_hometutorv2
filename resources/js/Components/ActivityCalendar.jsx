@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
-const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAY_LABELS = {
+  en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+  ms: ['Ah', 'Is', 'Se', 'Ra', 'Kh', 'Ju', 'Sa'],
+};
 const PRACTICE_COLOR = '#22c55e';
 
 function pad2(value) {
@@ -12,7 +16,7 @@ function buildDateKey(year, month, day) {
   return `${year}-${pad2(month)}-${pad2(day)}`;
 }
 
-function MonthGrid({ month, loginSet, practiceSet, todayKey }) {
+function MonthGrid({ month, loginSet, practiceSet, todayKey, locale }) {
   const cells = useMemo(() => {
     const list = [];
     for (let i = 0; i < month.firstWeekday; i += 1) {
@@ -34,7 +38,7 @@ function MonthGrid({ month, loginSet, practiceSet, todayKey }) {
       }}
     >
       <div className="grid grid-cols-7 justify-items-center gap-1.5 text-center text-[11px] font-extrabold uppercase" style={{ color: 'color-mix(in srgb, var(--theme-accent) 70%, #475569)' }}>
-        {WEEKDAY_LABELS.map((label, index) => (
+        {WEEKDAY_LABELS[locale === 'ms' ? 'ms' : 'en'].map((label, index) => (
           <span key={`${month.year}-${month.month}-wd-${index}`}>{label}</span>
         ))}
       </div>
@@ -80,7 +84,7 @@ function MonthGrid({ month, loginSet, practiceSet, todayKey }) {
                 />
               )}
               <span
-                title={`${dateKey}${loggedIn ? ' · login' : ''}${practised ? ' · practice' : ''}`}
+                title={`${dateKey}${loggedIn ? locale === 'ms' ? ' · log masuk' : ' · login' : ''}${practised ? locale === 'ms' ? ' · latihan' : ' · practice' : ''}`}
                 className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-transform duration-200 hover:scale-110 sm:h-10 sm:w-10 ${
                   isToday ? 'ring-[3px] ring-offset-2' : ''
                 }`}
@@ -97,6 +101,8 @@ function MonthGrid({ month, loginSet, practiceSet, todayKey }) {
 }
 
 export default function ActivityCalendar({ months = [], loginDates = [], practiceDates = [] }) {
+  const { locale } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
   const loginSet = useMemo(() => new Set(loginDates), [loginDates]);
   const practiceSet = useMemo(() => new Set(practiceDates), [practiceDates]);
   const todayKey = useMemo(() => {
@@ -110,6 +116,8 @@ export default function ActivityCalendar({ months = [], loginDates = [], practic
   if (!months.length) return null;
 
   const activeMonth = months[activeIndex] ?? months[months.length - 1];
+  const monthLabel = new Intl.DateTimeFormat(locale === 'ms' ? 'ms-MY' : 'en-MY', { month: 'long', year: 'numeric' })
+    .format(new Date(activeMonth.year, activeMonth.month - 1, 1));
   const canGoPrev = activeIndex > 0;
   const canGoNext = activeIndex < months.length - 1;
 
@@ -125,11 +133,11 @@ export default function ActivityCalendar({ months = [], loginDates = [], practic
             className="flex items-center gap-1 rounded-full border-2 bg-white px-3.5 py-1.5 text-xs font-bold transition-transform hover:scale-105 active:scale-95"
             style={{ ...pillBorder, color: 'var(--theme-accent)' }}
           >
-            <ChevronLeftIcon className="h-4 w-4" /> Bulan lepas
+            <ChevronLeftIcon className="h-4 w-4" /> {tr('Previous month', 'Bulan lepas')}
           </button>
         ) : <span />}
         <p className="rounded-full px-4 py-1 text-sm font-extrabold" style={{ background: 'color-mix(in srgb, var(--theme-accent) 12%, white)', color: 'var(--theme-accent)' }}>
-          {activeMonth.label}
+          {monthLabel}
         </p>
         {canGoNext ? (
           <button
@@ -138,18 +146,18 @@ export default function ActivityCalendar({ months = [], loginDates = [], practic
             className="flex items-center gap-1 rounded-full border-2 bg-white px-3.5 py-1.5 text-xs font-bold transition-transform hover:scale-105 active:scale-95"
             style={{ ...pillBorder, color: 'var(--theme-accent)' }}
           >
-            Bulan depan <ChevronRightIcon className="h-4 w-4" />
+            {tr('Next month', 'Bulan depan')} <ChevronRightIcon className="h-4 w-4" />
           </button>
         ) : <span />}
       </div>
 
-      <MonthGrid month={activeMonth} loginSet={loginSet} practiceSet={practiceSet} todayKey={todayKey} />
+      <MonthGrid month={activeMonth} loginSet={loginSet} practiceSet={practiceSet} todayKey={todayKey} locale={locale} />
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold" style={{ color: '#64748b' }}>
-        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: 'var(--theme-accent)' }} /> Log masuk</span>
-        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: PRACTICE_COLOR }} /> Buat latihan</span>
-        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: `linear-gradient(135deg, var(--theme-accent), ${PRACTICE_COLOR})` }} /> Log masuk &amp; latihan</span>
-        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full ring-2 ring-offset-1" style={{ '--tw-ring-color': '#f59e0b' }} /> Hari ini</span>
+        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: 'var(--theme-accent)' }} /> {tr('Login', 'Log masuk')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: PRACTICE_COLOR }} /> {tr('Practice', 'Buat latihan')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full shadow-sm" style={{ background: `linear-gradient(135deg, var(--theme-accent), ${PRACTICE_COLOR})` }} /> {tr('Login & practice', 'Log masuk & latihan')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-full ring-2 ring-offset-1" style={{ '--tw-ring-color': '#f59e0b' }} /> {tr('Today', 'Hari ini')}</span>
       </div>
     </div>
   );

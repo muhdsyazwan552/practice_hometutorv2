@@ -6,9 +6,11 @@ import PageDrawingTool from '@/Components/PageDrawingTool';
 import AutoNotes from '@/Components/AutoNotes';
 import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ThemeLoader from '@/Components/ThemeLoader';
+import useThemedAlert from '@/utils/useThemedAlert';
 import { useQuestionTools } from '@/Components/QuestionTools';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 import QuestionPassage from '@/Components/QuestionPassage';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 /**
  * QuestionDisplay Component
@@ -18,6 +20,7 @@ import QuestionPassage from '@/Components/QuestionPassage';
  * @returns {JSX.Element} - Rendered question content
  */
 const QuestionDisplay = ({ question }) => {
+  const { locale } = useLanguage();
   if (!question) return null;
 
   /**
@@ -59,7 +62,7 @@ const QuestionDisplay = ({ question }) => {
             <div className="max-w-full">
               <img
                 src={imageUrl}
-                alt="Question"
+                alt={locale === 'ms' ? 'Soalan' : 'Question'}
                 className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain"
               />
               <ImagePathLabel path={imageUrl} />
@@ -74,9 +77,9 @@ const QuestionDisplay = ({ question }) => {
     // Fallback when no question content is available
     return (
       <div className="text-center p-4 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No question content available</p>
+        <p className="text-gray-500">{locale === 'ms' ? 'Kandungan soalan tidak tersedia' : 'No question content available'}</p>
         {question.question_text && (
-          <p className="mt-2 text-sm text-gray-600">Question text: {question.question_text}</p>
+          <p className="mt-2 text-sm text-gray-600">{locale === 'ms' ? 'Teks soalan' : 'Question text'}: {question.question_text}</p>
         )}
       </div>
     );
@@ -109,6 +112,7 @@ const QuestionDisplay = ({ question }) => {
  * Format: A.(image) - letter inline with image
  */
 const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDisabled, onClick }) => {
+  const { locale } = useLanguage();
   /**
    * Determines the CSS classes based on option state
    */
@@ -164,7 +168,7 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
             <div className="relative">
               <img
                 src={option.file}
-                alt={`Option ${optionLetter}`}
+                alt={`${locale === 'ms' ? 'Pilihan' : 'Option'} ${optionLetter}`}
                 className="max-w-full h-auto rounded-lg shadow-sm max-h-32 object-contain"
               />
               <ImagePathLabel path={option.file} />
@@ -203,7 +207,7 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
           {optionLetter}.
         </span>
         <span className="text-sm md:text-base lg:text-base xl:text-lg">
-          {optionText || `Option ${optionLetter}`}
+          {optionText || `${locale === 'ms' ? 'Pilihan' : 'Option'} ${optionLetter}`}
         </span>
       </div>
     );
@@ -246,6 +250,7 @@ const buildQuestionReview = (questions, firstTryResults, answeredQuestions) =>
  * @returns {JSX.Element} - The complete quiz interface
  */
 export default function ObjectiveQuestion() {
+  const alert = useThemedAlert();
   // Extract props from Inertia page
   const {
     subject,
@@ -384,6 +389,10 @@ const handleExitWithResults = async () => {
 
   // Save the practice session first
   try {
+    alert.loading({
+      title: alert.tr('Saving your progress…', 'Sedang menyimpan kemajuan…'),
+      text: alert.tr('Your results will appear shortly.', 'Keputusan anda akan dipaparkan sebentar lagi.'),
+    });
     const endTime = new Date().toISOString();
 
     // Create question attempts array including UNFINISHED questions
@@ -427,7 +436,7 @@ const handleExitWithResults = async () => {
       unfinishedQuestions: allQuestionAttempts.length - questionAttempts.length
     });
 
-    await router.post('/practice-session/objective', {
+    await new Promise((resolve, reject) => router.post('/practice-session/objective', {
       subject_id: subject_id,
       topic_id: topic_id,
       start_at: practiceStartTime,
@@ -442,21 +451,25 @@ const handleExitWithResults = async () => {
         first_try_result: result ? result.isCorrect : null,
         chosen_answer_id: result ? result.answerId : 0 // 0 for unfinished
       }))
-    });
+    }, { onSuccess: resolve, onError: reject, onCancel: () => reject(new Error('Request cancelled')) }));
 
     console.log('✅ Early exit session saved with unfinished questions');
 
     // AFTER saving, show results
+    alert.close();
     setEarlyExitResults(exitResults);
     setShowEarlyExitResults(true);
     setTimerRunning(false);
 
   } catch (error) {
     console.error('❌ Failed to save early exit session:', error);
-    // Still show results even if save fails
-    setEarlyExitResults(exitResults);
-    setShowEarlyExitResults(true);
-    setTimerRunning(false);
+    alert.close();
+    setTimerRunning(true);
+    await alert.message({
+      title: alert.tr('Progress was not saved', 'Kemajuan tidak disimpan'),
+      text: alert.tr('Please try exiting again.', 'Sila cuba keluar sekali lagi.'),
+      icon: 'error',
+    });
   }
 };
 
@@ -471,16 +484,18 @@ const handleExitWithResults = async () => {
   /**
    * Handle exit confirmation from layout
    */
-  const handleExitConfirmation = () => {
-    // Show custom confirmation
-    const shouldShowResults = window.confirm(
-      `You have answered ${answeredQuestions.size} out of ${questions.length} questions.\n\n` +
-      'Do you want to:\n' +
-      '• "OK" - See your results and exit\n' +
-      '• "Cancel" - Return to quiz'
-    );
-
-    if (shouldShowResults) {
+  const handleExitConfirmation = async () => {
+    const result = await alert.confirm({
+      title: alert.tr('Exit practice?', 'Keluar daripada latihan?'),
+      text: alert.tr(
+        `You answered ${answeredQuestions.size} of ${questions.length} questions. Your progress will be saved and the remaining questions marked as skipped.`,
+        `Anda menjawab ${answeredQuestions.size} daripada ${questions.length} soalan. Kemajuan akan disimpan dan soalan selebihnya ditanda sebagai dilangkau.`
+      ),
+      confirmText: alert.tr('Save & view results', 'Simpan & lihat keputusan'),
+      cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+      icon: 'warning',
+    });
+    if (result.isConfirmed) {
       handleExitWithResults();
     }
   };
@@ -499,6 +514,7 @@ const handleExitQuiz = async () => {
   const endTime = new Date().toISOString();
 
   try {
+    alert.loading({ title: alert.tr('Saving your progress…', 'Sedang menyimpan kemajuan…') });
     // Create question attempts array including UNFINISHED questions
     const allQuestionAttempts = [];
     
@@ -532,7 +548,7 @@ const handleExitQuiz = async () => {
       }
     });
 
-    await router.post('/practice-session/objective', {
+    await new Promise((resolve, reject) => router.post('/practice-session/objective', {
       subject_id: subject_id,
       topic_id: topic_id,
       start_at: practiceStartTime,
@@ -547,28 +563,35 @@ const handleExitQuiz = async () => {
         first_try_result: result ? result.isCorrect : null,
         chosen_answer_id: result ? result.answerId : 0 // 0 for unfinished
       }))
-    });
+    }, { onSuccess: resolve, onError: reject, onCancel: () => reject(new Error('Request cancelled')) }));
 
     console.log('✅ Session saved for early exit with all questions');
+    alert.close();
     returnToSubjectPage();
 
   } catch (error) {
     console.error('❌ Failed to save session:', error);
-    alert('Failed to save your progress. Please try again.');
+    alert.close();
+    await alert.message({ title: alert.tr('Progress was not saved', 'Kemajuan tidak disimpan'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
   }
 };
 
   /**
  * Handle back navigation logic
  */
-  const handleBackNavigation = () => {
+  const handleBackNavigation = async () => {
     // If there's progress, show custom confirmation
     if (answeredQuestions.size > 0 || questionAttempts.length > 0) {
       // Use the exit confirmation handler that shows results
       handleExitConfirmation();
     } else {
-      // No progress: return to the subject and selected level directly.
-      returnToSubjectPage();
+      const result = await alert.confirm({
+        title: alert.tr('Exit practice?', 'Keluar daripada latihan?'),
+        text: alert.tr('You have not answered any questions yet.', 'Anda belum menjawab sebarang soalan.'),
+        confirmText: alert.tr('Exit practice', 'Keluar latihan'),
+        cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+      });
+      if (result.isConfirmed) returnToSubjectPage();
     }
   };
 
@@ -1258,7 +1281,7 @@ const savePracticeSession = async () => {
   const FooterContent = () => (
     <div className="mx-auto flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       {/* Left side: Tools menu (shared with the subjective page) */}
-      <div className="flex items-center gap-2">{toolsButton}</div>
+      <div className="hidden items-center gap-2 sm:flex">{toolsButton}</div>
 
       {/* Middle: Answer check buttons */}
       <div className="order-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -1272,7 +1295,7 @@ const savePracticeSession = async () => {
               : "bg-green-600 text-white hover:bg-green-700"
               }`}
           >
-            Check Answer
+            {alert.tr('Check Answer', 'Semak Jawapan')}
           </button>
         )}
 
@@ -1282,7 +1305,7 @@ const savePracticeSession = async () => {
           !answeredQuestions.has(currentQuestionIndex) && (
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               <span className="text-red-600 font-medium text-sm md:text-base">
-                Select another answer
+                {alert.tr('Select another answer', 'Pilih jawapan lain')}
               </span>
               <button
                 onClick={handleCheckAnswer}
@@ -1292,7 +1315,7 @@ const savePracticeSession = async () => {
                   : "bg-orange-600 text-white hover:bg-orange-700"
                   }`}
               >
-                {isCheckAgainDisabled ? "Checking..." : "Check Again"}
+                {isCheckAgainDisabled ? alert.tr('Checking…', 'Sedang menyemak…') : alert.tr('Check Again', 'Semak Semula')}
               </button>
             </div>
           )}
@@ -1304,8 +1327,8 @@ const savePracticeSession = async () => {
             className="order-3 min-h-12 w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:order-none sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base"
           >
             {currentQuestionIndex < questions.length - 1
-              ? "Next Question"
-              : "Finish Quiz"}
+              ? alert.tr('Next Question', 'Soalan Seterusnya')
+              : alert.tr('Finish Quiz', 'Tamatkan Kuiz')}
           </button>
         )}
       </div>
@@ -1393,7 +1416,7 @@ const savePracticeSession = async () => {
 
   // Loading State
   if (loading) {
-    return <ThemeLoader variant="page" message="Loading new questions…" detail="Preparing your quiz" />;
+    return <ThemeLoader variant="page" message={alert.tr('Loading practice questions…', 'Sedang memuatkan soalan latihan…')} detail={alert.tr('Preparing this practice session.', 'Sedang menyediakan sesi latihan ini.')} />;
   }
 
   // No Questions Available State
@@ -1402,13 +1425,13 @@ const savePracticeSession = async () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">No Questions Available</h1>
-            <p className="text-gray-600 mb-6">No questions found for this topic.</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">{alert.tr('No Questions Available', 'Tiada Soalan Tersedia')}</h1>
+            <p className="text-gray-600 mb-6">{alert.tr('No questions found for this topic.', 'Tiada soalan ditemui untuk topik ini.')}</p>
             <button
               onClick={handleRestartQuiz}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Try Again
+              {alert.tr('Try Again', 'Cuba Lagi')}
             </button>
           </div>
         </div>
@@ -1480,9 +1503,9 @@ const savePracticeSession = async () => {
                     </svg>
                   </span>
                   <div className="min-w-0">
-                    <p className="font-bold text-emerald-700">Correct!</p>
+                    <p className="font-bold text-emerald-700">{alert.tr('Correct!', 'Betul!')}</p>
                     <p className="text-sm text-slate-500">
-                      {firstTryResults[currentQuestionIndex]?.isCorrect ? 'Perfect on first try!' : 'Well done.'}
+                      {firstTryResults[currentQuestionIndex]?.isCorrect ? alert.tr('Perfect on first try!', 'Tepat pada cubaan pertama!') : alert.tr('Well done.', 'Syabas.')}
                     </p>
                   </div>
                 </div>
@@ -1494,8 +1517,8 @@ const savePracticeSession = async () => {
                     </svg>
                   </span>
                   <div className="min-w-0">
-                    <p className="font-bold text-rose-700">Not quite!</p>
-                    <p className="text-sm text-slate-500">Give it another try.</p>
+                    <p className="font-bold text-rose-700">{alert.tr('Not quite!', 'Belum tepat!')}</p>
+                    <p className="text-sm text-slate-500">{alert.tr('Give it another try.', 'Cuba sekali lagi.')}</p>
                   </div>
                 </div>
               )}
@@ -1513,7 +1536,7 @@ const savePracticeSession = async () => {
                   </div>
                 </div>
                 {/* Instructions */}
-                <span className="text-gray-600 text-sm sm:text-sm mb-4 block">Pilih 1 jawapan : </span>
+                <span className="text-gray-600 text-sm sm:text-sm mb-4 block">{alert.tr('Choose one answer:', 'Pilih satu jawapan:')}</span>
 
                 {/* Answer Options */}
                 <div className="space-y-3 mb-6">
@@ -1552,7 +1575,7 @@ const savePracticeSession = async () => {
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Explanation:
+                      {alert.tr('Explanation:', 'Penerangan:')}
                     </h3>
                     <div
                       className="text-blue-700 text-sm sm:text-base prose prose-blue max-w-none"

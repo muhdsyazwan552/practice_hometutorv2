@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/Contexts/LanguageContext';
 import {
   KEYS,
   continuesFromAnswer,
@@ -80,6 +81,8 @@ function showValue(value) {
 
 /** Quadratic and simultaneous-equation solver (like the EQN mode on a Casio). */
 function EquationSolver() {
+  const { locale } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
   const [mode, setMode] = useState('quad');
   const [values, setValues] = useState({});
   const [answer, setAnswer] = useState(null);
@@ -100,7 +103,7 @@ function EquationSolver() {
   const solve = () => {
     const numbers = layout.rows.map((row) => row.map((name) => readNumber(values[name])));
     if (numbers.flat().some((number) => number === null)) {
-      setAnswer({ error: 'Fill in every box with a number (e.g. -3, 1/2, √2).' });
+      setAnswer({ error: tr('Fill in every box with a number (e.g. -3, 1/2, √2).', 'Isi setiap kotak dengan nombor (cth. -3, 1/2, √2).') });
       return;
     }
     if (mode === 'quad') {
@@ -114,9 +117,9 @@ function EquationSolver() {
 
   const quad = answer?.quad;
   const natureText = {
-    distinct: 'b² − 4ac > 0: two different real roots',
-    equal: 'b² − 4ac = 0: two equal real roots',
-    none: 'b² − 4ac < 0: no real roots',
+    distinct: tr('b² − 4ac > 0: two different real roots', 'b² − 4ac > 0: dua punca nyata berbeza'),
+    equal: tr('b² − 4ac = 0: two equal real roots', 'b² − 4ac = 0: dua punca nyata sama'),
+    none: tr('b² − 4ac < 0: no real roots', 'b² − 4ac < 0: tiada punca nyata'),
   };
 
   return (
@@ -124,7 +127,7 @@ function EquationSolver() {
       <div className="grid grid-cols-3 gap-1">
         {[['quad', 'Quadratic'], ['sim2', '2 unknowns'], ['sim3', '3 unknowns']].map(([key, label]) => (
           <button key={key} type="button" onClick={() => selectMode(key)} className={`h-7 rounded-md text-[11px] font-semibold ${mode === key ? 'bg-amber-500 text-slate-950' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-            {label}
+            {({ Quadratic: tr('Quadratic', 'Kuadratik'), '2 unknowns': tr('2 unknowns', '2 pemboleh ubah'), '3 unknowns': tr('3 unknowns', '3 pemboleh ubah') })[label] || label}
           </button>
         ))}
       </div>
@@ -151,7 +154,7 @@ function EquationSolver() {
         ))}
       </div>
 
-      <button type="button" onClick={solve} className={`h-8 w-full rounded-md ${STYLE.equals}`}>Solve</button>
+      <button type="button" onClick={solve} className={`h-8 w-full rounded-md ${STYLE.equals}`}>{tr('Solve', 'Selesaikan')}</button>
 
       {answer && (
         <div className="space-y-0.5 rounded-md bg-emerald-50 p-2 font-mono text-xs text-slate-900">
@@ -187,6 +190,8 @@ function EquationSolver() {
 }
 
 const ScientificCalculator = () => {
+  const { locale } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
   const [tokens, setTokens] = useState([]);
   const [result, setResult] = useState(null); // { value } or { error }
   const [justEvaluated, setJustEvaluated] = useState(false);
@@ -283,13 +288,13 @@ const ScientificCalculator = () => {
   let answerNote = '';
   if (result?.error) {
     answerText = result.error;
-    answerNote = 'Press DEL to fix, or AC to clear';
+    answerNote = tr('Press DEL to fix, or AC to clear', 'Tekan DEL untuk membetulkan, atau AC untuk mengosongkan');
   } else if (result?.value !== undefined) {
     answerText = formatNumber(result.value);
     if (view === 'frac') {
       const fraction = toFraction(result.value);
       if (fraction) answerText = fraction;
-      else answerNote = 'This answer is not a simple fraction';
+      else answerNote = tr('This answer is not a simple fraction', 'Jawapan ini bukan pecahan ringkas');
     } else if (view === 'dms') {
       answerText = toDMS(result.value);
     }
@@ -305,11 +310,11 @@ const ScientificCalculator = () => {
       {/* Screen */}
       <div className="mb-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-slate-900">
         <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-          <button type="button" onClick={() => press('ANGLE')} className="rounded bg-slate-900 px-1.5 py-px text-emerald-200" title="Switch degrees / radians">
+          <button type="button" onClick={() => press('ANGLE')} className="rounded bg-slate-900 px-1.5 py-px text-emerald-200" title={tr('Switch degrees / radians', 'Tukar darjah / radian')}>
             {angle}
           </button>
           {memory !== 0 && <span title={`Memory: ${formatNumber(memory)}`}>M</span>}
-          {view === 'frac' && <span>Fraction</span>}
+          {view === 'frac' && <span>{tr('Fraction', 'Pecahan')}</span>}
           {view === 'dms' && <span>°′″</span>}
         </div>
         <div className="mt-0.5 min-h-[1.25rem] break-all font-mono text-xs leading-5">
@@ -325,7 +330,7 @@ const ScientificCalculator = () => {
       <div className="mb-1.5 grid grid-cols-3 gap-1 rounded-md bg-slate-800 p-0.5">
         {TABS.map(([key, label]) => (
           <button key={key} type="button" onClick={() => setTab(key)} className={`h-6 rounded text-[11px] font-semibold ${tab === key ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-            {label}
+            {({ Scientific: tr('Scientific', 'Saintifik'), Statistics: tr('Statistics', 'Statistik'), Equations: tr('Equations', 'Persamaan') })[label] || label}
           </button>
         ))}
       </div>
@@ -337,7 +342,7 @@ const ScientificCalculator = () => {
           <Keypad rows={tab === 'sci' ? SCI_KEYS : STAT_KEYS} onPress={press} />
           {tab === 'stat' && (
             <p className="mt-1.5 text-[10px] leading-[14px] text-slate-400">
-              Type numbers with commas, e.g. x̄ 2,4,6 = 4. s / s² = sample, σ / σ² = population.
+              {tr('Type numbers with commas, e.g. x̄ 2,4,6 = 4. s / s² = sample, σ / σ² = population.', 'Masukkan nombor dipisahkan koma, cth. x̄ 2,4,6 = 4. s / s² = sampel, σ / σ² = populasi.')}
             </p>
           )}
           <div className="my-1.5 h-px bg-slate-700" />
@@ -348,7 +353,7 @@ const ScientificCalculator = () => {
       {/* History: tap an answer to use it again */}
       {history.length > 0 && tab !== 'eqn' && (
         <details className="mt-1.5 text-[11px] text-slate-300">
-          <summary className="cursor-pointer hover:text-white">History ({history.length})</summary>
+          <summary className="cursor-pointer hover:text-white">{tr('History', 'Sejarah')} ({history.length})</summary>
           <div className="mt-1 max-h-24 space-y-1 overflow-y-auto">
             {history.map((item, index) => (
               <button key={index} type="button" onClick={() => reuse(item.value)} className="block w-full rounded bg-slate-800 px-2 py-1 text-left hover:bg-slate-700">

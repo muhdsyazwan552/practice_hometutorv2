@@ -3,8 +3,11 @@ import { router } from '@inertiajs/react';
 import DonutChart from '@/Components/ChartJsDonut';
 import QuestionReviewModal from '@/Components/QuestionReviewModal';
 import { exportSessionsToPdf } from '@/utils/exportPdf';
+import useThemedAlert from '@/utils/useThemedAlert';
+import ThemeLoader from '@/Components/ThemeLoader';
 
 export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, questionType }) {
+    const alert = useThemedAlert();
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -19,7 +22,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
 
     const handleExportToPdf = () => {
         if (sessions.length === 0) {
-            alert('No session data to export');
+            void alert.message({ title: alert.tr('Nothing to export', 'Tiada data untuk dieksport'), text: alert.tr('No practice session is available yet.', 'Belum ada sesi latihan tersedia.'), icon: 'info' });
             return;
         }
         
@@ -32,7 +35,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
             );
         } catch (error) {
             console.error('Error exporting PDF:', error);
-            alert('Failed to export PDF. Please try again.');
+            void alert.message({ title: alert.tr('Export failed', 'Eksport gagal'), text: alert.tr('Please try exporting the PDF again.', 'Sila cuba eksport PDF sekali lagi.'), icon: 'error' });
         } finally {
             setExporting(false);
         }
@@ -104,7 +107,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                     {/* Header */}
                     <div className="flex items-center justify-between gap-3 border-b border-gray-200 p-4 sm:p-6">
                         <h2 className="text-lg font-bold text-gray-800 sm:text-xl">
-                            {subtopicData?.name || 'Subtopic'}
+                            {subtopicData?.name || alert.tr('Subtopic', 'Subtopik')}
                         </h2>
                         <button
                             onClick={onClose}
@@ -125,20 +128,17 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                     onClick={fetchSessionDetails}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                 >
-                                    Retry
+                                    {alert.tr('Retry', 'Cuba Lagi')}
                                 </button>
                             </div>
                         ) : loading ? (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                <p className="text-gray-600 mt-4">Loading session details...</p>
-                            </div>
+                            <ThemeLoader message={alert.tr('Loading session details…', 'Sedang memuatkan butiran sesi…')} />
                         ) : sessions.length === 0 ? (
                             <div className="text-center py-8">
                                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                <p className="text-gray-500 text-lg">No practice sessions found</p>
+                                <p className="text-gray-500 text-lg">{alert.tr('No practice sessions found', 'Tiada sesi latihan ditemui')}</p>
                             </div>
                         ) : (
                             <>
@@ -148,43 +148,43 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                         <thead>
                                             <tr className="bg-gray-50">
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    No
+                                                    {alert.tr('No.', 'Bil.')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Type
+                                                    {alert.tr('Type', 'Jenis')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Total Questions
+                                                    {alert.tr('Total Questions', 'Jumlah Soalan')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    {questionType === 'Objective' ? 'Correct' : 'Answered'}
+                                                    {questionType === 'Objective' ? alert.tr('Correct', 'Betul') : alert.tr('Answered', 'Dijawab')}
                                                 </th>
                                                 {/* Show Wrong column only for Objective */}
                                                 {questionType === 'Objective' && (
                                                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                        Wrong
+                                                        {alert.tr('Wrong', 'Salah')}
                                                     </th>
                                                 )}
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Skipped
+                                                    {alert.tr('Skipped', 'Dilangkau')}
                                                 </th>
                                                 {/* Show Score column only for Objective */}
                                                 {questionType === 'Objective' && (
                                                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                        Score
+                                                        {alert.tr('Score', 'Markah')}
                                                     </th>
                                                 )}
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Time Spent
+                                                    {alert.tr('Time Spent', 'Masa Digunakan')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Avg Time
+                                                    {alert.tr('Avg Time', 'Purata Masa')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Session Date
+                                                    {alert.tr('Session Date', 'Tarikh Sesi')}
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                                                    Actions
+                                                    {alert.tr('Actions', 'Tindakan')}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -196,7 +196,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                                     </td>
                                                     <td className="px-4 py-3 text-center whitespace-nowrap">
                                                         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${session.session_type === 'mission' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'}`}>
-                                                            {session.session_type === 'mission' ? 'Mission' : 'Practice'}
+                                                            {session.session_type === 'mission' ? alert.tr('Mission', 'Misi') : alert.tr('Practice', 'Latihan')}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-700 text-center bg-gray-100">
@@ -222,17 +222,17 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                                                     percentage={parseFloat(session.score) || 0}
                                                                     size={40}
                                                                     strokeWidth={4}
-                                                                    label="Score"
+                                                                    label={alert.tr('Score', 'Markah')}
                                                                     color="#3b82f6"
                                                                 />
                                                             </div>
                                                         </td>
                                                     )}
                                                     <td className="px-4 py-3 text-sm text-gray-600 text-center">
-                                                        {session.total_time || '0 min 0 secs'}
+                                                        {session.total_time || alert.tr('0 min 0 secs', '0 min 0 saat')}
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-600 text-center">
-                                                        {session.average_time || '0 min 0 secs'}
+                                                        {session.average_time || alert.tr('0 min 0 secs', '0 min 0 saat')}
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-900 text-center">
                                                         {session.session_date || '-'}
@@ -241,9 +241,9 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                                         <button
                                                             onClick={() => openReviewModal(session.id)}
                                                             className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
-                                                            title="Review Questions"
+                                                            title={alert.tr('Review Questions', 'Semak Soalan')}
                                                         >
-                                                            Review
+                                                            {alert.tr('Review', 'Semak')}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -270,14 +270,14 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                 {exporting ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Exporting...
+                                        {alert.tr('Exporting…', 'Sedang mengeksport…')}
                                     </>
                                 ) : (
                                     <>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        Export PDF
+                                        {alert.tr('Export PDF', 'Eksport PDF')}
                                     </>
                                 )}
                             </button>
@@ -287,7 +287,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                             onClick={onClose}
                             className="rounded-md bg-gray-500 px-6 py-2 text-white transition-colors hover:bg-gray-600"
                         >
-                            Close
+                            {alert.tr('Close', 'Tutup')}
                         </button>
                     </div>
                 </div>

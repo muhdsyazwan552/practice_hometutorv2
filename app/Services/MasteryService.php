@@ -51,6 +51,34 @@ class MasteryService
         return (int) (DB::table('mastery_configurations')->value('questions_per_session') ?? 10);
     }
 
+    /** Data shown when Mission first opens and when its progress is refreshed. */
+    public function getMissionProgress($userId, $subjectId, $levelId, $topics = null): array
+    {
+        $topics = $topics ?? $this->getTopicsWithMastery($userId, $subjectId, $levelId);
+        $this->updateProgressCache($userId, $subjectId, $levelId, $topics);
+        $progress = $this->getUserProgress($userId, $subjectId, $levelId);
+
+        return [
+            'percentage' => $progress ? round($progress->overall_percentage) : 0,
+            'skills' => [
+                'mastered' => $progress->mastered_count ?? 0,
+                'proficient' => $progress->proficient_count ?? 0,
+                'familiar' => $progress->familiar_count ?? 0,
+                'practiced' => $progress->practiced_count ?? 0,
+                'needPractice' => $progress->need_practice_count ?? 0,
+            ],
+            'topics' => $topics->map(fn ($topic) => [
+                'id' => $topic['id'],
+                'title' => $topic['name'],
+                'color' => $topic['mastery_color'],
+                'mastery_level' => $topic['mastery_level'],
+                'current_score' => $topic['current_score'],
+                'total_attempts' => $topic['total_attempts'],
+                'subtopic_count' => count($topic['subtopics']),
+            ]),
+        ];
+    }
+
     public function resolveTopicScope(int $topicId): array
     {
         $topic = DB::table('topics')->select('id', 'parent_id')->find($topicId);
@@ -189,9 +217,9 @@ class MasteryService
     /**
      * Get topics that need practice (for Mission page display)
      */
-    public function getMissionSubtopics($userId, $subjectId, $levelId)
+    public function getMissionSubtopics($userId, $subjectId, $levelId, $topics = null)
     {
-        return $this->getTopicsWithMastery($userId, $subjectId, $levelId)
+        return ($topics ?? $this->getTopicsWithMastery($userId, $subjectId, $levelId))
             ->flatMap(function ($topic) {
                 if (!empty($topic['subtopics'])) {
                     return collect($topic['subtopics'])->map(function ($subtopic) use ($topic) {

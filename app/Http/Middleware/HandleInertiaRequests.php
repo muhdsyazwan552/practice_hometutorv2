@@ -92,6 +92,7 @@ class HandleInertiaRequests extends Middleware
 
             'appName' => config('app.name'),
             'appUrl' => config('app.url'),
+            'currentCourseForm' => fn () => $request->session()->get('current_course_form'),
             'canPlayGames' => fn () => $request->user()
                 && config('services.game_sso.games_url')
                 && app(GameSsoService::class)->resolveRole($request->user()) !== null,

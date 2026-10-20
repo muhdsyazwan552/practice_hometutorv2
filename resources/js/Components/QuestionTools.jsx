@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ScientificCalculator from '@/Components/ScientificCalculator';
 import Dictionary from '@/Components/Dictionary';
 import FloatingToolWindow from '@/Components/FloatingToolWindow';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const ICONS = {
   tools: (
@@ -23,8 +24,8 @@ const ICONS = {
 };
 
 const TOOLS = [
-  { key: 'calculator', label: 'Calculator' },
-  { key: 'dictionary', label: 'Kamus' },
+  { key: 'calculator', en: 'Calculator', ms: 'Kalkulator' },
+  { key: 'dictionary', en: 'Dictionary', ms: 'Kamus' },
   // "Draw on Page" (PageDrawingTool) and "Add Note" (AutoNotes) stay hidden until
   // they are fixed: the eraser paints white, drawing needs a mouse and blocks the
   // answers, and reopening Add Note wipes saved notes.
@@ -41,6 +42,8 @@ const TOOLS = [
  * toolWindows anywhere in the page.
  */
 export function useQuestionTools() {
+  const { locale } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState({ calculator: false, dictionary: false });
 
@@ -74,11 +77,11 @@ export function useQuestionTools() {
         type="button"
         onClick={() => setMenuOpen((current) => !current)}
         aria-expanded={menuOpen}
-        aria-label="Tools"
+        aria-label={tr('Tools', 'Alat')}
         className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-700 px-3 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 sm:px-4"
       >
         {ICONS.tools}
-        <span className="hidden sm:inline">Tools</span>
+        <span className="hidden sm:inline">{tr('Tools', 'Alat')}</span>
       </button>
 
       {menuOpen && (
@@ -91,7 +94,7 @@ export function useQuestionTools() {
               className="flex w-full items-center gap-3 px-4 py-3 text-left text-slate-700 transition-colors hover:bg-slate-100"
             >
               <span className="text-slate-500">{ICONS[tool.key]}</span>
-              {tool.label}
+              {locale === 'ms' ? tool.ms : tool.en}
             </button>
           ))}
         </div>
@@ -102,12 +105,12 @@ export function useQuestionTools() {
   const toolWindows = (
     <>
       {open.calculator && (
-        <FloatingToolWindow title="Scientific Calculator" icon={ICONS.calculator} onClose={() => closeTool('calculator')}>
+        <FloatingToolWindow title={tr('Scientific Calculator', 'Kalkulator Saintifik')} icon={ICONS.calculator} onClose={() => closeTool('calculator')}>
           <ScientificCalculator />
         </FloatingToolWindow>
       )}
       {open.dictionary && (
-        <FloatingToolWindow title="Kamus" icon={ICONS.dictionary} width={320} stack={open.calculator ? 1 : 0} onClose={() => closeTool('dictionary')}>
+        <FloatingToolWindow title={tr('Dictionary', 'Kamus')} icon={ICONS.dictionary} width={320} stack={open.calculator ? 1 : 0} onClose={() => closeTool('dictionary')}>
           <Dictionary />
         </FloatingToolWindow>
       )}

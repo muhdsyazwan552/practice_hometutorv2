@@ -27,11 +27,12 @@ const cardMotion = {
 const BENTO_ACCENTS = ['#1F6F5C', '#6D28D9', '#1D4ED8', '#9D174D', '#B45309', '#3E4C1F', '#0E7490', '#7C2D12'];
 
 // Copy for the big featured tile, based on how far the student actually is.
-function heroCaption(subject) {
-  if (!subject?.topicsTotal) return { badge: 'Coming soon', line: 'Topics coming soon' };
-  if (subject.progressPercentage >= 100) return { badge: 'Fully mastered', line: `${subject.topicsAnswered} of ${subject.topicsTotal} topics · try a challenge to stay sharp` };
-  if (subject.progressPercentage > 0) return { badge: 'Continue practising', line: `${subject.topicsAnswered} of ${subject.topicsTotal} topics practised` };
-  return { badge: 'Start here', line: `${subject.topicsTotal} topics waiting for you` };
+function heroCaption(subject, locale) {
+  const ms = locale === 'ms';
+  if (!subject?.topicsTotal) return { badge: ms ? 'Akan datang' : 'Coming soon', line: ms ? 'Topik akan datang' : 'Topics coming soon' };
+  if (subject.progressPercentage >= 100) return { badge: ms ? 'Dikuasai sepenuhnya' : 'Fully mastered', line: ms ? `${subject.topicsAnswered} daripada ${subject.topicsTotal} topik · cuba cabaran untuk terus mahir` : `${subject.topicsAnswered} of ${subject.topicsTotal} topics · try a challenge to stay sharp` };
+  if (subject.progressPercentage > 0) return { badge: ms ? 'Sambung latihan' : 'Continue practising', line: ms ? `${subject.topicsAnswered} daripada ${subject.topicsTotal} topik dipraktikkan` : `${subject.topicsAnswered} of ${subject.topicsTotal} topics practised` };
+  return { badge: ms ? 'Mula di sini' : 'Start here', line: ms ? `${subject.topicsTotal} topik menanti anda` : `${subject.topicsTotal} topics waiting for you` };
 }
 
 const HERO_MOTIF_LAYOUT = [
@@ -44,7 +45,8 @@ const HERO_MOTIF_LAYOUT = [
 ];
 
 export default function Dashboard() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
   const {
     auth,
     profileData,
@@ -58,12 +60,13 @@ export default function Dashboard() {
     learningProgress,
     questionsAnswered = 0,
     pointBalance = 0,
+    currentCourseForm,
   } = usePage().props;
 
   const user = auth?.user || {};
-  const firstName = (profileData?.name || user.name || 'Learner').split(' ')[0];
+  const firstName = (profileData?.name || user.name || tr('Learner', 'Murid')).split(' ')[0];
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? tr('Good morning', 'Selamat pagi') : hour < 18 ? tr('Good afternoon', 'Selamat tengah hari') : tr('Good evening', 'Selamat malam');
   const themeCustom = studentTheme?.custom;
   const dashboardPalette = resolveDashboardTheme(dashboardTheme, themeCustom);
   const learningCard = resolveLearningCard({ dashboardTheme, cardTheme: learningSpaceCardTheme, custom: themeCustom });
@@ -94,8 +97,7 @@ export default function Dashboard() {
     : null;
   const tileSubjects = bentoSubjects.filter((s) => s !== heroSubject);
 
-  // Route straight to the subject's Practice tab, letting the backend pick
-  // the student's own level/form automatically instead of hardcoding Form 4/5.
+  // Preserve the level last selected in a course when opening another subject.
   const getSubjectUrl = (subject) => {
     if (!subject?.id) return route('quiz-page');
     const slug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
@@ -103,19 +105,20 @@ export default function Dashboard() {
       subject: slug,
       subject_id: subject.id,
       level_id: subject.level_id,
+      ...(currentCourseForm ? { form: currentCourseForm } : {}),
     });
   };
 
   const stats = [
-    { label: 'Learning progress', value: `${progressPercentage}%`, helper: progressTopicsTotal ? `${progressTopicsAnswered} daripada ${progressTopicsTotal} topik dipraktikkan` : 'Belum ada topik untuk tahap ini', icon: ChartBarIcon, tone: 'text-indigo-600 bg-indigo-50' },
-    { label: 'Soalan dijawab', value: questionsAnswered.toLocaleString(), helper: 'Jumlah semua soalan yang telah dijawab', icon: TrophyIcon, tone: 'text-amber-600 bg-amber-50' },
-    { label: 'Day streak', value: `${dayStreak} day${dayStreak === 1 ? '' : 's'}`, helper: practiceToday ? `${practiceToday} practice done today` : 'No practice yet today', icon: FireIcon, tone: 'text-rose-600 bg-rose-50' },
-    { label: 'Total point', value: pointBalance.toLocaleString(), helper: 'Point tersedia untuk Kedai Quiz Arena', icon: SparklesIcon, tone: 'text-cyan-600 bg-cyan-50' },
+    { label: tr('Learning progress', 'Kemajuan pembelajaran'), value: `${progressPercentage}%`, helper: progressTopicsTotal ? tr(`${progressTopicsAnswered} of ${progressTopicsTotal} topics practised`, `${progressTopicsAnswered} daripada ${progressTopicsTotal} topik dipraktikkan`) : tr('No topics for this level yet', 'Belum ada topik untuk tahap ini'), icon: ChartBarIcon, tone: 'text-indigo-600 bg-indigo-50' },
+    { label: tr('Questions answered', 'Soalan dijawab'), value: questionsAnswered.toLocaleString(), helper: tr('Total questions answered', 'Jumlah semua soalan yang telah dijawab'), icon: TrophyIcon, tone: 'text-amber-600 bg-amber-50' },
+    { label: tr('Day streak', 'Hari berturut-turut'), value: `${dayStreak} ${tr(dayStreak === 1 ? 'day' : 'days', 'hari')}`, helper: practiceToday ? tr(`${practiceToday} practices done today`, `${practiceToday} latihan dibuat hari ini`) : tr('No practice yet today', 'Belum berlatih hari ini'), icon: FireIcon, tone: 'text-rose-600 bg-rose-50' },
+    { label: tr('Total points', 'Jumlah mata'), value: pointBalance.toLocaleString(), helper: tr('Points available for the Quiz Arena shop', 'Mata tersedia untuk Kedai Arena Kuiz'), icon: SparklesIcon, tone: 'text-cyan-600 bg-cyan-50' },
   ];
 
   return (
     <DashboardLayout>
-      <Head title="Dashboard" />
+      <Head title={tr('Dashboard', 'Papan Pemuka')} />
 
       <main
         data-theme-style={dashboardTheme?.slug}
@@ -184,7 +187,7 @@ export default function Dashboard() {
               >
                 <SparklesIcon className="h-4 w-4" />
               </motion.span>
-              {learningCard.badge || 'Your learning space'}
+              {learningCard.badge || tr('Your learning space', 'Ruang pembelajaran anda')}
             </div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               {greeting}, {firstName}.
@@ -193,7 +196,7 @@ export default function Dashboard() {
               {profileData?.name || user.name} · {profileData?.grade || 'Form 5'}
             </p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
-              Pick up where you left off, build your streak, and make today&apos;s study session count.
+              {tr("Pick up where you left off, build your streak, and make today's study session count.", 'Sambung pembelajaran anda, kekalkan rentak dan manfaatkan sesi belajar hari ini.')}
             </p>
           </div>
         </motion.section>
@@ -217,8 +220,8 @@ export default function Dashboard() {
           <motion.section {...cardMotion} transition={{ duration: 0.35, delay: 0.14 }} className="theme-surface mt-5 rounded-2xl border p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Kalendar pembelajaran</h2>
-                <p className="mt-1 text-sm text-slate-500">Hari log masuk dan hari buat latihan untuk 3 bulan terakhir.</p>
+                <h2 className="text-lg font-semibold text-slate-900">{tr('Learning calendar', 'Kalendar pembelajaran')}</h2>
+                <p className="mt-1 text-sm text-slate-500">{tr('Login and practice days from the last 3 months.', 'Hari log masuk dan hari buat latihan untuk 3 bulan terakhir.')}</p>
               </div>
               <div
                 className="rounded-xl p-2.5"
@@ -248,17 +251,17 @@ export default function Dashboard() {
 
               <div className="relative mb-6 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-indigo-500">Learning Hub</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-indigo-500">{tr('Learning Hub', 'Pusat Pembelajaran')}</span>
                   <h2 className="mt-2 text-xl font-extrabold tracking-tight text-slate-900">{t('my_courses', 'My courses')}</h2>
-                  <p className="mt-1 text-sm text-slate-500">Pilih subjek untuk mula atau sambung latihan anda.</p>
+                  <p className="mt-1 text-sm text-slate-500">{tr('Choose a subject to start or continue practising.', 'Pilih subjek untuk mula atau sambung latihan anda.')}</p>
                 </div>
-                <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700">{bentoSubjects.length} subjek</span>
+                <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700">{bentoSubjects.length} {tr('subjects', 'subjek')}</span>
               </div>
 
               {bentoSubjects.length ? (
                 <div className="relative">
                   {heroSubject && (() => {
-                    const caption = heroCaption(heroSubject);
+                    const caption = heroCaption(heroSubject, locale);
                     return (
                       <Link
                         href={getSubjectUrl(heroSubject)}
@@ -276,7 +279,7 @@ export default function Dashboard() {
                           </h3>
                           <p className="mt-2 text-sm text-white/80">{caption.line}</p>
                           <span className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-slate-900 shadow-lg shadow-slate-950/10">
-                            {heroSubject.progressPercentage ? 'Sambung latihan' : 'Mula latihan'} <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                            {heroSubject.progressPercentage ? tr('Continue practice', 'Sambung latihan') : tr('Start practice', 'Mula latihan')} <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                           </span>
                         </div>
                         <div className="relative mt-2 flex shrink-0 items-center gap-4 sm:mt-0">
@@ -286,10 +289,10 @@ export default function Dashboard() {
                           >
                             <div className="grid h-full w-full place-items-center rounded-full text-center" style={{ background: heroSubject.bentoColor }}>
                               <span className="text-3xl font-extrabold text-white">{heroSubject.progressPercentage ?? 0}%</span>
-                              <span className="text-[10px] font-bold uppercase tracking-wide text-white/70">siap</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-white/70">{tr('done', 'siap')}</span>
                             </div>
                           </div>
-                          <div className="hidden text-left text-sm text-white/80 sm:block"><b className="block text-white">Progress anda</b>{heroSubject.topicsAnswered ?? 0}/{heroSubject.topicsTotal ?? 0} topik</div>
+                          <div className="hidden text-left text-sm text-white/80 sm:block"><b className="block text-white">{tr('Your progress', 'Kemajuan anda')}</b>{heroSubject.topicsAnswered ?? 0}/{heroSubject.topicsTotal ?? 0} {tr('topics', 'topik')}</div>
                         </div>
                       </Link>
                     );
@@ -325,11 +328,11 @@ export default function Dashboard() {
                           </div>
                           <div className="relative mt-5">
                             <h3 className={`text-lg font-extrabold tracking-tight ${started ? 'text-white' : 'text-[#E4E4E7]'}`}>{subject.name || subject.title}</h3>
-                            <p className={`mt-1 text-xs ${started ? 'text-white/70' : 'text-[#9A9CA4]'}`}>{topicsTotal ? `${topicsAnswered} daripada ${topicsTotal} topik dipraktikkan` : 'Kandungan akan datang'}</p>
+                            <p className={`mt-1 text-xs ${started ? 'text-white/70' : 'text-[#9A9CA4]'}`}>{topicsTotal ? tr(`${topicsAnswered} of ${topicsTotal} topics practised`, `${topicsAnswered} daripada ${topicsTotal} topik dipraktikkan`) : tr('Content coming soon', 'Kandungan akan datang')}</p>
                           </div>
                           <div className="relative mt-auto pt-5">
                             <div className="h-1.5 overflow-hidden rounded-full bg-white/20"><motion.div className="h-full rounded-full bg-white" initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }} /></div>
-                            <span className={`mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold ${started ? 'text-white' : 'text-[#E4E4E7]'}`}>{topicsTotal ? (started ? 'Sambung latihan' : 'Mula latihan') : 'Akan datang'} <ArrowRightIcon className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span>
+                            <span className={`mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold ${started ? 'text-white' : 'text-[#E4E4E7]'}`}>{topicsTotal ? (started ? tr('Continue practice', 'Sambung latihan') : tr('Start practice', 'Mula latihan')) : tr('Coming soon', 'Akan datang')} <ArrowRightIcon className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span>
                           </div>
                         </Link>
                       );
@@ -339,7 +342,7 @@ export default function Dashboard() {
               ) : (
                 <div className="relative rounded-2xl border border-dashed border-slate-300 px-6 py-10 text-center">
                   <AcademicCapIcon className="mx-auto h-8 w-8 text-slate-400" />
-                  <p className="mt-3 text-sm font-medium text-slate-700">Your courses will appear here</p>
+                  <p className="mt-3 text-sm font-medium text-slate-700">{tr('Your courses will appear here', 'Kursus anda akan dipaparkan di sini')}</p>
                 </div>
               )}
             </motion.section>

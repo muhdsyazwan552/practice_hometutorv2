@@ -1005,3 +1005,29 @@ html.lenis body {
 .course-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Shared SweetAlert presentation for student actions and loading. */
+.swal2-container { z-index: 3000; }
+.ht-alert-popup.swal2-popup {
+  width: min(27rem, calc(100vw - 2rem));
+  border: 1px solid color-mix(in srgb, var(--alert-accent) 18%, white);
+  border-radius: 1.4rem;
+  padding: 1.6rem 1.4rem 1.3rem;
+  box-shadow: 0 24px 65px -18px rgba(15, 23, 42, .36);
+}
+.ht-alert-popup .swal2-icon { margin-top: .35rem; border-color: var(--alert-accent); color: var(--alert-accent); }
+.ht-alert-title.swal2-title { padding: .5rem 0 0; font-size: 1.35rem; line-height: 1.35; font-weight: 750; }
+.ht-alert-content.swal2-html-container { margin: .7rem 0 0; color: #526176; font-size: .95rem; line-height: 1.55; }
+.ht-alert-actions.swal2-actions { width: 100%; gap: .65rem; margin: 1.5rem 0 0; }
+.ht-alert-confirm, .ht-alert-cancel {
+  min-width: 7rem;
+  border-radius: .85rem;
+  padding: .72rem 1.15rem;
+  font-size: .9rem;
+  font-weight: 700;
+  transition: transform .15s ease, filter .15s ease;
+}
+.ht-alert-confirm:hover, .ht-alert-cancel:hover { transform: translateY(-1px); filter: brightness(.96); }
+.ht-alert-confirm { background: var(--alert-accent); color: white; }
+.ht-alert-cancel { background: #edf1f6; color: #354154; }
+.ht-alert-spinner.swal2-loader { border-color: var(--alert-accent) transparent var(--alert-accent) transparent; }

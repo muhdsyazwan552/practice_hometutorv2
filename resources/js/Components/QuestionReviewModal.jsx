@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { usePage, Head } from '@inertiajs/react';
 import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import ThemeLoader from '@/Components/ThemeLoader';
+import useThemedAlert from '@/utils/useThemedAlert';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 
 const ReviewQuestionDisplay = ({ question }) => {
-  if (!question) return <p className="text-gray-500">No question available</p>;
+  const { locale } = useLanguage();
+  if (!question) return <p className="text-gray-500">{locale === 'ms' ? 'Tiada soalan tersedia' : 'No question available'}</p>;
 
   const processQuestionHtml = (html) => {
     if (!html) return html;
@@ -77,7 +81,7 @@ const ReviewQuestionDisplay = ({ question }) => {
         <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p className="text-gray-500">No question content available</p>
+        <p className="text-gray-500">{locale === 'ms' ? 'Kandungan soalan tidak tersedia' : 'No question content available'}</p>
       </div>
     );
   };
@@ -92,6 +96,7 @@ const ReviewQuestionDisplay = ({ question }) => {
 
 // Simplified ReviewOptionDisplay - Handles text, HTML, and image answers
 const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, wasWrong }) => {
+  const { locale } = useLanguage();
   const getOptionStyles = () => {
     if (wasCorrect) return 'bg-green-50 border-green-500';
     if (wasWrong) return 'bg-red-50 border-red-500';
@@ -122,7 +127,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
           {/* Image */}
           <img
             src={option.file}
-            alt={`Option ${String.fromCharCode(65 + index)}`}
+            alt={`${locale === 'ms' ? 'Pilihan' : 'Option'} ${String.fromCharCode(65 + index)}`}
             className="max-w-full h-auto rounded-lg shadow-sm max-h-48 object-contain"
           />
           <ImagePathLabel path={option.file} />
@@ -152,9 +157,9 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
   };
 
   const getStatusText = () => {
-    if (wasCorrect) return 'Your Answer (Correct)';
-    if (wasWrong) return 'Your Answer (Incorrect)';
-    if (isCorrect) return 'Correct Answer';
+    if (wasCorrect) return locale === 'ms' ? 'Jawapan Anda (Betul)' : 'Your Answer (Correct)';
+    if (wasWrong) return locale === 'ms' ? 'Jawapan Anda (Salah)' : 'Your Answer (Incorrect)';
+    if (isCorrect) return locale === 'ms' ? 'Jawapan Betul' : 'Correct Answer';
     return '';
   };
 
@@ -193,6 +198,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
 };
 
 const ExplanationDisplay = ({ explanation }) => {
+  const { locale } = useLanguage();
   if (!explanation || explanation === "Explanation not available.") {
     return null;
   }
@@ -229,7 +235,7 @@ const ExplanationDisplay = ({ explanation }) => {
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
         </div>
-        <h4 className="font-semibold text-blue-800 text-lg">Explanation</h4>
+        <h4 className="font-semibold text-blue-800 text-lg">{locale === 'ms' ? 'Penerangan' : 'Explanation'}</h4>
       </div>
 
       <div className="ml-11">
@@ -241,7 +247,7 @@ const ExplanationDisplay = ({ explanation }) => {
         {/* Additional learning tips */}
         <div className="mt-4 pt-3 border-t border-blue-200">
           <p className="text-sm text-blue-700 font-medium">
-            💡 <span className="font-semibold">Learning Tip:</span> Review this explanation carefully and try similar questions to reinforce your understanding.
+            💡 <span className="font-semibold">{locale === 'ms' ? 'Petua Belajar:' : 'Learning Tip:'}</span> {locale === 'ms' ? 'Semak penerangan ini dan cuba soalan seumpamanya untuk mengukuhkan pemahaman anda.' : 'Review this explanation carefully and try similar questions to reinforce your understanding.'}
           </p>
         </div>
       </div>
@@ -250,6 +256,7 @@ const ExplanationDisplay = ({ explanation }) => {
 };
 
 const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
+  const { locale } = useLanguage();
   if (questionType !== 'subjective') return null;
 
   return (
@@ -262,7 +269,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h4 className="font-semibold text-blue-800 text-lg">Your Answer</h4>
+          <h4 className="font-semibold text-blue-800 text-lg">{locale === 'ms' ? 'Jawapan Anda' : 'Your Answer'}</h4>
         </div>
 
         <div className="ml-13">
@@ -277,7 +284,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
               <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p>No answer provided</p>
+              <p>{locale === 'ms' ? 'Tiada jawapan diberikan' : 'No answer provided'}</p>
             </div>
           )}
         </div>
@@ -291,7 +298,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h4 className="font-semibold text-green-800 text-lg">Schema Answer</h4>
+          <h4 className="font-semibold text-green-800 text-lg">{locale === 'ms' ? 'Skema Jawapan' : 'Marking Scheme'}</h4>
         </div>
 
         <div className="ml-13">
@@ -313,7 +320,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
               <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p>No schema answer available</p>
+              <p>{locale === 'ms' ? 'Tiada skema jawapan tersedia' : 'No marking scheme available'}</p>
             </div>
           )}
         </div>
@@ -326,6 +333,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
 
 // Main component
 export default function QuestionReviewModal({ isOpen, onClose, sessionId, reviewUrl = null, readOnly = false }) {
+  const alert = useThemedAlert();
   const [session, setSession] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -369,7 +377,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
       }
     } catch (error) {
       console.error('Error fetching question attempts:', error);
-      setError('Failed to load review data. Please try again.');
+      setError(alert.tr('Failed to load review data. Please try again.', 'Data semakan tidak dapat dimuatkan. Sila cuba lagi.'));
     } finally {
       setLoading(false);
     }
@@ -422,11 +430,11 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="text-lg font-bold text-gray-800 sm:text-2xl">
-                Question Review
+                {alert.tr('Question Review', 'Semakan Soalan')}
               </h2>
               {session && (
                 <p className="mt-1 truncate text-sm text-gray-600 sm:text-base">
-                  Session: {session.topic_name} • {session.created_at}
+                  {alert.tr('Session', 'Sesi')}: {session.topic_name} • {session.created_at}
                 </p>
               )}
             </div>
@@ -450,20 +458,17 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                 onClick={fetchQuestionAttempts}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                Retry
+                {alert.tr('Retry', 'Cuba Lagi')}
               </button>
             </div>
           ) : loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 mt-4">Loading review data...</p>
-            </div>
+            <ThemeLoader message={alert.tr('Loading question review…', 'Sedang memuatkan semakan soalan…')} />
           ) : attempts.length === 0 ? (
             <div className="text-center py-12">
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-gray-500 text-lg">No question attempts found for this session</p>
+              <p className="text-gray-500 text-lg">{alert.tr('No question attempts found for this session', 'Tiada percubaan soalan ditemui untuk sesi ini')}</p>
             </div>
           ) : (
             <>
@@ -472,7 +477,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
               {/* Question List (Mini Navigation) */}
               <div className="mb-2">
                 <h4 className="font-medium text-gray-700 mb-3">
-                  All Questions ({totalQuestions})
+                  {alert.tr('All Questions', 'Semua Soalan')} ({totalQuestions})
                 </h4>
 
                 <div className="grid grid-cols-5 md:grid-cols-10 gap-3">
@@ -493,9 +498,9 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                                 : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
                           }
   `}
-                        title={`Question ${index + 1}: ${attempt.chosen_answer_id === 0 && attempt.answer_status === 0
-                          ? 'Unanswered'
-                          : attempt.is_correct ? 'Correct' : 'Incorrect'
+                        title={`${alert.tr('Question', 'Soalan')} ${index + 1}: ${attempt.chosen_answer_id === 0 && attempt.answer_status === 0
+                          ? alert.tr('Unanswered', 'Belum dijawab')
+                          : attempt.is_correct ? alert.tr('Correct', 'Betul') : alert.tr('Incorrect', 'Salah')
                           }`}
                       >
                         {index + 1}
@@ -520,12 +525,12 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                         : 'bg-blue-100 text-blue-800'
                         }`}>
                         {currentAttempt.question_type === 'objective'
-                          ? (currentAttempt.is_correct ? '✓ Correct' : '✗ Incorrect')
-                          : '📝 Subjective'}
+                          ? (currentAttempt.is_correct ? `✓ ${alert.tr('Correct', 'Betul')}` : `✗ ${alert.tr('Incorrect', 'Salah')}`)
+                          : `📝 ${alert.tr('Subjective', 'Subjektif')}`}
                       </span>
                       {currentAttempt.time_taken > 0 && (
                         <span className="ml-2 text-gray-500 text-sm">
-                          ⏱️ Time: {formatTime(currentAttempt.time_taken || 0)}
+                          ⏱️ {alert.tr('Time', 'Masa')}: {formatTime(currentAttempt.time_taken || 0)}
                         </span>
                       )}
                     </div>
@@ -548,13 +553,13 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                 {currentAttempt.question_type === 'objective' ? (
                   // Objective Question - Show Options
                   <div className="space-y-3 mb-8">
-                    <h4 className="font-medium text-gray-700 mb-4">Answer Options:</h4>
+                    <h4 className="font-medium text-gray-700 mb-4">{alert.tr('Answer Options:', 'Pilihan Jawapan:')}</h4>
                     {isWrongMission && (
                       <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
                         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 font-bold text-white">!</span>
                         <div>
-                          <p className="text-xs font-bold uppercase tracking-wide text-amber-700">Mission review</p>
-                          <p className="font-semibold">Correct answers are not revealed for incorrect Mission questions.</p>
+                          <p className="text-xs font-bold uppercase tracking-wide text-amber-700">{alert.tr('Mission review', 'Semakan misi')}</p>
+                          <p className="font-semibold">{alert.tr('Correct answers are not revealed for incorrect Mission questions.', 'Jawapan betul tidak didedahkan bagi soalan misi yang dijawab salah.')}</p>
                         </div>
                       </div>
                     )}
@@ -597,11 +602,11 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                   >
-                    Previous
+                    {alert.tr('Previous', 'Sebelumnya')}
                   </button>
 
                   <div className="text-gray-700 font-medium">
-                    Question <span className="text-blue-600">{currentQuestionIndex + 1}</span> of {totalQuestions}
+                    {alert.tr('Question', 'Soalan')} <span className="text-blue-600">{currentQuestionIndex + 1}</span> {alert.tr('of', 'daripada')} {totalQuestions}
                   </div>
 
                   <button
@@ -611,7 +616,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                   >
-                    Next
+                    {alert.tr('Next', 'Seterusnya')}
                   </button>
                 </div>
 
@@ -630,7 +635,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
             <div className="text-gray-600">
               {session && (
                 <span className="text-sm">
-                  Topic: <span className="font-medium">{session.topic_name}</span>
+                  {alert.tr('Topic', 'Topik')}: <span className="font-medium">{session.topic_name}</span>
                 </span>
               )}
             </div>
@@ -639,7 +644,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId, review
                 onClick={onClose}
                 className="px-6 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
               >
-                Close Review
+                {alert.tr('Close Review', 'Tutup Semakan')}
               </button>
             </div>
           </div>

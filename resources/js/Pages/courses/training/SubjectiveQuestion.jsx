@@ -6,8 +6,10 @@ import QuestionReportButton from '@/Components/QuestionReportButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 import QuestionPassage from '@/Components/QuestionPassage';
 import { useQuestionTools } from '@/Components/QuestionTools';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
+  const alert = useThemedAlert();
   const pageProps = usePage().props;
 
   const {
@@ -129,6 +131,19 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState(Array(questions.length).fill(""));
+  const handleExitPractice = async () => {
+    const hasAnswers = answers.some((answer) => answer.trim() !== '');
+    const result = await alert.confirm({
+      title: alert.tr('Exit practice?', 'Keluar daripada latihan?'),
+      text: hasAnswers
+        ? alert.tr('Your answers have not been submitted and will be lost.', 'Jawapan anda belum dihantar dan akan hilang.')
+        : alert.tr('You have not answered any questions yet.', 'Anda belum menjawab sebarang soalan.'),
+      confirmText: alert.tr('Exit practice', 'Keluar latihan'),
+      cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+      icon: 'warning',
+    });
+    if (result.isConfirmed) window.history.back();
+  };
   const [error, setError] = useState("");
   const [showScore, setShowScore] = useState(false);
   const [quizResults, setQuizResults] = useState(null);
@@ -260,7 +275,7 @@ const processHtmlContent = (html) => {
 
   const handleCheckAnswer = () => {
     if (!answers[currentIndex].trim()) {
-      setError("⚠️ Please enter your answer first.");
+      setError(alert.tr('Please enter your answer first.', 'Sila masukkan jawapan anda dahulu.'));
       return;
     }
 
@@ -439,7 +454,7 @@ const processHtmlContent = (html) => {
   const footerContent = (
     <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 px-4 md:px-10 py-3">
       {/* Tools menu (calculator, kamus), shared with the objective page */}
-      <div className="self-start sm:self-auto">{toolsButton}</div>
+      <div className="hidden self-start sm:block sm:self-auto">{toolsButton}</div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         {/* Check Answer button */}
@@ -452,7 +467,7 @@ const processHtmlContent = (html) => {
               : 'bg-green-600 text-white hover:bg-green-700 '
               }`}
           >
-            Check Answer
+            {alert.tr('Check Answer', 'Semak Jawapan')}
           </button>
         )}
 
@@ -464,12 +479,12 @@ const processHtmlContent = (html) => {
           >
             {currentIndex < questions.length - 1 ? (
               <>
-                <span className="hidden sm:inline">Next Question</span>
-                <span className="sm:hidden">Next</span>
+                <span className="hidden sm:inline">{alert.tr('Next Question', 'Soalan Seterusnya')}</span>
+                <span className="sm:hidden">{alert.tr('Next', 'Seterusnya')}</span>
                 
               </>
             ) : (
-              'Finish Quiz 🎉'
+              alert.tr('Finish Quiz 🎉', 'Tamatkan Kuiz 🎉')
             )}
           </button>
         )}
@@ -490,7 +505,7 @@ const processHtmlContent = (html) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span className="text-green-800 font-medium text-sm">
-                  Answer submitted! ✓
+                  {alert.tr('Answer submitted! ✓', 'Jawapan dihantar! ✓')}
                 </span>
               </div>
             </div>
@@ -505,7 +520,7 @@ const processHtmlContent = (html) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span className="text-green-800 font-medium text-sm">
-                Answer submitted! ✓
+                {alert.tr('Answer submitted! ✓', 'Jawapan dihantar! ✓')}
               </span>
             </div>
           </div>
@@ -517,7 +532,7 @@ const processHtmlContent = (html) => {
   {/* Mobile Question Counter */}
   <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
     <h2 className="text-lg font-semibold text-gray-800 text-center">
-      Question {currentIndex + 1} of {questions.length}
+      {alert.tr('Question', 'Soalan')} {currentIndex + 1} {alert.tr('of', 'daripada')} {questions.length}
     </h2>
   </div>
 
@@ -548,7 +563,7 @@ const processHtmlContent = (html) => {
       `}</style>
     </div>
   ) : (
-    <p className="text-red-500">No question content available</p>
+    <p className="text-red-500">{alert.tr('No question content available', 'Kandungan soalan tidak tersedia')}</p>
   )}
   </div>
 
@@ -563,7 +578,7 @@ const processHtmlContent = (html) => {
     />
   </div>
 
-  <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">Type your answer below:</span>
+  <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">{alert.tr('Type your answer below:', 'Taip jawapan anda di bawah:')}</span>
 
   {/* Answer input */}
   <textarea
@@ -571,7 +586,7 @@ const processHtmlContent = (html) => {
     onChange={(e) => handleAnswerChange(e.target.value)}
     rows={4}
     className="w-full resize-none border-2 border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-lg font-medium mb-4 md:mb-6 p-3 md:p-4 bg-white transition-all duration-200"
-    placeholder="Type your detailed answer with explanations and working here..."
+    placeholder={alert.tr('Type your detailed answer with explanations and working here...', 'Taip jawapan lengkap berserta penerangan dan langkah kerja di sini...')}
     disabled={checked[currentIndex]}
   />
 
@@ -593,7 +608,7 @@ const processHtmlContent = (html) => {
         onClick={toggleSchema}
         className="max-w-xs sm:w-auto px-2 py-2 md:px-2 md:py-3 rounded-lg md:rounded-xl shadow bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all duration-300 hover:scale-105 text-xs md:text-sm"
       >
-        {showSchema[currentIndex] ? "Hide Schema Answer" : "Show Schema Answer"}
+        {showSchema[currentIndex] ? alert.tr('Hide Marking Scheme', 'Sembunyikan Skema Jawapan') : alert.tr('Show Marking Scheme', 'Lihat Skema Jawapan')}
       </button>
     )}
 
@@ -607,7 +622,7 @@ const processHtmlContent = (html) => {
         <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        Schema Answer:
+        {alert.tr('Marking Scheme:', 'Skema Jawapan:')}
       </h3>
       
       {questions[currentIndex]?.schema ? (
@@ -641,7 +656,7 @@ const processHtmlContent = (html) => {
               <div className="flex flex-col items-center">
                 <img
                   src={schema}
-                  alt="Schema Answer"
+                  alt={alert.tr('Marking Scheme', 'Skema Jawapan')}
                   className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain border border-gray-200"
                   onError={(e) => {
                     console.error('❌ Failed to load schema image:', schema);
@@ -649,7 +664,7 @@ const processHtmlContent = (html) => {
                     if (!e.target.parentNode.querySelector('.image-fallback')) {
                       const fallback = document.createElement('div');
                       fallback.className = 'image-fallback text-red-500 text-center p-4 bg-red-50 rounded-lg mt-2';
-                      fallback.textContent = `Failed to load schema image`;
+                      fallback.textContent = alert.tr('Could not load scheme image', 'Imej skema tidak dapat dimuatkan');
                       e.target.parentNode.appendChild(fallback);
                     }
                   }}
@@ -666,7 +681,7 @@ const processHtmlContent = (html) => {
           else if (schema.startsWith('http://') || schema.startsWith('https://')) {
             return (
               <div className="text-green-700">
-                <p className="mb-2">Schema answer is available at:</p>
+                <p className="mb-2">{alert.tr('The marking scheme is available at:', 'Skema jawapan tersedia di:')}</p>
                 <a
                   href={schema}
                   target="_blank"
@@ -690,7 +705,7 @@ const processHtmlContent = (html) => {
         })()
       ) : (
         <div className="text-red-500 bg-red-50 p-3 rounded-lg">
-          <p>No schema answer available for this question.</p>
+          <p>{alert.tr('No marking scheme is available for this question.', 'Tiada skema jawapan untuk soalan ini.')}</p>
         </div>
       )}
     </div>
@@ -729,12 +744,12 @@ const processHtmlContent = (html) => {
       <audio ref={wrongSoundRef} src="/sounds/wrong.mp3" preload="auto" />
       <audio ref={successSoundRef} src="/sounds/success.mp3" preload="auto" />
 
-      <Head title={`${subject} - Subjective Quiz`} />
+      <Head title={`${subject} - ${alert.tr('Subjective Practice', 'Latihan Subjektif')}`} />
 
       <SubjectiveQuestionLayout
         subject={subject}
         standard={standard}
-        currentTopic={topic || "Subjective Questions"}
+        currentTopic={topic || alert.tr('Subjective Questions', 'Soalan Subjektif')}
         questionStatuses={questionStatuses}
         currentIndex={currentIndex}
         timeElapsed={timeElapsed}
@@ -742,6 +757,7 @@ const processHtmlContent = (html) => {
         sectionTitle={sectionTitle || getSectionTitle()}
         formatTime={formatTime}
         footerContent={footerContent}
+        onBack={handleExitPractice}
       >
         {mainContent}
       </SubjectiveQuestionLayout>

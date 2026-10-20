@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import useThemedAlert from '@/utils/useThemedAlert';
+import ThemeLoader from '@/Components/ThemeLoader';
 
 export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, subjectKey }) {
+    const alert = useThemedAlert();
     const [sessionId, setSessionId] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -112,7 +115,7 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
             loadNextQuestion(data.session_id);
         } catch (error) {
             console.error('Error starting challenge:', error);
-            alert('Failed to start challenge. Please try again.');
+            void alert.message({ title: alert.tr('Cannot start challenge', 'Tidak dapat memulakan cabaran'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
             setLoading(false);
         }
     };
@@ -212,7 +215,7 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
             }
         } catch (error) {
             console.error('Error submitting answer:', error);
-            alert('Failed to submit answer. Please try again.');
+            void alert.message({ title: alert.tr('Answer not submitted', 'Jawapan tidak dihantar'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -247,6 +250,18 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
 
     const handleContinue = () => {
         handleClose();
+    };
+
+    const confirmClose = async () => {
+        if (!sessionId || summary) return handleClose();
+        const result = await alert.confirm({
+            title: alert.tr('Leave challenge?', 'Tinggalkan cabaran?'),
+            text: alert.tr('Your completed answers are saved. You can resume this challenge later.', 'Jawapan yang siap telah disimpan. Anda boleh sambung cabaran ini kemudian.'),
+            confirmText: alert.tr('Leave challenge', 'Tinggalkan cabaran'),
+            cancelText: alert.tr('Continue challenge', 'Teruskan cabaran'),
+            icon: 'warning',
+        });
+        if (result.isConfirmed) handleClose();
     };
 
     // Render HTML content safely
@@ -290,10 +305,7 @@ const getCorrectAnswerInfo = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                 {loading && !currentQuestion ? (
-                    <div className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Loading challenge...</p>
-                    </div>
+                    <ThemeLoader message={alert.tr('Loading challenge…', 'Sedang memuatkan cabaran…')} />
                 ) : summary ? (
                     // Summary View
                     <div className="relative">
@@ -304,19 +316,19 @@ const getCorrectAnswerInfo = () => {
                                 <div className="absolute bottom-10 left-1/3 w-1 h-1 bg-white rounded-full animate-pulse delay-200"></div>
                             </div>
                             <button
-                                onClick={handleClose}
+                                onClick={confirmClose}
                                 className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
                             </button>
                             <div className="text-center relative z-10">
-                                <h2 className="text-xl font-bold mb-2 sm:text-3xl">You've completed the mastery challenge</h2>
-                                <p className="text-lg text-blue-100 sm:text-xl">GREAT JOB!</p>
+                                <h2 className="text-xl font-bold mb-2 sm:text-3xl">{alert.tr("You've completed the mastery challenge", 'Anda telah menamatkan cabaran penguasaan')}</h2>
+                                <p className="text-lg text-blue-100 sm:text-xl">{alert.tr('GREAT JOB!', 'SYABAS!')}</p>
                             </div>
                         </div>
 
                         <div className="p-4 sm:p-8">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4 sm:text-xl sm:mb-6">PROGRESS MADE</h3>
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 sm:text-xl sm:mb-6">{alert.tr('PROGRESS MADE', 'KEMAJUAN DICAPAI')}</h3>
                             <div className="space-y-4">
                                 {summary.progress && summary.progress.length > 0 ? (
                                     summary.progress.map((item, index) => (
@@ -341,20 +353,20 @@ const getCorrectAnswerInfo = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-gray-500">No progress data available</p>
+                                    <p className="text-gray-500">{alert.tr('No progress data available', 'Tiada data kemajuan tersedia')}</p>
                                 )}
                             </div>
 
                             <div className="mt-6 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg sm:mt-8 sm:p-6">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className="text-sm text-gray-600">Your Score</p>
+                                        <p className="text-sm text-gray-600">{alert.tr('Your Score', 'Markah Anda')}</p>
                                         <p className="text-2xl font-bold text-teal-600 sm:text-3xl">
                                             {summary.correct_answers}/{summary.total_questions}
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm text-gray-600">Accuracy</p>
+                                        <p className="text-sm text-gray-600">{alert.tr('Accuracy', 'Ketepatan')}</p>
                                         <p className="text-2xl font-bold text-cyan-600 sm:text-3xl">
                                             {summary.score_percentage}%
                                         </p>
@@ -366,7 +378,7 @@ const getCorrectAnswerInfo = () => {
                                 onClick={handleContinue}
                                 className="mt-6 w-full py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center space-x-2"
                             >
-                                <span>Continue to next challenge</span>
+                                <span>{alert.tr('Continue to next challenge', 'Teruskan ke cabaran seterusnya')}</span>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
@@ -380,7 +392,7 @@ const getCorrectAnswerInfo = () => {
                         <div className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white p-4 relative sm:p-6">
                             {/* Close button - positioned absolutely */}
                             <button
-                                onClick={handleClose}
+                                onClick={confirmClose}
                                 className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
@@ -388,9 +400,9 @@ const getCorrectAnswerInfo = () => {
 
                             <div className="flex flex-col gap-3 pr-8 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                    <h3 className="text-base font-semibold sm:text-lg">Mastery Challenge</h3>
+                                    <h3 className="text-base font-semibold sm:text-lg">{alert.tr('Mastery Challenge', 'Cabaran Penguasaan')}</h3>
                                     <p className="text-xs text-sky-100 mt-1 sm:text-sm">
-                                        Question {questionNumber} of {totalQuestions}
+                                        {alert.tr('Question', 'Soalan')} {questionNumber} {alert.tr('of', 'daripada')} {totalQuestions}
                                     </p>
                                 </div>
 
@@ -454,7 +466,7 @@ const getCorrectAnswerInfo = () => {
                                     <div className="flex flex-col items-center">
                                         <img 
                                             src={currentQuestion.question_file} 
-                                            alt="Question" 
+                                            alt={alert.tr('Question', 'Soalan')}
                                             className="max-w-full h-auto rounded-lg shadow"
                                         />
                                         <ImagePathLabel path={currentQuestion.question_file} />
@@ -504,7 +516,7 @@ const getCorrectAnswerInfo = () => {
                                                                 <div className="inline-block max-w-full">
                                                                     <img
                                                                         src={answer.answer_option_file}
-                                                                        alt="Answer option"
+                                                                        alt={alert.tr('Answer option', 'Pilihan jawapan')}
                                                                         className="max-w-xs h-auto rounded"
                                                                     />
                                                                     <ImagePathLabel path={answer.answer_option_file} />
@@ -531,7 +543,7 @@ const getCorrectAnswerInfo = () => {
                                         );
                                     })
                                 ) : (
-                                    <p className="text-gray-500">No answers available</p>
+                                    <p className="text-gray-500">{alert.tr('No answers available', 'Tiada jawapan tersedia')}</p>
                                 )}
                             </div>
 
@@ -548,8 +560,8 @@ const getCorrectAnswerInfo = () => {
                                                         </svg>
                                                     </div>
                                                     <div className="flex-1">
-                                                        <p className="font-semibold text-green-800">Good work!</p>
-                                                        <p className="text-sm text-green-700">That's the right answer. Keep doing it!</p>
+                                                        <p className="font-semibold text-green-800">{alert.tr('Good work!', 'Syabas!')}</p>
+                                                        <p className="text-sm text-green-700">{alert.tr("That's the right answer. Keep doing it!", 'Itulah jawapan yang betul. Teruskan!')}</p>
                                                     </div>
                                                 </>
                                             ) : (
@@ -560,8 +572,8 @@ const getCorrectAnswerInfo = () => {
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-red-800">Incorrect</p>
-                                                        <p className="text-sm text-red-700">Moving to the next question…</p>
+                                                        <p className="font-semibold text-red-800">{alert.tr('Incorrect', 'Salah')}</p>
+                                                        <p className="text-sm text-red-700">{alert.tr('Moving to the next question…', 'Sedang beralih ke soalan seterusnya…')}</p>
                                                     </div>
                                                 </>
                                             )}
@@ -585,7 +597,7 @@ const getCorrectAnswerInfo = () => {
                                                                     </svg>
                                                                 </div>
                                                                 <div className="flex-1">
-                                                                    <p className="font-semibold text-blue-900 mb-2">Answer Description</p>
+                                                                    <p className="font-semibold text-blue-900 mb-2">{alert.tr('Answer Explanation', 'Penerangan Jawapan')}</p>
                                                                     {correctAnswer.reason && (
                                                                         <div className="prose prose-sm max-w-none text-blue-800 mb-2">
                                                                             {renderContent(correctAnswer.reason)}
@@ -600,7 +612,7 @@ const getCorrectAnswerInfo = () => {
                                                                         <div className="mt-2">
                                                                             <img 
                                                                                 src={correctAnswer.reason_file} 
-                                                                                alt="Answer explanation" 
+                                                                                alt={alert.tr('Answer explanation', 'Penerangan jawapan')}
                                                                                 className="max-w-full h-auto rounded shadow"
                                                                             />
                                                                             <ImagePathLabel path={correctAnswer.reason_file} />
@@ -627,20 +639,20 @@ const getCorrectAnswerInfo = () => {
                                             disabled={!selectedAnswer || isSubmitting}
                                             className="w-full px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors sm:w-auto"
                                         >
-                                            {isSubmitting ? 'Submitting...' : 'Submit Answer'}
+                                            {isSubmitting ? alert.tr('Submitting…', 'Sedang menghantar…') : alert.tr('Submit Answer', 'Hantar Jawapan')}
                                         </button>
                                     ) : isCorrect ? (
                                         <button
                                             onClick={handleNext}
                                             className="w-full px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                                         >
-                                            <span>Next question</span>
+                                            <span>{alert.tr('Next Question', 'Soalan Seterusnya')}</span>
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                             </svg>
                                         </button>
                                     ) : (
-                                        <p className="text-sm italic text-gray-500">Moving on…</p>
+                                        <p className="text-sm italic text-gray-500">{alert.tr('Moving on…', 'Sedang beralih…')}</p>
                                     )}
                                 </div>
                             </div>
@@ -648,7 +660,7 @@ const getCorrectAnswerInfo = () => {
                     </div>
                 ) : (
                     <div className="p-12 text-center">
-                        <p className="text-gray-500">No question data available</p>
+                        <p className="text-gray-500">{alert.tr('No question data available', 'Tiada data soalan tersedia')}</p>
                     </div>
                 )}
             </div>

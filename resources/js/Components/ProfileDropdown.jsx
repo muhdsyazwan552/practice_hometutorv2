@@ -1,9 +1,10 @@
 // resources/js/Components/ProfileDropdown.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import avatars from '@/Data/avatars';
 import { useLanguage } from '@/Contexts/LanguageContext';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function ProfileDropdown({ user, student, variant = 'default' }) {
   const [open, setOpen] = useState(false);
@@ -12,8 +13,23 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
   const dropdownRef = useRef(null);
   const { studentTheme } = usePage().props;
   const { locale } = useLanguage();
+  const alert = useThemedAlert();
   const accent = resolveDashboardTheme(studentTheme, studentTheme?.custom).accent;
   const menuText = locale === 'ms' ? { settings: 'Tetapan', signOut: 'Log keluar', photo: 'Tukar gambar profil' } : { settings: 'Settings', signOut: 'Sign out', photo: 'Change profile picture' };
+
+  const handleLogout = async () => {
+    setOpen(false);
+    const result = await alert.confirm({
+      title: alert.tr('Sign out?', 'Log keluar?'),
+      text: alert.tr('You will need to sign in again to continue learning.', 'Anda perlu log masuk semula untuk meneruskan pembelajaran.'),
+      confirmText: alert.tr('Sign out', 'Log keluar'),
+      icon: 'warning',
+    });
+    if (result.isConfirmed) {
+      alert.loading({ title: alert.tr('Signing out…', 'Sedang log keluar…') });
+      router.post(route('logout'), {}, { onFinish: alert.close });
+    }
+  };
 
   // Debug logging - updated to use the student prop
   // useEffect(() => {
@@ -138,11 +154,9 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
               <span className="text-slate-300 transition group-hover:translate-x-0.5">›</span>
             </Link>
 
-            <Link
-              href={route('logout')}
-              method="post"
-              as="button"
-              onClick={() => setOpen(false)}
+            <button
+              type="button"
+              onClick={handleLogout}
               className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
@@ -152,7 +166,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
               </span>
               <span className="mr-auto">{menuText.signOut}</span>
               <span className="text-rose-200 transition group-hover:translate-x-0.5">›</span>
-            </Link>
+            </button>
           </div>
         </div>
       )}
@@ -177,7 +191,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h3 className="text-lg font-semibold text-white">Change profile picture</h3>
+              <h3 className="text-lg font-semibold text-white">{menuText.photo}</h3>
               <div className="w-8" />
             </div>
 
@@ -186,7 +200,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
               <div className="relative">
                 <div className="w-48 h-48 rounded-full overflow-hidden ring-4 ring-gray-800">
                   {preview ? (
-                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={preview} alt={alert.tr('Preview', 'Pratonton')} className="w-full h-full object-cover" />
                   ) : studentData?.profile_picture ? (
                     <img
                       src={`/storage/${studentData.profile_picture}`}
@@ -232,7 +246,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <span className="text-sm text-gray-300">Choose Avatar</span>
+                      <span className="text-sm text-gray-300">{alert.tr('Choose Avatar', 'Pilih Avatar')}</span>
                     </button>
 
                     <label
@@ -245,7 +259,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                       </div>
-                      <span className="text-sm text-gray-300">Upload Photo</span>
+                      <span className="text-sm text-gray-300">{alert.tr('Upload Photo', 'Muat Naik Foto')}</span>
                     </label>
                   </div>
 
@@ -270,7 +284,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                         disabled={processing}
                         className="w-full py-3 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 disabled:opacity-50 transition"
                       >
-                        {processing ? 'Saving...' : 'Save'}
+                        {processing ? alert.tr('Saving…', 'Sedang menyimpan…') : alert.tr('Save', 'Simpan')}
                       </button>
                     </div>
                   )}
@@ -284,7 +298,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    Back
+                    {alert.tr('Back', 'Kembali')}
                   </button>
 
                   {/* Avatars Grid */}
@@ -321,7 +335,7 @@ export default function ProfileDropdown({ user, student, variant = 'default' }) 
                         disabled={processing}
                         className="w-full py-3 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 disabled:opacity-50 transition"
                       >
-                        {processing ? 'Saving...' : 'Save'}
+                        {processing ? alert.tr('Saving…', 'Sedang menyimpan…') : alert.tr('Save', 'Simpan')}
                       </button>
                     </div>
                   )}

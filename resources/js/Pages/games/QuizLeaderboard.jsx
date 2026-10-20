@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 import ObjectiveSection from './QuizInterface';
 import { router, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import useThemedAlert from '@/utils/useThemedAlert';
+import ThemeLoader from '@/Components/ThemeLoader';
 
 
 const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
+  const alert = useThemedAlert();
   const [userInfo, setUserInfo] = useState({
     nickname: '',
     icNumber: '',
@@ -75,14 +78,14 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
       );
 
       if (icExists) {
-        alert("🎮 IC number already exists! You cannot take the quiz again.");
+        void alert.message({ title: alert.tr('Already participated', 'Sudah menyertai'), text: alert.tr('This IC number has already been used for the quiz.', 'Nombor IC ini sudah digunakan untuk kuiz.'), icon: 'warning' });
         return;
       }
 
       setShowForm(false);
       setQuizStarted(true);
     } else {
-      alert('⚠️ Please fill in all fields');
+      void alert.message({ title: alert.tr('Complete the form', 'Lengkapkan borang'), text: alert.tr('Please fill in all fields before starting.', 'Sila isi semua ruangan sebelum bermula.'), icon: 'warning' });
     }
   };
 
@@ -136,21 +139,7 @@ const handleQuizComplete = async (results) => {
     };
 
     if (submittingQuiz) {
-    return (
-      <div className="min-h-screen bg-cover bg-center text-white flex items-center justify-center" style={{ backgroundImage: 'url(/images/background.jpg)' }}>
-        <div className="text-center bg-gray-800 bg-opacity-90 p-8 rounded-2xl border-2 border-blue-500">
-          <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-white mb-4">Processing Your Results</h2>
-          <p className="text-blue-300 mb-2">Calculating your score and rank...</p>
-          <p className="text-gray-400 text-sm">Preparing to return to leaderboard</p>
-          <div className="mt-4 flex justify-center space-x-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
-        </div>
-      </div>
-    );
+      return <ThemeLoader variant="page" message={alert.tr('Processing your results…', 'Sedang memproses keputusan anda…')} detail={alert.tr('Calculating your score and rank.', 'Sedang mengira markah dan kedudukan anda.')} />;
   }
 
     return (
@@ -167,8 +156,9 @@ const handleQuizComplete = async (results) => {
               </div>
             </div>
             <button
-              onClick={() => {
-                if (confirm('Are you sure you want to exit? Your progress will be lost.')) {
+              onClick={async () => {
+                const result = await alert.confirm({ title: alert.tr('Exit quiz?', 'Keluar daripada kuiz?'), text: alert.tr('Your current progress will be lost.', 'Kemajuan semasa anda akan hilang.'), confirmText: alert.tr('Exit quiz', 'Keluar kuiz'), cancelText: alert.tr('Continue quiz', 'Teruskan kuiz'), icon: 'warning' });
+                if (result.isConfirmed) {
                   setQuizStarted(false);
                   setShowForm(true);
                 }

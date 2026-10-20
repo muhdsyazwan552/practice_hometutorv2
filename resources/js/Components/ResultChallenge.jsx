@@ -1,4 +1,6 @@
 import React from "react";
+import ThemeLoader from '@/Components/ThemeLoader';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function ResultChallenge({
   results,
@@ -11,6 +13,8 @@ export default function ResultChallenge({
   isModal = false,
   onCloseModal
 }) {
+  const alert = useThemedAlert();
+  const tr = alert.tr;
   console.log('ResultChallenge received props:', {
     results,
     topic,
@@ -29,14 +33,7 @@ export default function ResultChallenge({
 
   // Show loading if no results
   if (!results) {
-    return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading results...</p>
-        </div>
-      </div>
-    );
+    return <ThemeLoader variant="page" message={alert.tr('Loading results…', 'Sedang memuatkan keputusan…')} />;
   }
 
   // Format time function
@@ -46,7 +43,7 @@ export default function ResultChallenge({
     const remainingSeconds = seconds % 60;
     
     if (minutes === 0) {
-      return `${remainingSeconds} seconds`;
+      return `${remainingSeconds} ${tr('seconds', 'saat')}`;
     }
     return `${minutes}m ${remainingSeconds}s`;
   };
@@ -85,15 +82,15 @@ export default function ResultChallenge({
           
           <div className="text-center">
             <h1 className="text-xl font-bold text-white mb-1">
-              {topic ? `Mission: ${topic}` : 'Mission Results'}
+              {topic ? `${tr('Mission', 'Misi')}: ${topic}` : tr('Mission Results', 'Keputusan Misi')}
             </h1>
-            <p className="text-sm text-blue-100">Mission Completed</p>
+            <p className="text-sm text-blue-100">{tr('Mission Completed', 'Misi Selesai')}</p>
           </div>
 
           <div className="text-center mt-4">
             <div className="inline-flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <p className="text-lg font-semibold text-white">Great work!</p>
+              <p className="text-lg font-semibold text-white">{tr('Great work!', 'Syabas!')}</p>
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             </div>
           </div>
@@ -107,7 +104,7 @@ export default function ResultChallenge({
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Correct</p>
+                  <p className="text-xs text-gray-600 font-medium">{tr('Correct', 'Betul')}</p>
                   <p className="text-2xl font-bold text-green-600 mt-1">
                     {results.correctAnswers || 0}
                   </p>
@@ -122,7 +119,7 @@ export default function ResultChallenge({
             <div className="bg-red-50 rounded-lg p-4 border border-red-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Incorrect</p>
+                  <p className="text-xs text-gray-600 font-medium">{tr('Incorrect', 'Salah')}</p>
                   <p className="text-2xl font-bold text-red-600 mt-1">
                     {(results.totalQuestions || 0) - (results.correctAnswers || 0)}
                   </p>
@@ -137,7 +134,7 @@ export default function ResultChallenge({
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Total Time</p>
+                  <p className="text-xs text-gray-600 font-medium">{tr('Total Time', 'Jumlah Masa')}</p>
                   <p className="text-lg font-bold text-purple-600 mt-1">
                     {formatTime(results.timeElapsed)}
                   </p>
@@ -152,7 +149,7 @@ export default function ResultChallenge({
             <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Avg/Question</p>
+                  <p className="text-xs text-gray-600 font-medium">{tr('Avg/Question', 'Purata/Soalan')}</p>
                   <p className="text-lg font-bold text-orange-600 mt-1">
                     {formatAverageTime(averageTime)}
                   </p>
@@ -166,13 +163,13 @@ export default function ResultChallenge({
 
           {/* Performance Summary */}
           <div className="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-200">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Performance Summary</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">{tr('Performance Summary', 'Ringkasan Prestasi')}</h3>
             
             <div className="space-y-4">
               {/* Score Bar */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Accuracy Score</span>
+                  <span className="text-sm font-medium text-gray-700">{tr('Accuracy Score', 'Skor Ketepatan')}</span>
                   <span className="text-sm font-bold text-blue-600">{accuracyRate}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
@@ -186,26 +183,26 @@ export default function ResultChallenge({
               {/* Stats List */}
               <div className="grid grid-cols-4 gap-4">
                 <div className="bg-white p-3 rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500">Questions</div>
+                  <div className="text-xs text-gray-500">{tr('Questions', 'Soalan')}</div>
                   <div className="text-lg font-bold text-gray-800">
                     {results.totalQuestions || 0}
                   </div>
                 </div>
                 
                 <div className="bg-white p-3 rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500">Completion</div>
+                  <div className="text-xs text-gray-500">{tr('Completion', 'Penyelesaian')}</div>
                   <div className="text-lg font-bold text-green-600">100%</div>
                 </div>
                 
                 <div className="bg-white p-3 rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500">Score</div>
+                  <div className="text-xs text-gray-500">{tr('Score', 'Skor')}</div>
                   <div className="text-lg font-bold text-blue-600">
                     {results.score || results.correctAnswers || 0}/{results.totalQuestions || 0}
                   </div>
                 </div>
                 
                 <div className="bg-white p-3 rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500">Accuracy</div>
+                  <div className="text-xs text-gray-500">{tr('Accuracy', 'Ketepatan')}</div>
                   <div className="text-lg font-bold text-green-600">{accuracyRate}%</div>
                 </div>
               </div>
@@ -245,9 +242,9 @@ export default function ResultChallenge({
             <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-full mb-3">
               <span className="text-2xl">🎯</span>
             </div>
-            <h2 className="text-lg font-bold text-gray-800 mb-1">Mission Complete!</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-1">{tr('Mission Complete!', 'Misi Selesai!')}</h2>
             <p className="text-sm text-gray-600">
-              You've completed this mission. Keep going to master every topic!
+              {tr("You've completed this mission. Keep going to master every topic!", 'Anda telah menyelesaikan misi ini. Teruskan usaha untuk menguasai setiap topik!')}
             </p>
           </div>
 
@@ -261,7 +258,7 @@ export default function ResultChallenge({
               className="flex-1 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg flex items-center justify-center"
             >
               <span className="mr-2">🔄</span>
-              Try Again
+              {tr('Try Again', 'Cuba Lagi')}
             </button>
 
             <button
@@ -269,7 +266,7 @@ export default function ResultChallenge({
               className="flex-1 px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg flex items-center justify-center"
             >
               <span className="mr-2">✅</span>
-              Close Results
+              {tr('Close Results', 'Tutup Keputusan')}
             </button>
           </div>
         </div>
@@ -288,9 +285,9 @@ export default function ResultChallenge({
               <div className="flex items-center justify-center space-x-3">
                 <div className="text-center">
                   <h1 className="text-lg font-bold text-gray-50">
-                    {topic || 'Practice Challenge'}
+                    {topic || tr('Practice Challenge', 'Cabaran Latihan')}
                   </h1>
-                  <p className="text-xs text-gray-50">Practice Results</p>
+                  <p className="text-xs text-gray-50">{tr('Practice Results', 'Keputusan Latihan')}</p>
                 </div>
               </div>
             </div>
@@ -300,9 +297,9 @@ export default function ResultChallenge({
             <div className="flex items-center">
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-50">
-                  {topic || 'Practice Challenge'}
+                  {topic || tr('Practice Challenge', 'Cabaran Latihan')}
                 </h1>
-                <p className="text-sm text-gray-50">Practice Results</p>
+                <p className="text-sm text-gray-50">{tr('Practice Results', 'Keputusan Latihan')}</p>
               </div>
             </div>
           </div>
@@ -313,11 +310,11 @@ export default function ResultChallenge({
           <div className="flex items-center justify-center space-x-2 lg:space-x-4 mb-4">
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
-            <p className="text-xl lg:text-3xl text-gray-100 font-semibold">Great Practice!</p>
+            <p className="text-xl lg:text-3xl text-gray-100 font-semibold">{tr('Great Practice!', 'Latihan yang bagus!')}</p>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
           </div>
-          <p className="text-gray-100 italic text-base lg:text-2xl px-4">Practice makes perfect!</p>
+          <p className="text-gray-100 italic text-base lg:text-2xl px-4">{tr('Practice makes perfect!', 'Latihan membawa kejayaan!')}</p>
         </div>
       </header>
 
@@ -332,7 +329,7 @@ export default function ResultChallenge({
               <div className="bg-green-50 rounded-lg lg:rounded-xl p-4 lg:p-6 border-2 border-green-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">Total Correct</h3>
+                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">{tr('Total Correct', 'Jumlah Betul')}</h3>
                     <p className="text-2xl lg:text-3xl font-bold text-green-600 mt-1 lg:mt-2">
                       {results.correctAnswers || 0}
                     </p>
@@ -347,7 +344,7 @@ export default function ResultChallenge({
               <div className="bg-red-50 rounded-lg lg:rounded-xl p-4 lg:p-6 border-2 border-red-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">Total Incorrect</h3>
+                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">{tr('Total Incorrect', 'Jumlah Salah')}</h3>
                     <p className="text-2xl lg:text-3xl font-bold text-red-600 mt-1 lg:mt-2">
                       {(results.totalQuestions || 0) - (results.correctAnswers || 0)}
                     </p>
@@ -362,7 +359,7 @@ export default function ResultChallenge({
               <div className="bg-purple-50 rounded-lg lg:rounded-xl p-4 lg:p-6 border-2 border-purple-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">Total Time</h3>
+                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">{tr('Total Time', 'Jumlah Masa')}</h3>
                     <p className="text-base lg:text-xl font-bold text-purple-600 mt-1 lg:mt-2">
                       {formatTime(results.timeElapsed)}
                     </p>
@@ -377,7 +374,7 @@ export default function ResultChallenge({
               <div className="bg-orange-50 rounded-lg lg:rounded-xl p-4 lg:p-6 border-2 border-orange-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">Average Time</h3>
+                    <h3 className="text-sm lg:text-lg font-semibold text-gray-700">{tr('Average Time', 'Purata Masa')}</h3>
                     <p className="text-base lg:text-xl font-bold text-orange-600 mt-1 lg:mt-2">
                       {formatAverageTime(averageTime)}
                     </p>
@@ -391,30 +388,30 @@ export default function ResultChallenge({
 
             {/* Analysis Section */}
             <div className="bg-gray-50 rounded-lg lg:rounded-xl p-4 lg:p-6 mb-6 lg:mb-8 border-2 border-gray-200">
-              <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-3 lg:mb-4">Performance Analysis</h3>
+              <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-3 lg:mb-4">{tr('Performance Analysis', 'Analisis Prestasi')}</h3>
               <div className="space-y-3 lg:space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                  <span className="text-sm lg:text-base text-gray-600">Questions Attempted</span>
+                  <span className="text-sm lg:text-base text-gray-600">{tr('Questions Attempted', 'Soalan Dijawab')}</span>
                   <span className="text-sm lg:text-base font-semibold text-gray-800">
                     {results.totalQuestions || 0}/{results.totalQuestions || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                  <span className="text-sm lg:text-base text-gray-600">Accuracy Rate</span>
+                  <span className="text-sm lg:text-base text-gray-600">{tr('Accuracy Rate', 'Kadar Ketepatan')}</span>
                   <span className="text-sm lg:text-base font-semibold text-green-600">
                     {accuracyRate}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                  <span className="text-sm lg:text-base text-gray-600">Score</span>
+                  <span className="text-sm lg:text-base text-gray-600">{tr('Score', 'Skor')}</span>
                   <span className="text-sm lg:text-base font-semibold text-blue-600">
                     {results.score || results.correctAnswers || 0}/{results.totalQuestions || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-sm lg:text-base text-gray-600">Completion Status</span>
+                  <span className="text-sm lg:text-base text-gray-600">{tr('Completion Status', 'Status Penyelesaian')}</span>
                   <span className="text-sm lg:text-base font-semibold text-blue-600">
-                    Fully Completed
+                    {tr('Fully Completed', 'Selesai Sepenuhnya')}
                   </span>
                 </div>
               </div>
@@ -425,9 +422,9 @@ export default function ResultChallenge({
               <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-green-100 rounded-full mb-3 lg:mb-4">
                 <span className="text-2xl lg:text-3xl">🎯</span>
               </div>
-              <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">Practice Complete!</h2>
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">{tr('Practice Complete!', 'Latihan Selesai!')}</h2>
               <p className="text-sm lg:text-base text-gray-600 px-4">
-                You've completed this practice session. Keep practicing to improve your skills!
+                {tr("You've completed this practice session. Keep practicing to improve your skills!", 'Anda telah menyelesaikan sesi latihan ini. Teruskan berlatih untuk meningkatkan kemahiran anda!')}
               </p>
             </div>
 
@@ -441,7 +438,7 @@ export default function ResultChallenge({
                 className="px-6 py-3 lg:px-8 lg:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg lg:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium shadow-lg hover:scale-105 text-base lg:text-lg flex items-center justify-center"
               >
                 <span className="mr-2">🔄</span>
-                Try Again
+                {tr('Try Again', 'Cuba Lagi')}
               </button>
 
               <button
@@ -449,7 +446,7 @@ export default function ResultChallenge({
                 className="px-6 py-3 lg:px-8 lg:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg lg:rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:scale-105 text-base lg:text-lg flex items-center justify-center text-center"
               >
                 <span className="mr-2">✅</span>
-                Finish Practice
+                {tr('Finish Practice', 'Tamatkan Latihan')}
               </button>
             </div>
           </div>

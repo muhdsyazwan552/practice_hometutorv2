@@ -3,16 +3,17 @@ import { AcademicCapIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function SubjectMenuDropdown({ isOpen, setIsOpen, onToggle, variant = 'default' }) {
-    const schoolSubjects = usePage().props.schoolSubjects || [];
-    const { t } = useLanguage();
+    const { schoolSubjects = [], form, currentCourseForm } = usePage().props;
+    const { t, locale } = useLanguage();
     const compact = variant === 'compact';
 
     const getSubjectUrl = (subject) => {
         const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
 
-        // The backend picks the form from level_id, so full-access accounts
-        // land on the subject's own level instead of a hardcoded Form 4/5.
-        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${subject.level_id}`;
+        const params = new URLSearchParams({ subject_id: subject.id, level_id: subject.level_id });
+        const selectedForm = form || currentCourseForm;
+        if (selectedForm) params.set('form', selectedForm);
+        return `/subject/${subjectSlug}?${params.toString()}`;
     };
 
     const toggleMenu = () => {
@@ -40,7 +41,7 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, onToggle, varia
                 page overflow even while closed). From `sm:` up there's
                 enough room for the normal button-anchored dropdown. */}
             <div className={`fixed inset-x-3 top-16 z-[60] max-h-[70vh] origin-top overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 text-slate-900 shadow-2xl shadow-slate-950/40 transition duration-200 sm:absolute sm:inset-x-auto sm:left-0 sm:top-[calc(100%+0.75rem)] sm:max-h-none sm:w-72 sm:origin-top-left ${isOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'}`}>
-                <div className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Your subjects</div>
+                <div className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">{locale === 'ms' ? 'Subjek anda' : 'Your subjects'}</div>
                 <div className="max-h-80 overflow-y-auto">
                     {schoolSubjects.map((subject) => (
                         <Link key={subject.id} href={getSubjectUrl(subject)} onClick={() => setIsOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700">
@@ -48,7 +49,7 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, onToggle, varia
                             <span className="truncate">{subject.name}</span>
                         </Link>
                     ))}
-                    {schoolSubjects.length === 0 && <p className="px-3 py-5 text-sm text-slate-400">No subjects available yet.</p>}
+                    {schoolSubjects.length === 0 && <p className="px-3 py-5 text-sm text-slate-400">{locale === 'ms' ? 'Belum ada subjek tersedia.' : 'No subjects available yet.'}</p>}
                 </div>
             </div>
         </div>

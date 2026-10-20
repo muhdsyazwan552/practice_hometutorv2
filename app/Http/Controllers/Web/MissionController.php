@@ -17,10 +17,15 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\InertiaLocaleTrait;
 use App\Helpers\LevelHelper;
+use App\Services\MasteryService;
 
 class MissionController extends Controller
 {
     use InertiaLocaleTrait;
+
+    public function __construct(private MasteryService $masteryService)
+    {
+    }
 
     /**
      * Display the mission page for a subject
@@ -111,6 +116,17 @@ class MissionController extends Controller
             abort(404, 'Subject not found');
         }
 
+        Session::put('current_course_form', $form);
+
+        $topics = $this->masteryService->getTopicsWithMastery($userId, $subjectId, $levelId);
+        $initialProgress = $this->masteryService->getMissionProgress($userId, $subjectId, $levelId, $topics);
+        $initialSkills = $this->masteryService->getMissionSubtopics($userId, $subjectId, $levelId, $topics)->values();
+        $initialChallenge = [
+            'title' => 'Mastery Challenge',
+            'description' => "Strengthen skills you've already practiced",
+            'question_count' => $this->masteryService->getQuestionsPerSession(),
+        ];
+
         // Get topics dengan structure yang benar
        
 
@@ -122,6 +138,9 @@ class MissionController extends Controller
             'form' => $form,
             
             'selectedStandard' => $form,
+            'initialProgress' => $initialProgress,
+            'initialSkills' => $initialSkills,
+            'initialChallenge' => $initialChallenge,
             'availableForms' => $availableForms,
             'availableLevels' => $availableLevels,
             'availableSubjects' => $availableSubjects,

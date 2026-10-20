@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { usePage, router } from "@inertiajs/react";
 import SubjectLayout from "@/Layouts/SubjectLayout";
-import ThemeLoader from "@/Components/ThemeLoader";
 import MasteryChallenge from "@/Components/MasteryChallenge";
 import PracticeChallenge from "@/Components/PracticeChallenge";
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const stages = [
     ["needPractice", "Rank 1 · Need practice"],
@@ -100,6 +100,12 @@ function RankTrack({ rank, compact = false }) {
 }
 
 export default function SubjectMissionPage() {
+    const { locale } = useLanguage();
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
+    const rankNames = locale === 'ms'
+        ? ['Perlu latihan', 'Sudah berlatih', 'Biasa', 'Mahir', 'Dikuasai']
+        : ['Need practice', 'Practised', 'Familiar', 'Proficient', 'Mastered'];
+    const rankName = (rank) => rankNames[Math.max(0, Math.min(4, rank - 1))];
     const { props } = usePage();
     const {
         subject,
@@ -110,6 +116,9 @@ export default function SubjectMissionPage() {
         availableLevels = {},
         availableSubjects = {},
         studentTheme,
+        initialProgress,
+        initialSkills = [],
+        initialChallenge,
     } = props;
     const themeSlug = studentTheme?.slug || "ocean-blue";
     const themeCardRadius =
@@ -130,10 +139,11 @@ export default function SubjectMissionPage() {
             "color-mix(in srgb, var(--theme-card) 82%, var(--theme-accent) 18%)",
         borderColor: "color-mix(in srgb, var(--theme-accent) 30%, white)",
     };
-    const [progressData, setProgressData] = useState(null);
-    const [skills, setSkills] = useState([]);
-    const [challenge, setChallenge] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const scopeKey = `${subject_id}:${level_id}`;
+    const [refreshed, setRefreshed] = useState(null);
+    const progressData = refreshed?.scopeKey === scopeKey ? refreshed.progress : initialProgress;
+    const skills = refreshed?.scopeKey === scopeKey ? refreshed.skills : initialSkills;
+    const challenge = refreshed?.scopeKey === scopeKey ? refreshed.challenge : initialChallenge;
     const [challengeOpen, setChallengeOpen] = useState(false);
     const [practiceOpen, setPracticeOpen] = useState(false);
     const [selectedTopic, setSelectedTopic] = useState(null);
@@ -141,6 +151,12 @@ export default function SubjectMissionPage() {
     const [subtopicPage, setSubtopicPage] = useState(1);
     const [subtopicsPerPage, setSubtopicsPerPage] = useState(8);
     const [currentStandard, setCurrentStandard] = useState(form || "Form 4");
+
+    useEffect(() => {
+        setRefreshed(null);
+        setCurrentStandard(form || "Form 4");
+        setSubtopicPage(1);
+    }, [form, scopeKey, initialProgress]);
 
     const loadMission = async () => {
         const [progressRes, skillsRes, challengeRes] = await Promise.all([
@@ -171,20 +187,14 @@ export default function SubjectMissionPage() {
             skillsRes.json(),
             challengeRes.json(),
         ]);
-        setProgressData(progress);
-        setSkills(Array.isArray(topicSkills) ? topicSkills : []);
+        setRefreshed({
+            scopeKey,
+            progress,
+            skills: Array.isArray(topicSkills) ? topicSkills : [],
+            challenge: challengeInfo,
+        });
         setSubtopicPage(1);
-        setChallenge(challengeInfo);
     };
-
-    useEffect(() => {
-        if (!subject_id || !level_id) return;
-        loadMission()
-            .catch((error) =>
-                console.error("Error fetching subject data", error),
-            )
-            .finally(() => setLoading(false));
-    }, [subject_abbr, subject_id, level_id]);
 
     useEffect(() => {
         const updatePageSize = () => {
@@ -227,13 +237,6 @@ export default function SubjectMissionPage() {
         setPracticeOpen(true);
     };
 
-    if (loading)
-        return (
-            <SubjectLayout subject={subject_abbr} activeTab="Mission">
-                <ThemeLoader message="Loading your practice…" />
-            </SubjectLayout>
-        );
-
     const percentage = progressData?.percentage || 0;
     const totalSubtopicPages = Math.max(
         1,
@@ -266,7 +269,7 @@ export default function SubjectMissionPage() {
                     >
                         <div className="flex items-center justify-between">
                             <h2 className="text-sm font-black tracking-widest text-blue-950">
-                                LEARNING QUEST
+                                {tr('LEARNING QUEST', 'MISI PEMBELAJARAN')}
                             </h2>
                             <span className="text-sky-500">✦</span>
                         </div>
@@ -306,10 +309,10 @@ export default function SubjectMissionPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--theme-accent)" }}>
-                                    Topic mastery
+                                    {tr('Topic mastery', 'Penguasaan topik')}
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Built from each subtopic rank.
+                                    {tr('Built from each subtopic rank.', 'Dikira daripada kedudukan setiap subtopik.')}
                                 </p>
                             </div>
                         </div>
@@ -327,15 +330,14 @@ export default function SubjectMissionPage() {
                                         <div className="flex-1 rounded-xl border bg-white/90 px-3 py-2 shadow-sm" style={themeSurface}>
                                             <div className="flex items-center justify-between gap-2">
                                                 <p className="text-sm font-semibold text-slate-700">
-                                                    {label}
+                                                    {tr(`Rank ${index + 1}`, `Tahap ${index + 1}`)} · {rankName(index + 1)}
                                                 </p>
                                                 <span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ background: "color-mix(in srgb, var(--theme-accent) 13%, white)", color: "var(--theme-accent)" }}>
                                                     {count}
                                                 </span>
                                             </div>
                                             <p className="text-xs text-slate-400">
-                                                {count} topic
-                                                {count === 1 ? "" : "s"}
+                                                {count} {tr(count === 1 ? 'topic' : 'topics', 'topik')}
                                             </p>
                                         </div>
                                     </div>
@@ -345,7 +347,7 @@ export default function SubjectMissionPage() {
                         <div className="mt-6 border-t border-sky-100 pt-4">
                             <div className="mb-3 flex items-center justify-between">
                                 <h3 className="text-xs font-black tracking-widest text-sky-700">
-                                    TOPIC RANKS
+                                    {tr('TOPIC RANKS', 'TAHAP TOPIK')}
                                 </h3>
                                 <span className="text-xs text-slate-400">
                                     {progressData?.topics?.length || 0}
@@ -367,16 +369,13 @@ export default function SubjectMissionPage() {
                                                     {topic.title}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-slate-400">
-                                                    {topicRank.label}
+                                                    {rankName(topicRank.rank)}
                                                 </span>
                                             </div>
                                             {topic.subtopic_count > 0 && (
                                                 <p className="mt-1 pl-7 text-[10px] font-semibold" style={{ color: "var(--theme-accent)" }}>
                                                     {topic.subtopic_count}{" "}
-                                                    subtopic
-                                                    {topic.subtopic_count === 1
-                                                        ? ""
-                                                        : "s"}
+                                                    {tr(topic.subtopic_count === 1 ? 'subtopic' : 'subtopics', 'subtopik')}
                                                 </p>
                                             )}
                                             <div className="mt-2">
@@ -401,7 +400,7 @@ export default function SubjectMissionPage() {
                                 ◉
                             </span>
                             <h2 className="text-xl font-black tracking-wide">
-                                PRACTICE ARENA
+                                {tr('PRACTICE ARENA', 'ARENA LATIHAN')}
                             </h2>
                         </div>
                         {challenge && (
@@ -414,22 +413,22 @@ export default function SubjectMissionPage() {
                                         </div>
                                         <div>
                                             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--theme-accent)" }}>
-                                                Featured mission
+                                                {tr('Featured mission', 'Misi pilihan')}
                                             </p>
                                             <h3 className="mt-1 text-xl font-black text-blue-950 sm:text-2xl">
-                                                {challenge.title}
+                                                {locale === 'ms' && challenge.title === 'Mastery Challenge' ? 'Cabaran Penguasaan' : challenge.title}
                                             </h3>
                                             <p className="mt-1 text-sm text-slate-600">
-                                                {challenge.description}
+                                                {locale === 'ms' && challenge.description === "Strengthen skills you've already practiced" ? 'Kukuhkan kemahiran yang sudah anda latih' : challenge.description}
                                             </p>
                                             <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
                                                 <span className="rounded-full bg-white px-3 py-1 text-slate-600 shadow-sm">
                                                     {challenge.question_count ||
                                                         10}{" "}
-                                                    questions
+                                                    {tr('questions', 'soalan')}
                                                 </span>
                                                 <span className="rounded-full px-3 py-1" style={{ background: "color-mix(in srgb, var(--theme-accent) 13%, white)", color: "var(--theme-accent)" }}>
-                                                    Topic-based mastery
+                                                    {tr('Topic-based mastery', 'Penguasaan berasaskan topik')}
                                                 </span>
                                             </div>
                                         </div>
@@ -439,7 +438,7 @@ export default function SubjectMissionPage() {
                                         className="w-full rounded-xl px-6 py-3 font-black text-white shadow-lg transition hover:scale-[1.03] sm:w-auto"
                                         style={{ background: "var(--theme-hero)" }}
                                     >
-                                        Play now →
+                                        {tr('Play now', 'Main sekarang')} →
                                     </button>
                                 </div>
                             </section>
@@ -449,20 +448,19 @@ export default function SubjectMissionPage() {
                             <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--theme-accent)" }}>
-                                        Subtopic missions
+                                        {tr('Subtopic missions', 'Misi subtopik')}
                                     </p>
                                     <h3 className="text-xl font-black text-slate-900">
-                                        Choose a subtopic to practise
+                                        {tr('Choose a subtopic to practise', 'Pilih subtopik untuk berlatih')}
                                     </h3>
                                 </div>
                                 <p className="text-sm text-slate-500">
-                                    Each subtopic has its own rank
+                                    {tr('Each subtopic has its own rank', 'Setiap subtopik mempunyai tahap sendiri')}
                                 </p>
                             </div>
                             {skills.length === 0 ? (
                                 <div className="rounded-2xl bg-sky-50 px-5 py-10 text-center text-lg font-bold text-sky-800">
-                                    No subtopics are available for this subject
-                                    and level.
+                                    {tr('No subtopics are available for this subject and level.', 'Tiada subtopik tersedia untuk subjek dan tingkatan ini.')}
                                 </div>
                             ) : (
                                 <>
@@ -482,7 +480,7 @@ export default function SubjectMissionPage() {
                                                                 size="lg"
                                                             />
                                                             <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-                                                                Rank{" "}
+                                                                {tr('Rank', 'Tahap')}{" "}
                                                                 {topicRank.rank}
                                                             </span>
                                                         </div>
@@ -506,15 +504,15 @@ export default function SubjectMissionPage() {
                                                                     }}
                                                                 >
                                                                     {
-                                                                        topicRank.label
+                                                                        rankName(topicRank.rank)
                                                                     }
                                                                 </span>
                                                                 <span className="text-[10px] font-semibold text-slate-400">
-                                                                    Rank{" "}
+                                                                    {tr('Rank', 'Tahap')}{" "}
                                                                     {
                                                                         topicRank.rank
                                                                     }{" "}
-                                                                    of 5
+                                                                    {tr('of 5', 'daripada 5')}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -522,7 +520,7 @@ export default function SubjectMissionPage() {
                                                     <div className="mt-4 rounded-xl bg-white/75 p-3 ring-1" style={{ borderColor: "color-mix(in srgb, var(--theme-accent) 15%, white)" }}>
                                                         <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
                                                             <span>
-                                                                Rank progress
+                                                                {tr('Rank progress', 'Kemajuan tahap')}
                                                             </span>
                                                             <span>R1 → R5</span>
                                                         </div>
@@ -534,24 +532,10 @@ export default function SubjectMissionPage() {
                                                     </div>
                                                     <div className="mt-4 flex items-center justify-between">
                                                         <span className="text-xs font-bold text-slate-500">
-                                                            Next:{" "}
+                                                            {tr('Next:', 'Seterusnya:')}{" "}
                                                             {topicRank.rank < 5
-                                                                ? rankMap[
-                                                                      Object.keys(
-                                                                          rankMap,
-                                                                      ).find(
-                                                                          (
-                                                                              key,
-                                                                          ) =>
-                                                                              rankMap[
-                                                                                  key
-                                                                              ]
-                                                                                  .rank ===
-                                                                              topicRank.rank +
-                                                                                  1,
-                                                                      )
-                                                                  ]?.label
-                                                                : "Complete"}
+                                                                ? rankName(topicRank.rank + 1)
+                                                                : tr('Complete', 'Selesai')}
                                                         </span>
                                                         <button
                                                             onClick={() =>
@@ -562,7 +546,7 @@ export default function SubjectMissionPage() {
                                                             className="rounded-xl px-4 py-2 text-sm font-bold text-white transition group-hover:brightness-110"
                                                             style={{ background: "var(--theme-accent)" }}
                                                         >
-                                                            Start →
+                                                            {tr('Start', 'Mula')} →
                                                         </button>
                                                     </div>
                                                 </article>
@@ -572,7 +556,7 @@ export default function SubjectMissionPage() {
                                     {totalSubtopicPages > 1 && (
                                         <div className="mt-5 flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row">
                                             <p className="text-xs font-semibold text-slate-500">
-                                                Showing{" "}
+                                                {tr('Showing', 'Memaparkan')}{" "}
                                                 {(subtopicPage - 1) *
                                                     subtopicsPerPage +
                                                     1}
@@ -582,7 +566,7 @@ export default function SubjectMissionPage() {
                                                         subtopicsPerPage,
                                                     skills.length,
                                                 )}{" "}
-                                                of {skills.length} subtopics
+                                                {tr('of', 'daripada')} {skills.length} {tr('subtopics', 'subtopik')}
                                             </p>
                                             <div className="flex w-full items-center gap-1.5 sm:w-auto">
                                                 <button
@@ -601,7 +585,7 @@ export default function SubjectMissionPage() {
                                                     }
                                                     className="flex-1 rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
                                                 >
-                                                    ← Previous
+                                                    ← {tr('Previous', 'Sebelumnya')}
                                                 </button>
                                                 <span className="whitespace-nowrap px-2 text-xs font-black text-sky-700 sm:hidden">
                                                     {subtopicPage} /{" "}
@@ -642,7 +626,7 @@ export default function SubjectMissionPage() {
                                                     }
                                                     className="flex-1 rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
                                                 >
-                                                    Next →
+                                                    {tr('Next', 'Seterusnya')} →
                                                 </button>
                                             </div>
                                         </div>

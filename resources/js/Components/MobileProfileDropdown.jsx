@@ -1,9 +1,23 @@
 // MobileProfileDropdown.jsx
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function MobileProfileDropdown({ user }) {
+  const alert = useThemedAlert();
+  const handleLogout = async () => {
+    const result = await alert.confirm({
+      title: alert.tr('Sign out?', 'Log keluar?'),
+      text: alert.tr('You will need to sign in again to continue learning.', 'Anda perlu log masuk semula untuk meneruskan pembelajaran.'),
+      confirmText: alert.tr('Sign out', 'Log keluar'),
+      icon: 'warning',
+    });
+    if (result.isConfirmed) {
+      alert.loading({ title: alert.tr('Signing out…', 'Sedang log keluar…') });
+      router.post(route('logout'), {}, { onFinish: alert.close });
+    }
+  };
   return (
     <Dropdown>
       <Dropdown.Trigger>
@@ -36,17 +50,16 @@ export default function MobileProfileDropdown({ user }) {
             Profile
           </Dropdown.Link>
           
-          <Dropdown.Link 
-            href={route('logout')} 
-            method="post" 
-            as="button"
+          <button
+            type="button"
+            onClick={handleLogout}
             className="flex items-center w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50"
           >
             <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Log 
-          </Dropdown.Link>
+            {alert.tr('Sign out', 'Log keluar')}
+          </button>
         </div>
       </Dropdown.Content>
     </Dropdown>

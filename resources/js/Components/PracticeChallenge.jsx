@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import ResultChallenge from '@/Components/ResultChallenge';
 import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import useThemedAlert from '@/utils/useThemedAlert';
+import ThemeLoader from '@/Components/ThemeLoader';
 
 export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName }) {
+    const alert = useThemedAlert();
     const [sessionId, setSessionId] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -187,7 +190,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
             loadNextQuestion(data.session_id);
         } catch (error) {
             console.error('Full error details:', error);
-            alert(`Failed to start practice. Error: ${error.message}`);
+            void alert.message({ title: alert.tr('Cannot start practice', 'Tidak dapat memulakan latihan'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
             setLoading(false);
         }
     };
@@ -321,7 +324,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         // Don't auto-load next question - wait for user to click "Next"
     } catch (error) {
         console.error('Error submitting answer:', error);
-        alert(`Failed to submit answer: ${error.message}`);
+        void alert.message({ title: alert.tr('Answer not submitted', 'Jawapan tidak dihantar'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
     } finally {
         setIsSubmitting(false);
     }
@@ -419,6 +422,18 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         handleClose();
     };
 
+    const confirmClose = async () => {
+        if (!sessionId || summary) return handleClose();
+        const result = await alert.confirm({
+            title: alert.tr('Leave practice?', 'Tinggalkan latihan?'),
+            text: alert.tr('Your completed answers are saved. You can resume this session later.', 'Jawapan yang siap telah disimpan. Anda boleh sambung sesi ini kemudian.'),
+            confirmText: alert.tr('Leave practice', 'Tinggalkan latihan'),
+            cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+            icon: 'warning',
+        });
+        if (result.isConfirmed) handleClose();
+    };
+
     // Render HTML content safely
     const renderContent = (content) => {
         if (!content) return null;
@@ -486,22 +501,16 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                 {loading && !currentQuestion ? (
-                    <div className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Loading practice session...</p>
-                    </div>
+                    <ThemeLoader message={alert.tr('Loading practice session…', 'Sedang memuatkan sesi latihan…')} />
                 ) : summary ? (
-                    <div className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Preparing your results...</p>
-                    </div>
+                    <ThemeLoader message={alert.tr('Preparing your results…', 'Sedang menyediakan keputusan anda…')} />
                 ) : currentQuestion ? (
                     <div>
                         {/* Header with Progress Circles */}
                         <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 relative sm:p-6">
                             {/* Close button - positioned absolutely */}
                             <button
-                                onClick={handleClose}
+                                onClick={confirmClose}
                                 className="absolute top-3 right-3 text-white/80 hover:text-white text-2xl sm:top-4 sm:right-4"
                             >
                                 ×
@@ -509,9 +518,9 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
                             <div className="flex flex-col gap-3 pr-8 md:flex-row md:items-start md:justify-between">
                                 <div>
-                                    <h3 className="text-base font-semibold sm:text-lg">Mission: {topicName}</h3>
+                                    <h3 className="text-base font-semibold sm:text-lg">{alert.tr('Mission', 'Misi')}: {topicName}</h3>
                                     <p className="text-xs text-green-100 mt-1 sm:text-sm">
-                                        Question {questionNumber} of {totalQuestions}
+                                        {alert.tr('Question', 'Soalan')} {questionNumber} {alert.tr('of', 'daripada')} {totalQuestions}
                                     </p>
                                 </div>
 
@@ -588,7 +597,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                     <div className="flex flex-col items-center">
                                         <img 
                                             src={currentQuestion.question_file} 
-                                            alt="Question"
+                                            alt={alert.tr('Question', 'Soalan')}
                                             className="max-w-full h-auto rounded-lg shadow"
                                         />
                                         <ImagePathLabel path={currentQuestion.question_file} />
@@ -637,7 +646,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                 <div className="inline-block max-w-full">
                                                                     <img
                                                                         src={answer.answer_option_file}
-                                                                        alt="Answer option"
+                                                                        alt={alert.tr('Answer option', 'Pilihan jawapan')}
                                                                         className="max-w-xs h-auto rounded"
                                                                     />
                                                                     <ImagePathLabel path={answer.answer_option_file} />
@@ -664,7 +673,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                         );
                                     })
                                 ) : (
-                                    <p className="text-gray-500">No answers available</p>
+                                    <p className="text-gray-500">{alert.tr('No answers available', 'Tiada jawapan tersedia')}</p>
                                 )}
                             </div>
 
@@ -681,8 +690,8 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                         </svg>
                                                     </div>
                                                     <div className="flex-1">
-                                                        <p className="font-semibold text-green-800">Good work!</p>
-                                                        <p className="text-sm text-green-700">That's the right answer.</p>
+                                                        <p className="font-semibold text-green-800">{alert.tr('Good work!', 'Syabas!')}</p>
+                                                        <p className="text-sm text-green-700">{alert.tr("That's the right answer.", 'Itulah jawapan yang betul.')}</p>
                                                     </div>
                                                 </>
                                             ) : (
@@ -693,8 +702,8 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-red-800">Incorrect</p>
-                                                        <p className="text-sm text-red-700">Review the correct answer above.</p>
+                                                        <p className="font-semibold text-red-800">{alert.tr('Incorrect', 'Salah')}</p>
+                                                        <p className="text-sm text-red-700">{alert.tr('Review the correct answer above.', 'Semak jawapan yang betul di atas.')}</p>
                                                     </div>
                                                 </>
                                             )}
@@ -717,7 +726,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                                             </svg>
-                                                            <span>Answer Description</span>
+                                                            <span>{alert.tr('Answer Explanation', 'Penerangan Jawapan')}</span>
                                                         </button>
                                                     )}
 
@@ -730,7 +739,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                     </svg>
                                                                 </div>
                                                                 <div className="flex-1">
-                                                                    <p className="font-semibold text-blue-900 mb-2">Answer Description</p>
+                                                                    <p className="font-semibold text-blue-900 mb-2">{alert.tr('Answer Explanation', 'Penerangan Jawapan')}</p>
                                                                     {correctAnswer.reason && (
                                                                         <div className="prose prose-sm max-w-none text-blue-800 mb-2">
                                                                             {renderContent(correctAnswer.reason)}
@@ -745,7 +754,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                         <div className="mt-2">
                                                                             <img
                                                                                 src={correctAnswer.reason_file}
-                                                                                alt="Answer explanation"
+                                                                                alt={alert.tr('Answer explanation', 'Penerangan jawapan')}
                                                                                 className="max-w-full h-auto rounded shadow"
                                                                             />
                                                                             <ImagePathLabel path={correctAnswer.reason_file} />
@@ -776,14 +785,14 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                 {isSubmitting ? (
                     <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Submitting...</span>
+                        <span>{alert.tr('Submitting…', 'Sedang menghantar…')}</span>
                     </>
                 ) : (
                     <>
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Submit Answer</span>
+                        <span>{alert.tr('Submit Answer', 'Hantar Jawapan')}</span>
                     </>
                 )}
             </button>
@@ -794,7 +803,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                     onClick={handleNext}
                     className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                 >
-                    <span>Next Question</span>
+                    <span>{alert.tr('Next Question', 'Soalan Seterusnya')}</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -807,7 +816,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                     }}
                     className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
                 >
-                    <span>See Results</span>
+                    <span>{alert.tr('See Results', 'Lihat Keputusan')}</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -820,7 +829,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                     </div>
                 ) : (
                     <div className="p-12 text-center">
-                        <p className="text-gray-500">No question data available</p>
+                        <p className="text-gray-500">{alert.tr('No question data available', 'Tiada data soalan tersedia')}</p>
                     </div>
                 )}
             </div>

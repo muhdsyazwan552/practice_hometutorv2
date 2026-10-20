@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { usePage } from '@inertiajs/react';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 // "TEMA 1 : KAEDAH SAINTIFIK" -> "Tema 1: Kaedah Saintifik". Titles that are
 // already mixed case are left alone so acronyms (SPM, DNA) keep their capitals.
@@ -19,6 +20,7 @@ const readableTitle = (text = '') => {
  * false = wrong first try, null = not answered yet.
  */
 export default function QuestionHeader({ title, topic, statuses = [], current = 0, timeText, timeClass = 'text-slate-600', onBack, backLabel = 'Back' }) {
+  const { locale } = useLanguage();
   const { auth, topic_id, parent_topic_id } = usePage().props;
   const showDevelopmentIds = auth?.user?.email === 'tasya@children.hometutor.local';
   const dotsRef = useRef(null);
@@ -56,12 +58,12 @@ export default function QuestionHeader({ title, topic, statuses = [], current = 
           <h1 className="truncate text-base font-bold text-slate-800 sm:text-lg" title={title}>{readableTitle(title)}</h1>
           {topic && <p className="truncate text-xs text-slate-500 sm:text-sm" title={topic}>{topic}</p>}
           {showDevelopmentIds && topic_id && <p className="mt-1 font-mono text-xs text-amber-800">
-            {parent_topic_id ? `ID topik: ${parent_topic_id} · ID subtopik: ${topic_id}` : `ID topik: ${topic_id}`}
+            {parent_topic_id ? `${locale === 'ms' ? 'ID topik' : 'Topic ID'}: ${parent_topic_id} · ${locale === 'ms' ? 'ID subtopik' : 'Subtopic ID'}: ${topic_id}` : `${locale === 'ms' ? 'ID topik' : 'Topic ID'}: ${topic_id}`}
           </p>}
         </div>
 
         {timeText && (
-          <span className={`flex flex-none items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-sm font-semibold tabular-nums ${timeClass}`} title="Time elapsed">
+          <span className={`flex flex-none items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-sm font-semibold tabular-nums ${timeClass}`} title={locale === 'ms' ? 'Masa berlalu' : 'Time elapsed'}>
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -92,7 +94,7 @@ export default function QuestionHeader({ title, topic, statuses = [], current = 
               );
             })}
           </div>
-          <span className="flex-none text-xs font-semibold text-slate-500">Soalan {Math.min(current + 1, total)}/{total}</span>
+          <span className="flex-none text-xs font-semibold text-slate-500">{locale === 'ms' ? 'Soalan' : 'Question'} {Math.min(current + 1, total)}/{total}</span>
         </div>
       )}
 

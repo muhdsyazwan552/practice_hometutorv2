@@ -37,6 +37,8 @@ class InteractiveController extends Controller
 
         abort_unless($subjectData, 404, 'Subject not found for this level.');
 
+        Session::put('current_course_form', $selectedLevel->name);
+
         $availableSubjects = [];
         foreach ($levels as $level) {
             $matchingSubject = $this->subjectForLevel($subject, (int) $level->id);

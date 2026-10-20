@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const footerLinks = {
   about: [
@@ -44,6 +45,9 @@ const LinkColumn = ({ title, links }) => (
 
 export default function StandardFooter() {
   const currentYear = new Date().getFullYear();
+  const { locale, changeLanguage, isChangingLanguage } = useLanguage();
+  const tr = (en, ms) => locale === 'ms' ? ms : en;
+  const localLinks = (links) => links.map((link) => ({ ...link, label: ({ 'Our Company': tr('Our Company', 'Syarikat Kami'), 'Our Products': tr('Our Products', 'Produk Kami'), Payment: tr('Payment', 'Pembayaran'), 'Contact Us': tr('Contact Us', 'Hubungi Kami') })[link.label] || link.label }));
 
   return (
     <footer className="mt-2 border-t border-white/10 bg-slate-950 text-slate-200">
@@ -55,25 +59,25 @@ export default function StandardFooter() {
               <span className="text-lg font-bold tracking-tight text-white">HomeTutor</span>
             </div>
             <p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base">
-              HomeTutor provides engaging digital learning content and mastery modules to help every student progress with confidence.
+              {tr('HomeTutor provides engaging digital learning content and mastery modules to help every student progress with confidence.', 'HomeTutor menyediakan kandungan pembelajaran digital dan modul penguasaan untuk membantu setiap pelajar maju dengan yakin.')}
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Practice with purpose, understand your progress, and get personalised learning support at every step.
+              {tr('Practice with purpose, understand your progress, and get personalised learning support at every step.', 'Berlatih dengan matlamat yang jelas, fahami kemajuan anda dan dapatkan sokongan pembelajaran pada setiap langkah.')}
             </p>
           </div>
 
-          <LinkColumn title="About" links={footerLinks.about} />
-          <LinkColumn title="Support" links={footerLinks.support} />
+          <LinkColumn title={tr('About', 'Tentang Kami')} links={localLinks(footerLinks.about)} />
+          <LinkColumn title={tr('Support', 'Sokongan')} links={localLinks(footerLinks.support)} />
         </div>
 
         <div className="flex flex-col gap-5 pt-6 text-center sm:text-left lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col items-center gap-3 text-xs text-slate-400 sm:flex-row sm:flex-wrap sm:justify-start sm:gap-x-5 sm:gap-y-2">
-            <span>© {currentYear} HomeTutor. All rights reserved.</span>
-            <a href="/terms" className="transition hover:text-white">Terms of Use</a>
-            <a href="/privacy" className="transition hover:text-white">Privacy Policy</a>
+            <span>© {currentYear} HomeTutor. {tr('All rights reserved.', 'Hak cipta terpelihara.')}</span>
+            <a href="/terms" className="transition hover:text-white">{tr('Terms of Use', 'Terma Penggunaan')}</a>
+            <a href="/privacy" className="transition hover:text-white">{tr('Privacy Policy', 'Dasar Privasi')}</a>
             <label className="flex items-center gap-2">
-              <span>Language</span>
-              <select aria-label="Language" defaultValue="en" className="rounded-md border border-slate-600 bg-slate-900 px-2 py-1 text-xs text-slate-100 outline-none transition focus:border-sky-400">
+              <span>{tr('Language', 'Bahasa')}</span>
+              <select aria-label={tr('Language', 'Bahasa')} value={locale} onChange={(event) => changeLanguage(event.target.value)} disabled={isChangingLanguage} className="rounded-md border border-slate-600 bg-slate-900 px-2 py-1 text-xs text-slate-100 outline-none transition focus:border-sky-400">
                 <option value="en">English</option>
                 <option value="ms">Bahasa Melayu</option>
               </select>

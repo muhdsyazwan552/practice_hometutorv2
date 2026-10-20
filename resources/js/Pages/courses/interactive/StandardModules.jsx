@@ -1,7 +1,10 @@
 // resources/js/Pages/courses/interactive/StandardModules.jsx
 import React from 'react';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const StandardModules = ({ modules, onModuleClick, standard }) => {
+    const { locale } = useLanguage();
+    const tr = (en, ms) => locale === 'ms' ? ms : en;
     // Helper function to get module color based on type
     const getTypeColor = (type) => {
         switch (type) {
@@ -78,9 +81,9 @@ const StandardModules = ({ modules, onModuleClick, standard }) => {
     const getTypeDisplayName = (type) => {
         const typeMap = {
             'react_literasi': 'Drag & Drop',
-            'DRAG_4_ANSWERS_TOP': '4 Answers Top',
-            'DRAG_2_OPTIONS_PER_QUESTION': '2 Options Each',
-            'DRAG_3_OPTIONS_PER_QUESTION': '3 Options',
+            'DRAG_4_ANSWERS_TOP': tr('4 Answers Top', '4 Jawapan di Atas'),
+            'DRAG_2_OPTIONS_PER_QUESTION': tr('2 Options Each', '2 Pilihan Setiap Soalan'),
+            'DRAG_3_OPTIONS_PER_QUESTION': tr('3 Options', '3 Pilihan'),
         };
         return typeMap[type] || type;
     };
@@ -103,10 +106,10 @@ const StandardModules = ({ modules, onModuleClick, standard }) => {
                             return {
                                 badge: <span className="text-xs font-medium bg-green-100 text-green-800 px-3 py-1.5 rounded-full flex items-center gap-2">
                                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                    Completed
+                                    {tr('Completed', 'Selesai')}
                                 </span>,
                                 iconBg: 'bg-gradient-to-r from-green-400 to-teal-500',
-                                buttonText: 'Review Activity',
+                                buttonText: tr('Review Activity', 'Semak Aktiviti'),
                                 buttonClass: 'bg-green-600 hover:bg-green-700',
                                 stepColor: 'bg-green-500',
                                 stepIcon: '✓'
@@ -115,10 +118,10 @@ const StandardModules = ({ modules, onModuleClick, standard }) => {
                             return {
                                 badge: <span className="text-xs font-medium bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full flex items-center gap-2">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                                    Available Now
+                                    {tr('Available Now', 'Tersedia Sekarang')}
                                 </span>,
                                 iconBg: 'bg-gradient-to-r from-blue-400 to-cyan-500',
-                                buttonText: 'Start Activity',
+                                buttonText: tr('Start Activity', 'Mulakan Aktiviti'),
                                 buttonClass: 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700',
                                 stepColor: 'bg-gray-200',
                                 stepIcon: stepNumber
@@ -127,10 +130,10 @@ const StandardModules = ({ modules, onModuleClick, standard }) => {
                             return {
                                 badge: <span className="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full flex items-center gap-2">
                                     <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                                    Locked
+                                    {tr('Locked', 'Terkunci')}
                                 </span>,
                                 iconBg: 'bg-gradient-to-r from-gray-300 to-gray-400',
-                                buttonText: 'Locked',
+                                buttonText: tr('Locked', 'Terkunci'),
                                 buttonClass: 'bg-gray-300 cursor-not-allowed text-gray-600',
                                 stepColor: 'bg-gray-300',
                                 stepIcon: '🔒'
@@ -167,11 +170,11 @@ const StandardModules = ({ modules, onModuleClick, standard }) => {
                                             <div className="flex flex-col">
                                                 {/* Dynamic standard name */}
                                                 <h3 className="font-bold text-gray-400 text-xs mb-3">
-                                                    {standard || module.standard || 'STANDARD'}
+                                                    {locale === 'ms' ? (standard || module.standard || 'STANDARD').replace(/^Form\s+(\d+)$/i, 'Tingkatan $1') : standard || module.standard || 'STANDARD'}
                                                 </h3>
 
                                                 <h3 className="font-semibold text-black text-lg">
-                                                     {module.title || `Interactive ${stepNumber}`}
+                                                     {module.title || `${tr('Interactive', 'Interaktif')} ${stepNumber}`}
                                                 </h3>
                                                 <p className="font-light text-gray-600 text-md">
                                                      {module.description}

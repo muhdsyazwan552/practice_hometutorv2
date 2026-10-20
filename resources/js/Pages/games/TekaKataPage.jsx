@@ -1,7 +1,9 @@
 // src/Pages/WordGridGame.jsx
 import React, { useState, useEffect } from "react";
+import useThemedAlert from '@/utils/useThemedAlert';
 
 export default function WordGridGame() {
+  const alert = useThemedAlert();
   // Senarai soalan
   const questions = [
     {
@@ -153,7 +155,7 @@ export default function WordGridGame() {
       setStatus(null);
       setShowHint(false);
     } else {
-      alert("🎉 Semua soalan selesai!");
+      void alert.message({ title: alert.tr('All questions complete!', 'Semua soalan selesai!'), text: alert.tr('Great work finishing the word game.', 'Bagus! Anda telah menamatkan permainan teka kata.'), icon: 'success' });
     }
   };
 

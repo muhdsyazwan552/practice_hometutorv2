@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { resolveDashboardTheme } from '@/utils/dashboardTheme';
 import StandardFooter from '@/Components/StandardFooter';
 import QuestionHeader from '@/Components/QuestionHeader';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const SubjectiveQuestionLayout = ({
   children,
@@ -13,9 +14,11 @@ const SubjectiveQuestionLayout = ({
   getTimeColor,
   sectionTitle,
   formatTime,
-  footerContent
+  footerContent,
+  onBack,
 }) => {
   const { studentTheme } = usePage().props;
+  const { locale } = useLanguage();
   const palette = resolveDashboardTheme(studentTheme, studentTheme?.custom);
 
   return (
@@ -27,7 +30,8 @@ const SubjectiveQuestionLayout = ({
         current={currentIndex}
         timeText={formatTime(timeElapsed)}
         timeClass={getTimeColor()}
-        onBack={() => window.history.back()}
+        onBack={onBack}
+        backLabel={locale === 'ms' ? 'Keluar latihan' : 'Exit practice'}
       />
 
       <div className="student-theme-content relative pb-0 pt-0">
