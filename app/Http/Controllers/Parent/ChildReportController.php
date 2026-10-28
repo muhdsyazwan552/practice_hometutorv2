@@ -143,7 +143,6 @@ class ChildReportController extends Controller
                 ->map(fn ($id) => (int) $id);
             $levelIds = $levelIds->merge($historical)->unique();
         }
-
         return DB::table('level')
             ->whereIn('id', $levelIds)
             ->orderBy('id')
@@ -196,6 +195,12 @@ class ChildReportController extends Controller
             ->leftJoin('topics as main_topic', 'main_topic.id', '=', 'ps.topic_id')
             ->leftJoin('topics as subtopic', 'subtopic.id', '=', 'ps.subtopic_id')
             ->where('ps.user_id', $student->user_id)
+            ->when(Schema::hasColumn('practice_session', 'status') && Schema::hasTable('quiz_attempts'),
+                fn ($query) => $query->where(fn ($sessions) => $sessions
+                    ->where('ps.session_type', 'practice')
+                    ->orWhere('ps.status', '!=', 'in_progress')
+                    ->orWhereExists(fn ($attempts) => $attempts->selectRaw('1')
+                        ->from('quiz_attempts as qa')->whereColumn('qa.session_id', 'ps.id'))))
             ->select([
                 'ps.*',
                 's.name as subject_name',

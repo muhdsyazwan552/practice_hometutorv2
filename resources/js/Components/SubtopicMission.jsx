@@ -5,7 +5,7 @@ import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel'
 import useThemedAlert from '@/utils/useThemedAlert';
 import ThemeLoader from '@/Components/ThemeLoader';
 
-export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName }) {
+export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName }) {
     const alert = useThemedAlert();
     const [sessionId, setSessionId] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -16,7 +16,8 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     const [questionNumber, setQuestionNumber] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(10);
     const [summary, setSummary] = useState(null);
-    const [loading, setLoading] = useState(false);
+    // The modal renders once before its start request runs in useEffect.
+    const [loading, setLoading] = useState(true);
     const [answerHistory, setAnswerHistory] = useState([]);
     const [showExplanation, setShowExplanation] = useState(false);
 
@@ -24,7 +25,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     const [sessionTimer, setSessionTimer] = useState(null);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [showResultModal, setShowResultModal] = useState(false);
-    const [practiceResults, setPracticeResults] = useState(null);
+    const [missionResults, setMissionResults] = useState(null);
 
     // Helper function to get CSRF token
     const getCsrfToken = () => {
@@ -108,9 +109,9 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
     useEffect(() => {
         if (isOpen && !sessionId) {
-            console.log('Modal opened, starting new practice session');
-            console.log('Practice topic:', { topicId, topicName });
-            startPractice();
+            console.log('Modal opened, starting new mission session');
+            console.log('Mission topic:', { topicId, topicName });
+            startMission();
         }
 
         // Cleanup timer on unmount
@@ -121,20 +122,20 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         };
     }, [isOpen]);
 
-    const startPractice = async () => {
+    const startMission = async () => {
         setLoading(true);
         try {
             await refreshCsrfToken();
 
             const csrfToken = getCsrfToken();
 
-            console.log('Starting practice with data:', {
+            console.log('Starting mission with data:', {
                 subject_id: subjectId,
                 level_id: levelId,
                 topic_id: topicId
             });
 
-            const response = await fetch(route('mission.practice.start'), {
+            const response = await fetch(route('mission.subtopic.start'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -155,7 +156,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
             if (response.status === 419) {
                 console.log('CSRF token expired, refreshing and retrying...');
                 await refreshCsrfToken();
-                return startPractice();
+                return startMission();
             }
 
             if (!response.ok) {
@@ -171,7 +172,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
             }
 
             const data = await response.json();
-            console.log('Practice started successfully:', data);
+            console.log('Mission started successfully:', data);
             setSessionId(data.session_id);
             setTotalQuestions(data.total_questions);
 
@@ -190,7 +191,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
             loadNextQuestion(data.session_id);
         } catch (error) {
             console.error('Full error details:', error);
-            void alert.message({ title: alert.tr('Cannot start practice', 'Tidak dapat memulakan latihan'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
+            void alert.message({ title: alert.tr('Cannot start mission', 'Tidak dapat memulakan misi'), text: alert.tr('Please try again.', 'Sila cuba lagi.'), icon: 'error' });
             setLoading(false);
         }
     };
@@ -223,11 +224,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         }
         
         const data = await response.json();
-        console.log('Practice question data received:', data);
+        console.log('Mission question data received:', data);
         
-        // Check if the API says practice is completed
+        // Check if the API says mission is completed
         if (data.completed) {
-            console.log('Practice completed (API), loading summary...');
+            console.log('Mission completed (API), loading summary...');
             stopSessionTimer();
             await loadSummary(sid);
         } else {
@@ -268,7 +269,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     try {
         await refreshCsrfToken();
         
-        const response = await fetch(route('mission.practice.answer'), {
+        const response = await fetch(route('mission.subtopic.answer'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -314,7 +315,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         // Check if this was the last question
         const isLastQuestion = questionNumber >= totalQuestions;
         
-        if (isLastQuestion || data.practice_complete) {
+        if (isLastQuestion || data.mission_complete) {
             console.log('Last question answered, loading summary...');
             // Stop timer
             stopSessionTimer();
@@ -333,12 +334,12 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     const loadSummary = async (sid) => {
         try {
             console.log('Loading summary for session:', sid);
-            const response = await fetch(route('mission.practice.summary', { session_id: sid }));
+            const response = await fetch(route('mission.subtopic.summary', { session_id: sid }));
             const data = await response.json();
-            console.log('Practice summary loaded:', data);
+            console.log('Mission summary loaded:', data);
 
             // Prepare results for ResultChallenge
-            setPracticeResults({
+            setMissionResults({
                 correctAnswers: data.correct_answers || 0,
                 totalQuestions: data.total_questions || 0,
                 skippedAnswers: 0,
@@ -362,7 +363,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
     const handleTryAgain = () => {
         setShowResultModal(false);
-        setPracticeResults(null);
+        setMissionResults(null);
         setSummary(null);
         setCurrentQuestion(null);
         setSelectedAnswer(null);
@@ -373,14 +374,14 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         setShowExplanation(false);
         setElapsedTime(0);
 
-        // Restart practice
-        startPractice();
+        // Restart mission
+        startMission();
     };
 
     // Handle close result modal
     const handleCloseResultModal = () => {
         setShowResultModal(false);
-        setPracticeResults(null);
+        setMissionResults(null);
         handleClose(); // Close entire modal
     };
 
@@ -397,6 +398,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 };
 
     const handleClose = () => {
+        setLoading(true);
         // Clean up timer
         if (sessionTimer) {
             clearInterval(sessionTimer);
@@ -414,7 +416,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         setElapsedTime(0);
         setSessionTimer(null);
         setShowResultModal(false);
-        setPracticeResults(null);
+        setMissionResults(null);
         onClose();
     };
 
@@ -423,15 +425,41 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     };
 
     const confirmClose = async () => {
+        if (isSubmitting) return;
         if (!sessionId || summary) return handleClose();
+        const hasAnswers = answerHistory.length > 0;
         const result = await alert.confirm({
-            title: alert.tr('Leave practice?', 'Tinggalkan latihan?'),
-            text: alert.tr('Your completed answers are saved. You can resume this session later.', 'Jawapan yang siap telah disimpan. Anda boleh sambung sesi ini kemudian.'),
-            confirmText: alert.tr('Leave practice', 'Tinggalkan latihan'),
-            cancelText: alert.tr('Continue practice', 'Teruskan latihan'),
+            title: alert.tr('Leave mission?', 'Tinggalkan misi?'),
+            text: hasAnswers
+                ? alert.tr('Your mission progress will be recorded. You can start a new mission later.', 'Kemajuan misi anda akan direkodkan. Anda boleh mulakan misi baharu kemudian.')
+                : alert.tr('No answers have been submitted, so this visit will not appear in your report.', 'Tiada jawapan dihantar, jadi sesi ini tidak akan muncul dalam laporan anda.'),
+            confirmText: alert.tr('Leave mission', 'Tinggalkan misi'),
+            cancelText: alert.tr('Continue mission', 'Teruskan misi'),
             icon: 'warning',
         });
-        if (result.isConfirmed) handleClose();
+        if (!result.isConfirmed) return;
+
+        alert.loading({ title: hasAnswers ? alert.tr('Saving mission progress…', 'Sedang menyimpan kemajuan misi…') : alert.tr('Leaving mission…', 'Sedang keluar daripada misi…') });
+        try {
+            await refreshCsrfToken();
+            const response = await fetch(route('mission.subtopic.save-progress'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ session_id: sessionId }),
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            alert.close();
+            handleClose();
+        } catch (error) {
+            console.error('Error saving mission progress:', error);
+            alert.close();
+            void alert.message({ title: alert.tr('Progress not saved', 'Kemajuan tidak disimpan'), text: alert.tr('Please try leaving again.', 'Sila cuba keluar sekali lagi.'), icon: 'error' });
+        }
     };
 
     // Render HTML content safely
@@ -469,10 +497,10 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     //     topicName,
     //     elapsedTime,
     //     showResultModal,
-    //     practiceResults: !!practiceResults
+    //     missionResults: !!missionResults
     // });
 
-    // If result modal is shown, don't render the practice modal
+    // If result modal is shown, don't render the mission modal
     if (showResultModal) {
   return (
     <div className="fixed inset-0 bg-black/70 z-[200] overflow-y-auto">
@@ -481,7 +509,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         {/* Modal container with max width */}
         <div className="w-full max-w-3xl">
           <ResultChallenge
-            results={practiceResults}
+            results={missionResults}
             onTryAgain={handleTryAgain}
             subject={subjectKey}
             topic={topicName}
@@ -501,7 +529,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                 {loading && !currentQuestion ? (
-                    <ThemeLoader message={alert.tr('Loading practice session…', 'Sedang memuatkan sesi latihan…')} />
+                    <ThemeLoader message={alert.tr('Loading mission session…', 'Sedang memuatkan sesi misi…')} />
                 ) : summary ? (
                     <ThemeLoader message={alert.tr('Preparing your results…', 'Sedang menyediakan keputusan anda…')} />
                 ) : currentQuestion ? (
@@ -585,7 +613,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                         {/* Question Content */}
                         <div className="p-4 sm:p-6 md:p-8">
                             <div className="mb-3 flex justify-end">
-                                <ReportQuestionButton questionId={currentQuestion.id} context="mission_practice" />
+                                <ReportQuestionButton questionId={currentQuestion.id} context="mission_subtopic" />
                             </div>
                             <div className="mb-6">
                                 {/* Question Text or Image */}

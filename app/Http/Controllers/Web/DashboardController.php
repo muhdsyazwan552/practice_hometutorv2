@@ -237,6 +237,7 @@ private function buildCourseProgress($subjectRows, ?int $userId): array
     $answeredTopicsBySubject = $userId
         ? DB::table('practice_session')
             ->where('user_id', $userId)
+            ->where('session_type', 'practice')
             ->whereIn('subject_id', $subjectIds)
             ->whereNotNull('topic_id')
             ->selectRaw('subject_id, COUNT(DISTINCT topic_id) as answered')
@@ -304,6 +305,7 @@ private function buildActivityCalendar(?int $userId): array
 
     $practiceDates = DB::table('practice_session')
         ->where('user_id', $userId)
+        ->where('session_type', 'practice')
         ->whereBetween('start_at', [$rangeStart, $rangeEnd])
         ->whereNotNull('start_at')
         ->selectRaw('DISTINCT DATE(start_at) as d')

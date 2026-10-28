@@ -62,7 +62,8 @@ class SubjectContentController extends Controller
                     ->from('questions as question')
                     ->whereColumn('question.topic_id', 'topic.id')
                     ->where('question.is_active', 1)
-                    ->where('question.is_published', 1);
+                    ->where('question.is_published', 1)
+                    ->where('question.approval_status', 1);
             })
             ->select([
                 'topic.id',
@@ -332,6 +333,7 @@ class SubjectContentController extends Controller
                 ->whereIn('topic_id', $allTopicIds)
                 ->where('is_active', 1)
                 ->where('is_published', 1)
+                ->where('approval_status', 1)
                 ->selectRaw('topic_id, COUNT(*) as count')
                 ->groupBy('topic_id')
                 ->pluck('count', 'topic_id');
@@ -343,6 +345,7 @@ class SubjectContentController extends Controller
             $practiceData = DB::table('practice_session')
                 ->whereIn(DB::raw('COALESCE(subtopic_id, topic_id)'), $allTopicIds)
                 ->where('user_id', $userId)
+                ->where('session_type', 'practice')
                 ->selectRaw('
                     COALESCE(subtopic_id, topic_id) as topic_id,
                     question_type_id,

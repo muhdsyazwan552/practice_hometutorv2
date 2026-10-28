@@ -16,7 +16,8 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
     const [totalQuestions, setTotalQuestions] = useState(10);
     const [startTime, setStartTime] = useState(null);
     const [summary, setSummary] = useState(null);
-    const [loading, setLoading] = useState(false);
+    // The modal renders once before its start request runs in useEffect.
+    const [loading, setLoading] = useState(true);
     const [answerHistory, setAnswerHistory] = useState([]);
     const [showExplanation, setShowExplanation] = useState(false);
 
@@ -237,6 +238,7 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
     };
 
     const handleClose = () => {
+        setLoading(true);
         setSessionId(null);
         setCurrentQuestion(null);
         setSelectedAnswer(null);
@@ -253,15 +255,41 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
     };
 
     const confirmClose = async () => {
+        if (isSubmitting) return;
         if (!sessionId || summary) return handleClose();
+        const hasAnswers = answerHistory.length > 0;
         const result = await alert.confirm({
             title: alert.tr('Leave challenge?', 'Tinggalkan cabaran?'),
-            text: alert.tr('Your completed answers are saved. You can resume this challenge later.', 'Jawapan yang siap telah disimpan. Anda boleh sambung cabaran ini kemudian.'),
+            text: hasAnswers
+                ? alert.tr('Your mission progress will be recorded. You can resume the remaining questions later.', 'Kemajuan misi anda akan direkodkan. Anda boleh sambung soalan yang berbaki kemudian.')
+                : alert.tr('No answers have been submitted, so this visit will not appear in your report.', 'Tiada jawapan dihantar, jadi sesi ini tidak akan muncul dalam laporan anda.'),
             confirmText: alert.tr('Leave challenge', 'Tinggalkan cabaran'),
             cancelText: alert.tr('Continue challenge', 'Teruskan cabaran'),
             icon: 'warning',
         });
-        if (result.isConfirmed) handleClose();
+        if (!result.isConfirmed) return;
+
+        alert.loading({ title: hasAnswers ? alert.tr('Saving mission progress…', 'Sedang menyimpan kemajuan misi…') : alert.tr('Leaving mission…', 'Sedang keluar daripada misi…') });
+        try {
+            await refreshCsrfToken();
+            const response = await fetch(route('mission.challenge.save-progress'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ session_id: sessionId }),
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            alert.close();
+            handleClose();
+        } catch (error) {
+            console.error('Error saving mission progress:', error);
+            alert.close();
+            void alert.message({ title: alert.tr('Progress not saved', 'Kemajuan tidak disimpan'), text: alert.tr('Please try leaving again.', 'Sila cuba keluar sekali lagi.'), icon: 'error' });
+        }
     };
 
     // Render HTML content safely

@@ -263,13 +263,15 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
             Route::post('/answer', [ChallengeController::class, 'submitAnswer'])->name('answer');
             Route::get('/summary', [ChallengeController::class, 'getSummary'])->name('summary');
             Route::get('/progress', [ChallengeController::class, 'getProgress'])->name('progress');
+            Route::post('/save-progress', [ChallengeController::class, 'saveChallengeProgress'])->name('save-progress');
         });
 
-        Route::prefix('practice')->name('practice.')->group(function () {
-            Route::post('/start', [ChallengeController::class, 'startPractice'])->name('start');
-            Route::get('/question', [ChallengeController::class, 'getPracticeQuestion'])->name('question');
-            Route::post('/answer', [ChallengeController::class, 'submitPracticeAnswer'])->name('answer');
-            Route::get('/summary', [ChallengeController::class, 'getPracticeSummary'])->name('summary');
+        Route::prefix('subtopic')->name('subtopic.')->group(function () {
+            Route::post('/start', [ChallengeController::class, 'startSubtopicMission'])->name('start');
+            Route::get('/question', [ChallengeController::class, 'getSubtopicMissionQuestion'])->name('question');
+            Route::post('/answer', [ChallengeController::class, 'submitSubtopicMissionAnswer'])->name('answer');
+            Route::get('/summary', [ChallengeController::class, 'getSubtopicMissionSummary'])->name('summary');
+            Route::post('/save-progress', [ChallengeController::class, 'saveChallengeProgress'])->name('save-progress');
         });
     });
 });

@@ -17,7 +17,7 @@ class QuestionReportController extends Controller
             'context' => ['required', Rule::in([
                 'objective_practice',
                 'subjective_practice',
-                'mission_practice',
+                'mission_subtopic',
                 'mastery_challenge',
                 'question_review',
             ])],

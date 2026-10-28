@@ -217,13 +217,13 @@ export default function ResultChallenge({
               </div>
               <div>
                 <h3 className="font-bold text-gray-800">Topic Summary</h3>
-                <p className="text-sm text-gray-600">{topic || 'Practice Topic'}</p>
+                <p className="text-sm text-gray-600">{topic || tr('Mission Topic', 'Topik Misi')}</p>
               </div>
             </div>
             
             <div className="pl-13">
               <div className="flex items-center justify-between py-2 border-b border-blue-100">
-                <span className="text-sm text-gray-600">Questions Practiced</span>
+                <span className="text-sm text-gray-600">{tr('Mission Questions', 'Soalan Misi')}</span>
                 <span className="text-sm font-semibold text-gray-800">{results.totalQuestions || 0}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-blue-100">
@@ -285,9 +285,9 @@ export default function ResultChallenge({
               <div className="flex items-center justify-center space-x-3">
                 <div className="text-center">
                   <h1 className="text-lg font-bold text-gray-50">
-                    {topic || tr('Practice Challenge', 'Cabaran Latihan')}
+                    {topic || tr('Subtopic Mission', 'Misi Subtopik')}
                   </h1>
-                  <p className="text-xs text-gray-50">{tr('Practice Results', 'Keputusan Latihan')}</p>
+                  <p className="text-xs text-gray-50">{tr('Mission Results', 'Keputusan Misi')}</p>
                 </div>
               </div>
             </div>
@@ -297,9 +297,9 @@ export default function ResultChallenge({
             <div className="flex items-center">
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-50">
-                  {topic || tr('Practice Challenge', 'Cabaran Latihan')}
+                  {topic || tr('Subtopic Mission', 'Misi Subtopik')}
                 </h1>
-                <p className="text-sm text-gray-50">{tr('Practice Results', 'Keputusan Latihan')}</p>
+                <p className="text-sm text-gray-50">{tr('Mission Results', 'Keputusan Misi')}</p>
               </div>
             </div>
           </div>
@@ -310,11 +310,11 @@ export default function ResultChallenge({
           <div className="flex items-center justify-center space-x-2 lg:space-x-4 mb-4">
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
-            <p className="text-xl lg:text-3xl text-gray-100 font-semibold">{tr('Great Practice!', 'Latihan yang bagus!')}</p>
+            <p className="text-xl lg:text-3xl text-gray-100 font-semibold">{tr('Great Mission!', 'Misi yang bagus!')}</p>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
             <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
           </div>
-          <p className="text-gray-100 italic text-base lg:text-2xl px-4">{tr('Practice makes perfect!', 'Latihan membawa kejayaan!')}</p>
+          <p className="text-gray-100 italic text-base lg:text-2xl px-4">{tr('Keep up the momentum!', 'Teruskan usaha!')}</p>
         </div>
       </header>
 
@@ -422,9 +422,9 @@ export default function ResultChallenge({
               <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-green-100 rounded-full mb-3 lg:mb-4">
                 <span className="text-2xl lg:text-3xl">🎯</span>
               </div>
-              <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">{tr('Practice Complete!', 'Latihan Selesai!')}</h2>
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">{tr('Mission Complete!', 'Misi Selesai!')}</h2>
               <p className="text-sm lg:text-base text-gray-600 px-4">
-                {tr("You've completed this practice session. Keep practicing to improve your skills!", 'Anda telah menyelesaikan sesi latihan ini. Teruskan berlatih untuk meningkatkan kemahiran anda!')}
+                {tr("You've completed this mission. Keep going to improve your skills!", 'Anda telah menyelesaikan misi ini. Teruskan usaha untuk meningkatkan kemahiran anda!')}
               </p>
             </div>
 
@@ -446,7 +446,7 @@ export default function ResultChallenge({
                 className="px-6 py-3 lg:px-8 lg:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg lg:rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:scale-105 text-base lg:text-lg flex items-center justify-center text-center"
               >
                 <span className="mr-2">✅</span>
-                {tr('Finish Practice', 'Tamatkan Latihan')}
+                {tr('Finish Mission', 'Tamatkan Misi')}
               </button>
             </div>
           </div>

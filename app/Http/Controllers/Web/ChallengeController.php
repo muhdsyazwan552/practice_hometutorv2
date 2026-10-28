@@ -27,9 +27,12 @@ class ChallengeController extends Controller
      */
     private function ownedSession($sessionId): ?object
     {
-        return DB::table('mastery_challenge_sessions')
+        return DB::table('practice_session')
             ->where('id', $sessionId)
             ->where('user_id', Auth::id())
+            ->where('session_type', 'mission')
+            ->select('practice_session.*')
+            ->selectRaw('total_correct as correct_answers, start_at as started_at, end_at as completed_at')
             ->first();
     }
 
@@ -62,10 +65,12 @@ class ChallengeController extends Controller
         ]);
 
         // Check if there's an active session
-        $activeSession = DB::table('mastery_challenge_sessions')
+        $activeSession = DB::table('practice_session')
             ->where('user_id', $userId)
             ->where('subject_id', $subjectId)
             ->where('level_id', $levelId)
+            ->where('session_type', 'mission')
+            ->where('mission_scope', 'subject')
             ->where('status', 'in_progress')
             ->first();
 
@@ -79,16 +84,17 @@ class ChallengeController extends Controller
                 ->where('q.question_type_id', 1)
                 ->count();
 
-            if ($storedQuestionCount > 0 && $storedQuestionCount === $objectiveQuestionCount) {
+            if ($storedQuestionCount === 10 && $storedQuestionCount === $objectiveQuestionCount) {
                 Log::info('Continuing existing challenge session', ['session_id' => $activeSession->id]);
                 return response()->json([
                     'session_id' => $activeSession->id,
+                    'total_questions' => $activeSession->total_questions,
                     'message' => 'Continuing existing challenge'
                 ]);
             }
 
             if ($storedQuestionCount > 0) {
-                DB::table('mastery_challenge_sessions')
+                DB::table('practice_session')
                     ->where('id', $activeSession->id)
                     ->update(['status' => 'abandoned', 'updated_at' => now()]);
                 $activeSession = null;
@@ -105,25 +111,34 @@ class ChallengeController extends Controller
             $questionCount
         );
 
-        if (empty($questionIds)) {
+        if (count($questionIds) < $questionCount) {
             return response()->json([
-                'error' => 'No questions available',
-                'message' => 'All topics are mastered or no questions found'
+                'error' => 'Not enough questions available',
+                'message' => 'A mission requires 10 available questions.'
             ], 400);
         }
 
         // Create new session if needed
         if (!$activeSession) {
-            $sessionId = DB::table('mastery_challenge_sessions')->insertGetId([
+            $firstTopicId = DB::table('questions')->where('id', $questionIds[0])->value('topic_id');
+            $topicScope = $this->masteryService->resolveTopicScope((int) $firstTopicId);
+            $sessionId = DB::table('practice_session')->insertGetId([
+                'uuid' => (string) Str::uuid(),
                 'user_id' => $userId,
                 'subject_id' => $subjectId,
                 'level_id' => $levelId,
+                'topic_id' => $topicScope['topic_id'],
+                'subtopic_id' => $topicScope['subtopic_id'],
+                'question_type_id' => 1,
                 'session_type' => 'mission',
+                'mission_scope' => 'subject',
                 'total_questions' => count($questionIds),
-                'correct_answers' => 0,
+                'total_correct' => 0,
+                'total_skipped' => count($questionIds),
+                'score' => 0,
                 'total_time_seconds' => 0,
                 'status' => 'in_progress',
-                'started_at' => now(),
+                'start_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -369,12 +384,12 @@ class ChallengeController extends Controller
 
         // Update session stats
         if ($isCorrect) {
-            DB::table('mastery_challenge_sessions')
+            DB::table('practice_session')
                 ->where('id', $sessionId)
-                ->increment('correct_answers');
+                ->increment('total_correct');
         }
         
-        DB::table('mastery_challenge_sessions')
+        DB::table('practice_session')
             ->where('id', $sessionId)
             ->increment('total_time_seconds', $timeTaken);
 
@@ -386,11 +401,11 @@ class ChallengeController extends Controller
         $challengeComplete = $answeredCount >= $session->total_questions;
 
         if ($challengeComplete) {
-            DB::table('mastery_challenge_sessions')
+            DB::table('practice_session')
                 ->where('id', $sessionId)
                 ->update([
                     'status' => 'completed',
-                    'completed_at' => now(),
+                    'end_at' => now(),
                     'updated_at' => now()
                 ]);
 
@@ -403,12 +418,10 @@ class ChallengeController extends Controller
 
             Log::info('Challenge completed', ['session_id' => $sessionId]);
 
-            $this->savePracticeSessionData(
-                $sessionId,
-                DB::table('mastery_challenge_sessions')->find($sessionId),
-                'mission'
-            );
         }
+
+        // Keep the shared report session current even when a mission is left early.
+        $this->saveReportSessionData($sessionId);
 
         return response()->json([
             'is_correct' => $isCorrect,
@@ -521,11 +534,36 @@ public function getProgress(Request $request)
     ]);
 }
 
+/** Save the current mission report snapshot when a student leaves early. */
+public function saveChallengeProgress(Request $request)
+{
+    $validated = $request->validate(['session_id' => 'required|integer']);
+    $session = $this->ownedSession($validated['session_id']);
+
+    if (! $session) {
+        return response()->json(['error' => 'Session not found'], 404);
+    }
+    $sessionType = $session->session_type ?? 'mission';
+    if ($sessionType !== 'mission') {
+        return response()->json(['error' => 'Unsupported session type'], 422);
+    }
+
+    if (! DB::table('mastery_challenge_attempts')->where('session_id', $session->id)->exists()) {
+        return response()->json(['saved' => false, 'answered_count' => 0]);
+    }
+
+    if (! $this->saveReportSessionData($session->id)) {
+        return response()->json(['error' => 'Could not save session progress'], 500);
+    }
+
+    return response()->json(['saved' => true]);
+}
+
 /**
- * Start a new practice session for a specific topic
- * POST /mission/practice/start
+ * Start a new subtopic mission
+ * POST /mission/subtopic/start
  */
-public function startPractice(Request $request)
+public function startSubtopicMission(Request $request)
 {
     $request->validate([
         'subject_id' => 'required|integer',
@@ -580,53 +618,21 @@ public function startPractice(Request $request)
         // Still proceed, but log the mismatch
     }
 
-    // Mission's per-topic sessions match the same 10-question count as the
-    // subject-wide mastery challenge (startChallenge()) — this modal is only
-    // ever opened from the Mission page, so it should feel consistent with it.
+    // Subtopic missions use the same ten-question count as subject missions.
     $questionCount = 10;
 
     // A parent-topic session includes questions from each of its subtopics.
-    $questionIds = $this->generatePracticeQuestions($topicId, $questionCount);
-    $practiceTopicIds = $this->getPracticeTopicIds($topicId);
+    $questionIds = $this->generateSubtopicMissionQuestions($topicId, $questionCount);
 
-    if (empty($questionIds)) {
-        // Try with less restrictive query
-        Log::info('No questions found with strict filters, trying relaxed search...');
-        
-        // Try without is_published filter
-        $questionIds = DB::table('questions')
-            ->whereIn('topic_id', $practiceTopicIds)
-            ->where('question_type_id', 1)
-            ->where('is_active', 1)
-            ->inRandomOrder()
-            ->limit($questionCount)
-            ->pluck('id')
-            ->toArray();
-            
-        Log::info('Questions without published filter:', ['ids' => $questionIds]);
-        
-        if (empty($questionIds)) {
-            // Try with only is_active filter
-            $questionIds = DB::table('questions')
-                ->whereIn('topic_id', $practiceTopicIds)
-                ->where('question_type_id', 1)
-                ->inRandomOrder()
-                ->limit($questionCount)
-                ->pluck('id')
-                ->toArray();
-                
-            Log::info('All questions in topic:', ['ids' => $questionIds]);
-        }
-        
-        if (empty($questionIds)) {
-            Log::error('No questions found for topic even with relaxed filters:', ['topic_id' => $topicId]);
-            return response()->json([
-                'error' => 'No questions available',
-                'message' => 'No questions found for this topic. Please check if questions exist in the database.',
-                'topic_id' => $topicId,
-                'topic_name' => $topic->name
-            ], 400);
-        }
+    // Only active, published and approved questions may be shown; no relaxed fallback.
+    if (count($questionIds) < $questionCount) {
+        Log::error('Not enough active, published and approved questions for topic:', ['topic_id' => $topicId]);
+        return response()->json([
+            'error' => 'Not enough questions available',
+            'message' => 'A mission requires 10 available questions for this topic.',
+            'topic_id' => $topicId,
+            'topic_name' => $topic->name
+        ], 400);
     }
 
     Log::info('Questions found:', [
@@ -635,16 +641,24 @@ public function startPractice(Request $request)
     ]);
 
     // Create new session
-    $sessionId = DB::table('mastery_challenge_sessions')->insertGetId([
+    $topicScope = $this->masteryService->resolveTopicScope((int) $topicId);
+    $sessionId = DB::table('practice_session')->insertGetId([
+        'uuid' => (string) Str::uuid(),
         'user_id' => $userId,
         'subject_id' => $subjectId,
         'level_id' => $levelId,
-        'session_type' => 'practice',
+        'topic_id' => $topicScope['topic_id'],
+        'subtopic_id' => $topicScope['subtopic_id'],
+        'question_type_id' => 1,
+        'session_type' => 'mission',
+        'mission_scope' => 'subtopic',
         'total_questions' => count($questionIds),
-        'correct_answers' => 0,
+        'total_correct' => 0,
+        'total_skipped' => count($questionIds),
+        'score' => 0,
         'total_time_seconds' => 0,
         'status' => 'in_progress',
-        'started_at' => now(),
+        'start_at' => now(),
         'created_at' => now(),
         'updated_at' => now()
     ]);
@@ -666,34 +680,35 @@ public function startPractice(Request $request)
     return response()->json([
         'session_id' => $sessionId,
         'total_questions' => count($questionIds),
-        'message' => 'Practice session started successfully',
+        'message' => 'Subtopic mission started successfully',
         'topic_name' => $topic->name
     ]);
 }
 
 /**
- * Generate practice questions for a specific topic
+ * Generate subtopic mission questions
  */
-private function generatePracticeQuestions($topicId, $questionCount = 10)
+private function generateSubtopicMissionQuestions($topicId, $questionCount = 10)
 {
     Log::info('Looking for questions for topic:', ['topic_id' => $topicId]);
-    $practiceTopicIds = $this->getPracticeTopicIds($topicId);
+    $missionTopicIds = $this->getSubtopicMissionTopicIds($topicId);
     $questionIds = [];
 
     // Round-robin gives every subtopic a place in a full-topic session.
     while (count($questionIds) < $questionCount) {
         $added = false;
 
-        foreach ($practiceTopicIds as $practiceTopicId) {
+        foreach ($missionTopicIds as $missionTopicId) {
             if (count($questionIds) >= $questionCount) {
                 break;
             }
 
             $questionId = DB::table('questions')
-                ->where('topic_id', $practiceTopicId)
+                ->where('topic_id', $missionTopicId)
                 ->where('question_type_id', 1)
                 ->where('is_active', 1)
                 ->where('is_published', 1)
+                ->where('approval_status', 1)
                 ->whereNotIn('id', $questionIds)
                 ->inRandomOrder()
                 ->value('id');
@@ -714,7 +729,7 @@ private function generatePracticeQuestions($topicId, $questionCount = 10)
     return $questionIds;
 }
 
-private function getPracticeTopicIds(int $topicId): array
+private function getSubtopicMissionTopicIds(int $topicId): array
 {
     $topic = DB::table('topics')->find($topicId);
     if (!$topic) {
@@ -740,20 +755,20 @@ private function getPracticeTopicIds(int $topicId): array
 }
 
 /**
- * Get next question for practice - reuse the same logic as challenge
- * GET /mission/practice/question?session_id=X
+ * Get next question for a subtopic mission - reuse the same logic as challenge
+ * GET /mission/subtopic/question?session_id=X
  */
-public function getPracticeQuestion(Request $request)
+public function getSubtopicMissionQuestion(Request $request)
 {
     // Reuse the same getQuestion method since tables are the same
     return $this->getQuestion($request);
 }
 
 /**
- * Submit answer for practice
- * POST /mission/practice/answer
+ * Submit answer for a subtopic mission
+ * POST /mission/subtopic/answer
  */
-public function submitPracticeAnswer(Request $request)
+public function submitSubtopicMissionAnswer(Request $request)
     {
         $request->validate([
             'session_id' => 'required|integer',
@@ -807,7 +822,7 @@ public function submitPracticeAnswer(Request $request)
         $answer = DB::table('answers')->where('id', $answerId)->where('question_id', $questionId)->first();
         $isCorrect = $answer && $answer->iscorrectanswer == 1;
 
-        Log::info('Submitting practice answer', [
+        Log::info('Submitting subtopic mission answer', [
             'session_id' => $sessionId,
             'question_id' => $questionId,
             'answer_id' => $answerId,
@@ -845,28 +860,28 @@ public function submitPracticeAnswer(Request $request)
 
         // Update session stats
         if ($isCorrect) {
-            DB::table('mastery_challenge_sessions')
+            DB::table('practice_session')
                 ->where('id', $sessionId)
-                ->increment('correct_answers');
+                ->increment('total_correct');
         }
         
-        DB::table('mastery_challenge_sessions')
+        DB::table('practice_session')
             ->where('id', $sessionId)
             ->increment('total_time_seconds', $timeTaken);
 
-        // Check if practice is complete
+        // Check if mission is complete
         $answeredCount = DB::table('mastery_challenge_attempts')
             ->where('session_id', $sessionId)
             ->count();
 
-        $practiceComplete = $answeredCount >= $session->total_questions;
+        $missionComplete = $answeredCount >= $session->total_questions;
 
-        if ($practiceComplete) {
-            DB::table('mastery_challenge_sessions')
+        if ($missionComplete) {
+            DB::table('practice_session')
                 ->where('id', $sessionId)
                 ->update([
                     'status' => 'completed',
-                    'completed_at' => now(),
+                    'end_at' => now(),
                     'updated_at' => now()
                 ]);
 
@@ -877,175 +892,81 @@ public function submitPracticeAnswer(Request $request)
                 $session->level_id
             );
 
-            // NEW: Save to practice_session and quiz_attempts tables
-            $this->savePracticeSessionData(
-                $sessionId,
-                DB::table('mastery_challenge_sessions')->find($sessionId),
-                'practice'
-            );
-
-            Log::info('Practice completed', ['session_id' => $sessionId]);
+            Log::info('Subtopic mission completed', ['session_id' => $sessionId]);
         }
+
+        // Record partial mission answers immediately, including early exits.
+        $this->saveReportSessionData($sessionId);
 
         return response()->json([
             'is_correct' => $isCorrect,
             'mastery_changed' => $masteryUpdate['previous_level'] !== $masteryUpdate['new_level'],
             'previous_mastery' => $masteryUpdate['previous_level'],
             'new_mastery' => $masteryUpdate['new_level'],
-            'practice_complete' => $practiceComplete
+            'mission_complete' => $missionComplete
         ]);
     }
 
-private function savePracticeSessionData($sessionId, $session, string $sessionType)
-    {
-        try {
-            Log::info('Starting to save practice session data to additional tables', [
-                'session_id' => $sessionId,
-                'user_id' => $session->user_id
-            ]);
-
-            // Get all attempts for this session
+private function saveReportSessionData(int $sessionId): bool
+{
+    try {
+        DB::transaction(function () use ($sessionId): void {
+            $current = DB::table('practice_session')->where('id', $sessionId)->lockForUpdate()->first();
             $attempts = DB::table('mastery_challenge_attempts')
-                ->where('session_id', $sessionId)
-                ->get();
-
-            // Get topic info from first question
-            $firstAttempt = $attempts->first();
-            if (!$firstAttempt) {
-                Log::warning('No attempts found for session', ['session_id' => $sessionId]);
+                ->where('session_id', $sessionId)->orderBy('id')->get();
+            if (! $current || $attempts->isEmpty()) {
                 return;
             }
 
-            // Get topic details
-            $topic = DB::table('topics')->find($firstAttempt->topic_id);
-            if (!$topic) {
-                Log::warning('Topic not found', ['topic_id' => $firstAttempt->topic_id]);
-                return;
-            }
-
-            // Check if this is a subtopic (parent_id != 0)
-            $isSubtopic = false;
-            $mainTopicId = $firstAttempt->topic_id;
-            $subtopicId = null;
-
-            if ($topic && $topic->parent_id != 0) {
-                $isSubtopic = true;
-                $mainTopicId = $topic->parent_id;
-                $subtopicId = $topic->id;
-            }
-
-            // Calculate statistics
-            $totalCorrect = DB::table('mastery_challenge_attempts')
-                ->where('session_id', $sessionId)
-                ->where('is_correct', 1)
-                ->count();
-
-            $totalQuestions = $session->total_questions;
-            $totalSkipped = 0; // No skipping in practice challenge
-            $score = $totalQuestions > 0 ? round(($totalCorrect / $totalQuestions) * 100, 2) : 0;
-            $totalTimeSeconds = $session->total_time_seconds;
-
-            Log::info('Practice session statistics', [
-                'total_questions' => $totalQuestions,
-                'total_correct' => $totalCorrect,
-                'score' => $score,
-                'total_time_seconds' => $totalTimeSeconds,
-                'is_subtopic' => $isSubtopic,
-                'main_topic_id' => $mainTopicId,
-                'subtopic_id' => $subtopicId
-            ]);
-
-            // 1. Insert into practice_session table
-            $practiceSessionId = DB::table('practice_session')->insertGetId([
-                'uuid' => (string) Str::uuid(),
-                'mastery_session_id' => $sessionId,
-                'user_id' => $session->user_id,
-                'subject_id' => $session->subject_id,
-                'topic_id' => $mainTopicId,
-                'subtopic_id' => $subtopicId,
-                'question_type_id' => 1, // Objective
-                'session_type' => $sessionType,
-                'total_questions' => $totalQuestions,
-                'start_at' => $session->started_at,
-                'end_at' => now(),
-                'total_correct' => $totalCorrect,
-                'total_skipped' => $totalSkipped,
-                'score' => $score,
-                'total_time_seconds' => $totalTimeSeconds,
-                'created_at' => now(),
+            $firstTopicId = (int) $attempts->first()->topic_id;
+            $scope = $this->masteryService->resolveTopicScope($firstTopicId);
+            $correct = $attempts->where('is_correct', 1)->count();
+            $total = (int) $current->total_questions;
+            DB::table('practice_session')->where('id', $sessionId)->update([
+                'topic_id' => $scope['topic_id'],
+                'subtopic_id' => $scope['subtopic_id'],
+                'total_correct' => $correct,
+                'total_skipped' => max(0, $total - $attempts->count()),
+                'score' => $total > 0 ? round($correct * 100 / $total) : 0,
                 'updated_at' => now(),
             ]);
 
-            Log::info('Inserted into practice_session table', [
-                'practice_session_id' => $practiceSessionId,
-                'mastery_session_id' => $sessionId
-            ]);
-
-            // 2. Insert into quiz_attempts table
-            $quizAttempts = [];
-            
-            foreach ($attempts as $attempt) {
-                // Get question details
-                $question = DB::table('questions')->find($attempt->question_id);
-                $parentId = $question ? ($question->parent_id ?? 0) : 0;
-
-                $quizAttempts[] = [
-                    'user_id' => $session->user_id,
-                    'parent_id' => $parentId,
-                    'question_id' => $attempt->question_id,
-                    'topic_id' => $mainTopicId,
-                    'subtopic_id' => $subtopicId,
-                    'choosen_answer_id' => $attempt->choosen_answer_id,
-                    'answer_status' => $attempt->is_correct, // 0 = wrong, 1 = correct
-                    'subjective_answer' => null,
-                    'session_id' => $practiceSessionId, // Link to practice_session table
-                    'time_taken' => $attempt->time_taken_seconds,
-                    'question_type_id' => 1, // Objective
-                    'created_at' => $attempt->created_at ?? now(),
-                    'updated_at' => $attempt->created_at ?? now(),
-                ];
-            }
-
-            if (!empty($quizAttempts)) {
-                DB::table('quiz_attempts')->insert($quizAttempts);
-                
-                Log::info('Inserted into quiz_attempts table', [
-                    'count' => count($quizAttempts),
-                    'practice_session_id' => $practiceSessionId
-                ]);
-            }
-
-            // 3. Update mastery_challenge_sessions with practice_session_id reference
-            DB::table('mastery_challenge_sessions')
-                ->where('id', $sessionId)
-                ->update([
-                    'practice_session_id' => $practiceSessionId,
-                    'updated_at' => now()
-                ]);
-
-            Log::info('Successfully saved practice session data to all tables', [
-                'mastery_session_id' => $sessionId,
-                'practice_session_id' => $practiceSessionId,
-                'quiz_attempts_count' => count($quizAttempts)
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to save practice session data to additional tables', [
+            DB::table('quiz_attempts')->where('session_id', $sessionId)->delete();
+            $questionParents = DB::table('questions')
+                ->whereIn('id', $attempts->pluck('question_id'))
+                ->pluck('parent_id', 'id');
+            DB::table('quiz_attempts')->insert($attempts->map(fn ($attempt) => [
+                'user_id' => $current->user_id,
+                'parent_id' => $questionParents[$attempt->question_id] ?? 0,
+                'question_id' => $attempt->question_id,
+                'topic_id' => $scope['topic_id'],
+                'subtopic_id' => $scope['subtopic_id'],
+                'choosen_answer_id' => $attempt->choosen_answer_id,
+                'answer_status' => $attempt->is_correct,
+                'subjective_answer' => null,
                 'session_id' => $sessionId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            // Don't throw error to avoid breaking the main flow
-            // Just log and continue
-        }
-    }
+                'time_taken' => $attempt->time_taken_seconds,
+                'question_type_id' => 1,
+                'created_at' => $attempt->created_at ?? now(),
+                'updated_at' => $attempt->created_at ?? now(),
+            ])->all());
+        });
 
+        return true;
+    } catch (\Exception $e) {
+        Log::error('Failed to save mission progress', [
+            'session_id' => $sessionId,
+            'error' => $e->getMessage(),
+        ]);
+
+        return false;
+    }
+}
 /**
- * Get practice summary
- * GET /mission/practice/summary?session_id=X
+ * Get subtopic mission summary
+ * GET /mission/subtopic/summary?session_id=X
  */
-public function getPracticeSummary(Request $request)
+public function getSubtopicMissionSummary(Request $request)
 {
     try {
         $sessionId = $request->get('session_id');
@@ -1078,7 +999,7 @@ public function getPracticeSummary(Request $request)
         // Return only session data (no mastery progress)
         return response()->json([
             'session_id' => $session->id,
-            'topic_name' => $topicInfo->topic_name ?? 'Practice Topic',
+            'topic_name' => $topicInfo->topic_name ?? 'Mission Topic',
             'total_questions' => $session->total_questions,
             'correct_answers' => $session->correct_answers,
             'incorrect_answers' => $session->total_questions - $session->correct_answers,
@@ -1091,7 +1012,7 @@ public function getPracticeSummary(Request $request)
         ]);
         
     } catch (\Exception $e) {
-        Log::error('Error in getPracticeSummary:', [
+        Log::error('Error in getSubtopicMissionSummary:', [
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString()
         ]);

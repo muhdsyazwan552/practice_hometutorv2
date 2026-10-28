@@ -48,6 +48,7 @@ class QuestionInspectorTest extends TestCase
             $table->unsignedBigInteger('parent_id')->default(0);
             $table->boolean('is_active');
             $table->boolean('is_published');
+            $table->boolean('approval_status')->default(true);
         });
         Schema::create('answers', function (Blueprint $table) {
             $table->id();

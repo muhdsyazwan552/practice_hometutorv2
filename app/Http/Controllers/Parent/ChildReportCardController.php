@@ -63,6 +63,12 @@ class ChildReportCardController extends Controller
             ->where('ps.created_at', '>=', now()->subDays($period)->startOfDay())
             ->orderByDesc('ps.created_at')
             ->orderByDesc('ps.id')
+            ->when(Schema::hasColumn('practice_session', 'status') && Schema::hasTable('quiz_attempts'),
+                fn ($query) => $query->where(fn ($sessions) => $sessions
+                    ->where('ps.session_type', 'practice')
+                    ->orWhere('ps.status', '!=', 'in_progress')
+                    ->orWhereExists(fn ($attempts) => $attempts->selectRaw('1')
+                        ->from('quiz_attempts as qa')->whereColumn('qa.session_id', 'ps.id'))))
             ->get([
                 'ps.uuid', 'ps.created_at', 'ps.score', 'ps.total_correct', 'ps.total_questions', 'ps.total_time_seconds',
                 's.name as subject_name',

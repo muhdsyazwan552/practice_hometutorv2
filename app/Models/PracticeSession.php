@@ -29,8 +29,10 @@ class PracticeSession extends Model
         'subtopic_id',
         'question_type_id',
         'session_type',
+        'mission_scope',
+        'status',
+        'level_id',
         'total_questions',
-        'mastery_session_id',
         'total_correct',
         'total_skipped',
         'score',
@@ -51,7 +53,7 @@ class PracticeSession extends Model
         'start_at' => 'datetime',
         'end_at' => 'datetime',
         'total_questions' => 'integer',
-        'mastery_session_id' => 'integer',
+        'level_id' => 'integer',
     ];
 
     public function topic()

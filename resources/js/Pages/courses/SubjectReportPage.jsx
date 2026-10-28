@@ -17,6 +17,7 @@ export default function SubjectReportPage() {
         subject_id,
         level_id,
         question_type = "Objective",
+        session_type = "practice",
         objective_topics = [],
         subjective_topics = [],
         availableLevels = {},
@@ -32,6 +33,7 @@ export default function SubjectReportPage() {
     const [currentStandard, setCurrentStandard] = useState(form || "Form 4");
     const [expandedTopics, setExpandedTopics] = useState({});
     const [activeTab, setActiveTab] = useState(question_type);
+    const [activeSessionType, setActiveSessionType] = useState(session_type);
     const [timeRange, setTimeRange] = useState("Last 7 Days");
     const [selectedSubtopic, setSelectedSubtopic] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +56,7 @@ export default function SubjectReportPage() {
                 level_id: newLevelId,
                 subject_id: newSubjectId,
                 question_type: activeTab,
+                session_type: activeSessionType,
                 preload_both: "true",
             }),
             {
@@ -80,6 +83,30 @@ export default function SubjectReportPage() {
                 level_id: level_id,
                 subject_id: subject_id,
                 question_type: tab,
+                session_type: activeSessionType,
+            }),
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setIsLoading(false),
+            },
+        );
+    };
+
+    const handleSessionTypeChange = (type) => {
+        if (type === activeSessionType) return;
+
+        setIsLoading(true);
+        setActiveSessionType(type);
+        closeModal();
+        router.get(
+            route("subject-report-page", {
+                subject: subject_abbr || subject,
+                form: currentStandard,
+                level_id,
+                subject_id,
+                question_type: activeTab,
+                session_type: type,
             }),
             {
                 preserveState: true,
@@ -217,17 +244,19 @@ export default function SubjectReportPage() {
             selectedStandard={currentStandard}
             onStandardChange={handleStandardChange}
             isLoading={isLoading}
-            loadingMessage={tr(`Loading ${activeTab.toLowerCase()} progress…`, `Sedang memuatkan kemajuan ${activeTab === 'Objective' ? 'objektif' : 'subjektif'}…`)}
+            loadingMessage={tr(`Loading ${activeSessionType} progress…`, `Sedang memuatkan kemajuan ${activeSessionType === 'mission' ? 'misi' : 'latihan'}…`)}
         >
             <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
                 {/* Header */}
                 <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                            {tr(activeTab, activeTab === 'Objective' ? 'Objektif' : 'Subjektif')} {tr('Analysis', 'Analisis')}
+                            {activeSessionType === 'mission' ? tr('Mission', 'Misi') : tr('Practice', 'Latihan')} {tr('Analysis', 'Analisis')}
                         </h2>
                         <p className="mt-1 text-sm text-gray-500 sm:text-base">
-                            {tr(`Review your ${activeTab.toLowerCase()} practice and see where you are improving.`, `Semak latihan ${activeTab === 'Objective' ? 'objektif' : 'subjektif'} anda dan lihat perkembangan anda.`)}
+                            {activeSessionType === 'mission'
+                                ? tr('Review your mission progress by topic.', 'Semak kemajuan misi anda mengikut topik.')
+                                : tr('Review your practice progress by topic.', 'Semak kemajuan latihan anda mengikut topik.')}
                         </p>
                     </div>
 
@@ -251,6 +280,25 @@ export default function SubjectReportPage() {
                             {tr('Subjective', 'Subjektif')}
                         </button>
                     </div>
+                </div>
+
+                <div className="mb-5 flex gap-1 rounded-xl p-1" style={themeSoftSurface} aria-label={tr('Report type', 'Jenis laporan')}>
+                    {[
+                        ['practice', tr('Practice', 'Latihan')],
+                        ['mission', tr('Mission', 'Misi')],
+                    ].map(([type, label]) => (
+                        <button
+                            key={type}
+                            type="button"
+                            onClick={() => handleSessionTypeChange(type)}
+                            disabled={isLoading}
+                            aria-pressed={activeSessionType === type}
+                            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition sm:flex-none ${activeSessionType === type ? 'text-white shadow-sm' : 'text-gray-600 hover:text-gray-800'}`}
+                            style={activeSessionType === type ? { background: 'var(--theme-hero)' } : undefined}
+                        >
+                            {label}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Progress Details */}
@@ -423,6 +471,7 @@ export default function SubjectReportPage() {
                 onClose={closeModal}
                 subtopicData={selectedSubtopic}
                 questionType={activeTab}
+                sessionType={activeSessionType}
             />
         </SubjectLayout>
     );

@@ -51,6 +51,18 @@ class ReportProgressTest extends TestCase
         $this->assertSame(40.0, (float) $progress[101]['average_score']);
         $this->assertSame('20 - 60', $progress[101]['score_statistic']);
         $this->assertNotNull($progress[101]['last_session']);
+
+        DB::table('practice_session')->insert(array_replace(
+            $this->sessionRow($child->id, 100, 101, 80, now()),
+            ['session_type' => 'mission']
+        ));
+
+        $practice = $method->invoke(app(ReportController::class), [100, 101], 1, 'practice');
+        $mission = $method->invoke(app(ReportController::class), [100, 101], 1, 'mission');
+        $this->assertSame(2, (int) $practice[101]['total_sessions']);
+        $this->assertSame(40.0, (float) $practice[101]['average_score']);
+        $this->assertSame(1, (int) $mission[101]['total_sessions']);
+        $this->assertSame(80.0, (float) $mission[101]['average_score']);
     }
 
     private function sessionRow(int $userId, int $topicId, int $subtopicId, int $score, $createdAt): array
@@ -142,6 +154,19 @@ class ReportProgressTest extends TestCase
         $this->assertSame(5, $sessions[1]['total_questions']);
         $this->assertSame(1, $sessions[1]['total_wrong']);
         $this->assertSame('60%', $sessions[1]['score']);
+
+        $missionResponse = app(ReportController::class)->getSubtopicDetails(
+            101,
+            Request::create('/subtopic/101/details', 'GET', ['questionType' => 'Objective', 'sessionType' => 'mission'])
+        );
+        $practiceResponse = app(ReportController::class)->getSubtopicDetails(
+            101,
+            Request::create('/subtopic/101/details', 'GET', ['questionType' => 'Objective', 'sessionType' => 'practice'])
+        );
+        $this->assertCount(1, $missionResponse->getData(true)['sessions']);
+        $this->assertSame('mission', $missionResponse->getData(true)['sessions'][0]['session_type']);
+        $this->assertCount(1, $practiceResponse->getData(true)['sessions']);
+        $this->assertSame('practice', $practiceResponse->getData(true)['sessions'][0]['session_type']);
     }
 
     public function test_wrong_mission_review_hides_correct_answer_flag(): void

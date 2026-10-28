@@ -8,6 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class StudentDataIsolationTest extends TestCase
@@ -37,14 +38,21 @@ class StudentDataIsolationTest extends TestCase
             $table->unsignedBigInteger('topic_id');
             $table->unsignedTinyInteger('question_type_id')->default(1);
         });
-        Schema::create('mastery_challenge_sessions', function (Blueprint $table) {
+        Schema::create('practice_session', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('subject_id')->nullable();
             $table->unsignedBigInteger('level_id')->nullable();
+            $table->unsignedBigInteger('topic_id');
+            $table->unsignedInteger('question_type_id')->default(1);
+            $table->string('session_type')->default('mission');
+            $table->string('mission_scope')->default('subject');
             $table->string('status');
             $table->unsignedInteger('total_questions')->default(5);
-            $table->unsignedInteger('correct_answers')->default(0);
+            $table->unsignedInteger('total_correct')->default(0);
+            $table->timestamp('start_at')->nullable();
+            $table->timestamp('end_at')->nullable();
             $table->unsignedInteger('total_time_seconds')->default(0);
             $table->timestamps();
         });
@@ -88,8 +96,10 @@ class StudentDataIsolationTest extends TestCase
 
     private function challengeSessionFor(User $owner): int
     {
-        $sessionId = DB::table('mastery_challenge_sessions')->insertGetId([
-            'user_id' => $owner->id, 'subject_id' => 1, 'level_id' => 1, 'status' => 'in_progress',
+        $sessionId = DB::table('practice_session')->insertGetId([
+            'uuid' => (string) Str::uuid(),
+            'user_id' => $owner->id, 'subject_id' => 1, 'level_id' => 1,
+            'topic_id' => 10, 'session_type' => 'mission', 'status' => 'in_progress',
         ]);
         DB::table('mastery_challenge_questions')->insert(['session_id' => $sessionId, 'question_id' => 1]);
 
@@ -104,11 +114,11 @@ class StudentDataIsolationTest extends TestCase
         $this->actingAs($intruder)->postJson(route('mission.challenge.answer'), [
             'session_id' => $sessionId, 'question_id' => 1, 'answer_id' => 1, 'time_taken' => 5,
         ])->assertStatus(400);
-        $this->actingAs($intruder)->postJson(route('mission.practice.answer'), [
+        $this->actingAs($intruder)->postJson(route('mission.subtopic.answer'), [
             'session_id' => $sessionId, 'question_id' => 1, 'answer_id' => 1, 'time_taken' => 5,
         ])->assertStatus(400);
 
-        foreach (['mission.challenge.question', 'mission.challenge.summary', 'mission.practice.question', 'mission.practice.summary'] as $route) {
+        foreach (['mission.challenge.question', 'mission.challenge.summary', 'mission.subtopic.question', 'mission.subtopic.summary'] as $route) {
             $this->actingAs($intruder)->getJson(route($route, ['session_id' => $sessionId]))->assertNotFound();
         }
 

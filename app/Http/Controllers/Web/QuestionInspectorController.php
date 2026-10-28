@@ -86,12 +86,14 @@ class QuestionInspectorController extends Controller
                     'in_practice_pool' => $inPracticePool,
                     'question_active' => (int) $question->is_active === 1,
                     'question_published' => (int) $question->is_published === 1,
+                    'question_approved' => (int) $question->approval_status === 1,
                     'topic_visible' => (bool) $isVisibleTopic,
                     'topic_has_children' => $childTopics->isNotEmpty(),
                     'practice_tile_visible' => (bool) $isPracticeTile,
                     'available_for_practice' => $inPracticePool
                         && (int) $question->is_active === 1
                         && (int) $question->is_published === 1
+                        && (int) $question->approval_status === 1
                         && $isPracticeTile,
                     'session_limit' => 5,
                 ],

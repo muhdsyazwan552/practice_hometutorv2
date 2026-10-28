@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { usePage, router } from "@inertiajs/react";
 import SubjectLayout from "@/Layouts/SubjectLayout";
 import MasteryChallenge from "@/Components/MasteryChallenge";
-import PracticeChallenge from "@/Components/PracticeChallenge";
+import SubtopicMission from "@/Components/SubtopicMission";
 import { useLanguage } from '@/Contexts/LanguageContext';
 
 const stages = [
@@ -145,7 +145,7 @@ export default function SubjectMissionPage() {
     const skills = refreshed?.scopeKey === scopeKey ? refreshed.skills : initialSkills;
     const challenge = refreshed?.scopeKey === scopeKey ? refreshed.challenge : initialChallenge;
     const [challengeOpen, setChallengeOpen] = useState(false);
-    const [practiceOpen, setPracticeOpen] = useState(false);
+    const [subtopicMissionOpen, setSubtopicMissionOpen] = useState(false);
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [selectedTopicName, setSelectedTopicName] = useState("");
     const [subtopicPage, setSubtopicPage] = useState(1);
@@ -231,10 +231,10 @@ export default function SubjectMissionPage() {
             }),
         );
     };
-    const openPractice = (topic) => {
+    const openSubtopicMission = (topic) => {
         setSelectedTopic(topic.id);
         setSelectedTopicName(topic.name);
-        setPracticeOpen(true);
+        setSubtopicMissionOpen(true);
     };
 
     const percentage = progressData?.percentage || 0;
@@ -400,7 +400,7 @@ export default function SubjectMissionPage() {
                                 ◉
                             </span>
                             <h2 className="text-xl font-black tracking-wide">
-                                {tr('PRACTICE ARENA', 'ARENA LATIHAN')}
+                                {tr('MISSION ARENA', 'ARENA MISI')}
                             </h2>
                         </div>
                         {challenge && (
@@ -451,7 +451,7 @@ export default function SubjectMissionPage() {
                                         {tr('Subtopic missions', 'Misi subtopik')}
                                     </p>
                                     <h3 className="text-xl font-black text-slate-900">
-                                        {tr('Choose a subtopic to practise', 'Pilih subtopik untuk berlatih')}
+                                        {tr('Choose a subtopic mission', 'Pilih misi subtopik')}
                                     </h3>
                                 </div>
                                 <p className="text-sm text-slate-500">
@@ -539,7 +539,7 @@ export default function SubjectMissionPage() {
                                                         </span>
                                                         <button
                                                             onClick={() =>
-                                                                openPractice(
+                                                                openSubtopicMission(
                                                                     skill,
                                                                 )
                                                             }
@@ -647,10 +647,10 @@ export default function SubjectMissionPage() {
                 levelId={level_id}
                 subjectKey={subject}
             />
-            <PracticeChallenge
-                isOpen={practiceOpen}
+            <SubtopicMission
+                isOpen={subtopicMissionOpen}
                 onClose={() => {
-                    setPracticeOpen(false);
+                    setSubtopicMissionOpen(false);
                     refreshMission();
                 }}
                 subjectId={subject_id}

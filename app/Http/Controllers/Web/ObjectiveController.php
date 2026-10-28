@@ -96,8 +96,8 @@ class ObjectiveController extends Controller
             ->select('questions.*')
             ->where('questions.topic_id', $topicId)
             ->where('questions.is_active', 1)
-            // ->where('questions.is_published', 1) // COMMENT OUT for now
-            // ->where('questions.approval_status', 'approved') // COMMENT OUT for now
+            ->where('questions.is_published', 1)
+            ->where('questions.approval_status', 1)
             ->orderByRaw('RAND()')
             ->limit(5)
             ->get();
@@ -175,8 +175,8 @@ class ObjectiveController extends Controller
             ->select('questions.*')
             ->where('questions.topic_id', $topic->id)
             ->where('questions.is_active', 1)
-            // ->where('questions.is_published', 1)
-            ->where('questions.approval_status', 'approved')
+            ->where('questions.is_published', 1)
+            ->where('questions.approval_status', 1)
             ->orderByRaw('RAND()')
             ->limit($limit)
             ->get();
@@ -184,8 +184,8 @@ class ObjectiveController extends Controller
         $totalQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE)
             ->where('topic_id', $topic->id)
             ->where('is_active', 1)
-            // ->where('is_published', 1)
-            ->where('approval_status', 'approved')
+            ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->count();
 
         Log::info("Topic '{$topicName}': {$totalQuestions} total questions available, fetching {$limit}");
@@ -222,10 +222,10 @@ class ObjectiveController extends Controller
         return PracticeQuestionTypes::applyPracticePool(DB::table('questions'), PracticeQuestionTypes::OBJECTIVE)
             ->where('topic_id', $topicId)
             ->where('is_active', 1)
-            // ->where('is_published', 1)
-            ->where('approval_status', 'approved')
+            ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->count();
-    }
+   }
 
     /**
      * Format questions for frontend

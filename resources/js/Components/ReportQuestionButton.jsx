@@ -97,7 +97,7 @@ export default function ReportQuestionButton({ questionId, context, className = 
                 <span className="sm:hidden">{tr('Report', 'Lapor')}</span>
             </button>
 
-            {open && typeof document !== 'undefined' && createPortal(<div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={closeFromBackdrop}>
+            {open && typeof document !== 'undefined' && createPortal(<div className="fixed inset-0 z-[300] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={closeFromBackdrop}>
                 <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6" onMouseDown={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="report-question-title">
                     <div className="flex items-start justify-between gap-4">
                         <div><p className="text-xs font-black uppercase tracking-widest text-rose-500">{tr('Help us improve', 'Bantu kami menambah baik')}</p><h2 id="report-question-title" className="mt-1 text-xl font-black text-slate-900">{tr('Report question', 'Lapor soalan')} #{questionId}</h2></div>

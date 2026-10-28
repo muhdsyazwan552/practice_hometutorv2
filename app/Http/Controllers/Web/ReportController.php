@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
 use App\Traits\InertiaLocaleTrait;
 use App\Support\PracticeQuestionTypes;
+use App\Support\MissionReport;
 use App\Support\QuestionContentNormalizer;
 use App\Helpers\LevelHelper;
 
@@ -34,6 +35,7 @@ class ReportController extends Controller
         $levelId = $request->get('level_id');
         $form = $request->get('form');
         $questionType = $request->get('question_type', 'Objective');
+        $sessionType = $request->get('session_type') === 'mission' ? 'mission' : 'practice';
 
         $userId = Auth::id();
         $user = Auth::user();
@@ -132,8 +134,8 @@ class ReportController extends Controller
 
         if ($shouldPreloadBoth) {
             $allData = [
-                'objective' => $this->getOptimizedReportData($subjectId, $levelId, 1),
-                'subjective' => $this->getOptimizedReportData($subjectId, $levelId, 2),
+                'objective' => $this->getOptimizedReportData($subjectId, $levelId, 1, $sessionType),
+                'subjective' => $this->getOptimizedReportData($subjectId, $levelId, 2, $sessionType),
             ];
 
             $objectiveData = $allData['objective'];
@@ -142,7 +144,7 @@ class ReportController extends Controller
         }
          else {
             // Load only current type (default untuk initial load)
-            $currentData = $this->getOptimizedReportData($subjectId, $levelId, $questionTypeId);
+            $currentData = $this->getOptimizedReportData($subjectId, $levelId, $questionTypeId, $sessionType);
             $objectiveData = $questionType === 'Objective' ? $currentData : [];
             $subjectiveData = $questionType === 'Subjective' ? $currentData : [];
         }
@@ -154,6 +156,7 @@ class ReportController extends Controller
             'level_id' => $levelId,
             'form' => $form,
             'question_type' => $questionType,
+            'session_type' => $sessionType,
             'objective_topics' => $objectiveData,
             'subjective_topics' => $subjectiveData,
             'topics' => $currentData,
@@ -300,6 +303,9 @@ class ReportController extends Controller
 
         // Check direct questions
         $topicsWithDirectQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), (int) $questionTypeId)
+            ->where('is_active', 1)
+            ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->whereIn('topic_id', $topicIds)
             ->distinct()
             ->pluck('topic_id')
@@ -307,7 +313,7 @@ class ReportController extends Controller
 
         // Check if parent topics have sub-topics with questions
         $topicsWithSubtopics = DB::table('topics as t')
-            ->whereIn('t.id', fn ($pool) => PracticeQuestionTypes::applyPracticePool($pool->from('questions'), (int) $questionTypeId)->select('topic_id'))
+            ->whereIn('t.id', fn ($pool) => PracticeQuestionTypes::applyPracticePool($pool->from('questions'), (int) $questionTypeId)->where('is_active', 1)->where('is_published', 1)->where('approval_status', 1)->select('topic_id'))
             ->whereIn('t.parent_id', $topicIds)
             ->where('t.is_active', 1)
             ->distinct()
@@ -321,10 +327,14 @@ class ReportController extends Controller
     /**
      * Batch calculate progress for multiple topics
      */
-    private function batchCalculateTopicProgress(array $topicIds, $questionTypeId)
+    private function batchCalculateTopicProgress(array $topicIds, $questionTypeId, ?string $sessionType = null)
     {
         if (empty($topicIds)) {
             return [];
+        }
+
+        if ($sessionType === 'mission') {
+            return $this->missionTopicProgress($topicIds, $questionTypeId);
         }
 
         $userId = Auth::id();
@@ -348,6 +358,7 @@ class ReportController extends Controller
             })
             ->where('question_type_id', $questionTypeId)
             ->where('user_id', $userId)
+            ->when($sessionType, fn ($query) => $query->where('session_type', $sessionType))
             ->groupBy(DB::raw('COALESCE(NULLIF(subtopic_id, 0), topic_id)'))
             ->get()
             ->keyBy('topic_id');
@@ -403,6 +414,33 @@ class ReportController extends Controller
         return $result;
     }
 
+    private function missionTopicProgress(array $topicIds, $questionTypeId): array
+    {
+        $missions = (int) $questionTypeId === 1
+            ? MissionReport::sessionsForUser((int) Auth::id())->groupBy(fn ($session) => $session->subtopic_id ?: $session->topic_id)
+            : collect();
+        $result = [];
+
+        foreach ($topicIds as $topicId) {
+            $sessions = $missions->get($topicId, collect());
+            $stats = $this->getEmptyProgress();
+            if ($sessions->isNotEmpty()) {
+                $scores = $sessions->pluck('score');
+                $latest = $sessions->sortByDesc('created_at')->first();
+                $date = \Carbon\Carbon::parse($latest->created_at);
+                $stats['total_sessions'] = $sessions->count();
+                $stats['average_score'] = round($scores->avg(), 1);
+                $stats['score_statistic'] = round($scores->min()).' - '.round($scores->max());
+                $stats['last_session'] = $date->year === (int) date('Y')
+                    ? $date->format('d M, h:i A')
+                    : $date->format('d M Y, h:i A');
+            }
+            $result[$topicId] = $stats;
+        }
+
+        return $result;
+    }
+
     /**
      * Check if a topic has questions for specific question type
      */
@@ -411,7 +449,9 @@ class ReportController extends Controller
         // Cek jika topic sendiri memiliki questions dengan question_type_id
         $hasDirectQuestions = PracticeQuestionTypes::applyPracticePool(DB::table('questions'), (int) $questionTypeId)
             ->where('topic_id', $topic->id)
-            // ->where('is_active', 1)
+            ->where('is_active', 1)
+            ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->exists();
 
         if ($hasDirectQuestions) {
@@ -426,8 +466,10 @@ class ReportController extends Controller
                 PracticeQuestionTypes::applyPracticePool($query, (int) $questionTypeId)
                     ->select(DB::raw(1))
                     ->from('questions')
-                    ->whereColumn('questions.topic_id', 'topics.id');
-                // ->where('questions.is_active', 1);
+                    ->whereColumn('questions.topic_id', 'topics.id')
+                    ->where('questions.is_active', 1)
+                    ->where('questions.is_published', 1)
+                    ->where('questions.approval_status', 1);
             })
             ->exists();
 
@@ -547,7 +589,7 @@ class ReportController extends Controller
     /**
      * Get report data yang OPTIMIZED
      */
-    private function getOptimizedReportData($subjectId, $levelId, $questionTypeId)
+    private function getOptimizedReportData($subjectId, $levelId, $questionTypeId, string $sessionType)
     {
         // Progress is user-specific and changes after every completed session,
         // so it must not be stored in a shared report cache.
@@ -614,7 +656,7 @@ class ReportController extends Controller
             $topicsWithQuestions = $this->optimizedBatchCheckTopicsWithQuestions($allTopicIds, $questionTypeId);
 
             // 5. Batch calculate progress untuk semua topics
-            $progressData = $this->batchCalculateTopicProgress($allTopicIds, $questionTypeId);
+            $progressData = $this->batchCalculateTopicProgress($allTopicIds, $questionTypeId, $sessionType);
 
             // 6. Filter dan build final data
             $reportData = [];
@@ -820,6 +862,9 @@ class ReportController extends Controller
         try {
             $questionType = $request->get('questionType', 'Objective');
             $questionTypeId = $this->getQuestionTypeId($questionType);
+            $sessionType = in_array($request->get('sessionType'), ['mission', 'practice'], true)
+                ? $request->get('sessionType')
+                : null;
 
             Log::info('Fetching subtopic details:', [
                 'subtopic_id' => $subtopicId,
@@ -835,14 +880,15 @@ class ReportController extends Controller
 
             // Get detailed session data with all sessions
             $sessions = DB::table('practice_session')
-                ->where(function ($query) use ($subtopicId) {
-                    $query->where('topic_id', $subtopicId)
-                        ->orWhere('subtopic_id', $subtopicId);
-                })
-                ->where('question_type_id', $questionTypeId)
-                ->where('user_id', Auth::id())
-                ->orderBy('created_at', 'desc')
-                ->get();
+                    ->where(function ($query) use ($subtopicId) {
+                        $query->where('topic_id', $subtopicId)
+                            ->orWhere('subtopic_id', $subtopicId);
+                    })
+                    ->where('question_type_id', $questionTypeId)
+                    ->where('user_id', Auth::id())
+                    ->when($sessionType, fn ($query) => $query->where('session_type', $sessionType))
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
             $sessionData = [];
 
@@ -1105,7 +1151,6 @@ class ReportController extends Controller
         try {
             Log::info('Fetching question attempts for session:', ['session' => $sessionIdentifier]);
 
-            // 1. Get session with topic in single query
             $session = DB::table('practice_session')
                 ->leftJoin('topics', 'practice_session.topic_id', '=', 'topics.id')
                 ->select('practice_session.*', 'topics.name as topic_name')
@@ -1113,23 +1158,15 @@ class ReportController extends Controller
                 ->where('practice_session.user_id', $userId)
                 ->first();
 
-            if (!$session) {
+            if (! $session) {
                 abort(404, 'Session not found');
             }
 
-            $sessionId = $session->id;
-            // 2. Get ALL attempts for this session with questions in ONE query
             $attempts = DB::table('quiz_attempts as qa')
                 ->join('questions as q', 'qa.question_id', '=', 'q.id')
                 ->leftJoin('topics as t', 'q.topic_id', '=', 't.id')
-                ->select(
-                    'qa.*',
-                    'q.question_text',
-                    'q.question_file',
-                    'q.question_type_id',
-                    't.name as topic_name'
-                )
-                ->where('qa.session_id', $sessionId)
+                ->select('qa.*', 'q.question_text', 'q.question_file', 'q.question_type_id', 't.name as topic_name')
+                ->where('qa.session_id', $session->id)
                 ->orderBy('qa.created_at', 'asc')
                 ->get();
 

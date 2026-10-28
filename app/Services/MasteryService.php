@@ -301,6 +301,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
             ->where('question_type_id', 1)
             ->where('is_active', 1)
             ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->count();
 
         if ($availableQuestions > 0) {
@@ -348,6 +349,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
             ->where('question_type_id', 1)
             ->where('is_active', 1)
             ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->inRandomOrder()
             ->limit($needed)
             ->pluck('id')
@@ -370,6 +372,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
                 ->where('question_type_id', 1)
                 ->where('is_active', 1)
                 ->where('is_published', 1)
+                ->where('approval_status', 1)
                 ->whereNotIn('id', $selectedQuestions)
                 ->inRandomOrder()
                 ->first();
@@ -612,6 +615,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
             ->where('question_type_id', 1)
             ->where('is_active', 1)
             ->where('is_published', 1)
+            ->where('approval_status', 1)
             ->select('topic_id', DB::raw('COUNT(*) as question_count'))
             ->groupBy('topic_id')
             ->pluck('question_count', 'topic_id');
