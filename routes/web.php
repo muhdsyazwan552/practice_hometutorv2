@@ -51,16 +51,16 @@ Route::get('/', function () {
     return Inertia::render('LegacyMarketing', ['section' => 'home']);
 })->name('home');
 
-Route::get('/products', fn () => Inertia::render('LegacyMarketing', ['section' => 'products']))->name('marketing.products');
-Route::get('/about', fn () => Inertia::render('LegacyMarketing', ['section' => 'about']))->name('marketing.about');
-Route::get('/faq', fn () => Inertia::render('LegacyMarketing', ['section' => 'faq']))->name('marketing.faq');
-Route::get('/terms-of-use', fn () => Inertia::render('LegacyMarketing', ['section' => 'terms']))->name('marketing.terms');
-Route::get('/privacy-policy', fn () => Inertia::render('LegacyMarketing', ['section' => 'privacy']))->name('marketing.privacy');
+Route::get('/products', fn() => Inertia::render('LegacyMarketing', ['section' => 'products']))->name('marketing.products');
+Route::get('/about', fn() => Inertia::render('LegacyMarketing', ['section' => 'about']))->name('marketing.about');
+Route::get('/faq', fn() => Inertia::render('LegacyMarketing', ['section' => 'faq']))->name('marketing.faq');
+Route::get('/terms-of-use', fn() => Inertia::render('LegacyMarketing', ['section' => 'terms']))->name('marketing.terms');
+Route::get('/privacy-policy', fn() => Inertia::render('LegacyMarketing', ['section' => 'privacy']))->name('marketing.privacy');
 
 // The landing page used to be previewed at /landing; keep old links working.
 Route::permanentRedirect('/landing', '/')->name('landing.practice');
 // Game-style version (Vanta.js + React Three Fiber), previewed alongside the others.
-Route::get('/landing/game', fn () => Inertia::render('PracticeGameLanding'))->name('landing.game');
+Route::get('/landing/game', fn() => Inertia::render('PracticeGameLanding'))->name('landing.game');
 
 Route::get('/demo/literasi-web', function () {
     return Inertia::render('Demos/LiterasiWebGame/Index');
@@ -146,6 +146,9 @@ Route::get('/subscription-required', function () {
 Route::get('/question-inspector', QuestionInspectorController::class)
     ->middleware(['auth', 'verified'])
     ->name('question-inspector');
+Route::post('/question-inspector/batch', [QuestionInspectorController::class, 'batch'])
+    ->middleware(['auth', 'verified', 'throttle:20,1'])
+    ->name('question-inspector.batch');
 Route::post('/subscription-required/renew', [ChildRenewalController::class, 'store'])
     ->middleware(['auth', 'verified', 'role:child', 'throttle:10,1'])
     ->name('child.subscription.renew');
@@ -267,6 +270,7 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
         });
 
         Route::prefix('subtopic')->name('subtopic.')->group(function () {
+            Route::get('/{topic}', [MissionController::class, 'subtopicPage'])->whereNumber('topic')->name('page');
             Route::post('/start', [ChallengeController::class, 'startSubtopicMission'])->name('start');
             Route::get('/question', [ChallengeController::class, 'getSubtopicMissionQuestion'])->name('question');
             Route::post('/answer', [ChallengeController::class, 'submitSubtopicMissionAnswer'])->name('answer');
@@ -279,4 +283,6 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
 // Open to guests too (the log in / register page has an EN / BM switch); guests keep the choice in the session.
 Route::post('/change-language', [LanguageController::class, 'change'])->middleware('web')->name('language.change');
 
-require __DIR__.'/auth.php';
+Route::get('/csr/skjugra', function () {return view('skjugra.homepage');});
+
+require __DIR__ . '/auth.php';
