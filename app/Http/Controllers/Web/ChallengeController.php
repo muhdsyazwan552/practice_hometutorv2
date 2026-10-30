@@ -618,6 +618,29 @@ public function startSubtopicMission(Request $request)
         // Still proceed, but log the mismatch
     }
 
+    $topicScope = $this->masteryService->resolveTopicScope((int) $topicId);
+
+    // Refreshing the mission page must not throw away a half-finished mission.
+    $activeSession = DB::table('practice_session')
+        ->where('user_id', $userId)
+        ->where('session_type', 'mission')
+        ->where('mission_scope', 'subtopic')
+        ->where('status', 'in_progress')
+        ->where('topic_id', $topicScope['topic_id'])
+        ->where('subtopic_id', $topicScope['subtopic_id'])
+        ->where('created_at', '>=', now()->subDay())
+        ->orderByDesc('id')
+        ->first();
+
+    if ($activeSession && DB::table('mastery_challenge_questions')->where('session_id', $activeSession->id)->count() === (int) $activeSession->total_questions) {
+        return response()->json([
+            'session_id' => $activeSession->id,
+            'total_questions' => $activeSession->total_questions,
+            'message' => 'Continuing existing challenge',
+            'topic_name' => $topic->name
+        ]);
+    }
+
     // Subtopic missions use the same ten-question count as subject missions.
     $questionCount = 10;
 
@@ -641,7 +664,6 @@ public function startSubtopicMission(Request $request)
     ]);
 
     // Create new session
-    $topicScope = $this->masteryService->resolveTopicScope((int) $topicId);
     $sessionId = DB::table('practice_session')->insertGetId([
         'uuid' => (string) Str::uuid(),
         'user_id' => $userId,

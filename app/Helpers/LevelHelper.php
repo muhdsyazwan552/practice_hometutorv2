@@ -111,6 +111,7 @@ class LevelHelper
         $levelIds = \Illuminate\Support\Facades\DB::table('subject')
             ->where('abbr', $subjectAbbr)
             ->where('is_active', 1)
+            ->whereExists(fn ($topics) => $topics->selectRaw('1')->from('topics')->whereColumn('topics.subject_id', 'subject.id'))
             ->pluck('level_id')
             ->map(fn ($id) => (int) $id)
             ->all();

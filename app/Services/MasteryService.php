@@ -239,6 +239,8 @@ class MasteryService
                     'is_subtopic' => false,
                 ]];
             })
+            // A mission needs 10 questions, so subtopics with fewer are not offered.
+            ->filter(fn ($scope) => ($scope['mission_question_count'] ?? $scope['question_count'] ?? 0) >= 10)
             ->sortBy(fn ($scope) => [$scope['parent_seq'], $scope['seq']])
             ->values();
     }
@@ -630,7 +632,17 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
         $topicIndex = $topics->keyBy('id');
         $childrenByParent = $topics->where('parent_id', '>', 0)->groupBy('parent_id');
 
-        $formatScope = function ($topic) use ($mastery, $questionCounts, $rankByLevel) {
+        // A subtopic mission draws from the subtopic and everything under it.
+        $poolCount = function ($topicId) use (&$poolCount, $childrenByParent, $questionCounts) {
+            $total = (int) $questionCounts->get($topicId, 0);
+            foreach ($childrenByParent->get($topicId, collect()) as $child) {
+                $total += $poolCount($child->id);
+            }
+
+            return $total;
+        };
+
+        $formatScope = function ($topic) use ($mastery, $questionCounts, $rankByLevel, $poolCount) {
             $record = $mastery->get($topic->id);
             $level = $record->mastery_level ?? 'not_started';
 
@@ -646,6 +658,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
                 'total_attempts' => (int) ($record->total_attempts ?? 0),
                 'correct_attempts' => (int) ($record->correct_attempts ?? 0),
                 'question_count' => (int) $questionCounts->get($topic->id, 0),
+                'mission_question_count' => $poolCount($topic->id),
             ];
         };
 

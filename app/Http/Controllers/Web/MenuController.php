@@ -34,6 +34,7 @@ class MenuController extends Controller
         // their own level; the subject page lets them switch form from there.
         if ($user->hasFullAccess()) {
             return Subject::where('is_active', true)
+                ->hasTopics()
                 ->select('id', 'name', 'level_id', 'abbr', 'seq')
                 ->orderByRaw('level_id = ? DESC', [$standardLevelId])
                 ->orderBy('level_id')
@@ -46,6 +47,7 @@ class MenuController extends Controller
 
         // Return ONLY the array of subjects
         return Subject::where('is_active', true)
+            ->hasTopics()
             ->where('level_id', $standardLevelId)
             ->select('id', 'name', 'level_id', 'abbr', 'seq')
             ->orderBy('seq')

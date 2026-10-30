@@ -151,6 +151,56 @@ class MissionController extends Controller
         ]);
     }
 
+    /**
+     * Full-page subtopic mission (replaces the old modal).
+     * GET /mission/subtopic/{topic}
+     */
+    public function subtopicPage(Request $request, int $topic)
+    {
+        $topicRow = DB::table('topics')->find($topic);
+        abort_unless($topicRow, 404);
+
+        $subject = Subject::find($topicRow->subject_id);
+        abort_unless($subject, 404);
+
+        $level = Level::find($topicRow->level_id);
+        $locale = Session::get('locale', 'en');
+        App::setLocale($locale);
+
+        $form = $request->get('form', $level->name ?? null);
+        $subjectKey = $request->get('subject', $subject->name);
+        $backUrl = route('subject-mission-page', [
+            'subject' => $subjectKey,
+            'form' => $form,
+            'level_id' => $topicRow->level_id,
+            'subject_id' => $topicRow->subject_id,
+        ]);
+
+        // The mission is created from the list page first; opening this page
+        // without one of the student's own unfinished sessions goes back there.
+        $sessionId = (int) $request->get('session_id');
+        $hasSession = $sessionId > 0 && DB::table('practice_session')
+            ->where('id', $sessionId)
+            ->where('user_id', Auth::id())
+            ->where('session_type', 'mission')
+            ->where('status', 'in_progress')
+            ->exists();
+        if (! $hasSession) {
+            return redirect($backUrl);
+        }
+
+        return $this->renderWithLocale('courses/SubtopicMissionPage', [
+            'subject' => $subjectKey,
+            'subject_id' => (int) $topicRow->subject_id,
+            'level_id' => (int) $topicRow->level_id,
+            'form' => $form,
+            'topic_id' => (int) $topicRow->id,
+            'topic_name' => $topicRow->name,
+            'session_id' => $sessionId,
+            'back_url' => $backUrl,
+        ]);
+    }
+
         private function loadPhpTranslations($locale)
 {
     $fallbackLocale = 'en';

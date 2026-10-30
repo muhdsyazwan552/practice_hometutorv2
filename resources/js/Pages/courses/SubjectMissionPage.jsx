@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { usePage, router } from "@inertiajs/react";
 import SubjectLayout from "@/Layouts/SubjectLayout";
 import MasteryChallenge from "@/Components/MasteryChallenge";
-import SubtopicMission from "@/Components/SubtopicMission";
 import { useLanguage } from '@/Contexts/LanguageContext';
+import useThemedAlert from '@/utils/useThemedAlert';
 
 const stages = [
     ["needPractice", "Rank 1 · Need practice"],
@@ -145,9 +145,8 @@ export default function SubjectMissionPage() {
     const skills = refreshed?.scopeKey === scopeKey ? refreshed.skills : initialSkills;
     const challenge = refreshed?.scopeKey === scopeKey ? refreshed.challenge : initialChallenge;
     const [challengeOpen, setChallengeOpen] = useState(false);
-    const [subtopicMissionOpen, setSubtopicMissionOpen] = useState(false);
-    const [selectedTopic, setSelectedTopic] = useState(null);
-    const [selectedTopicName, setSelectedTopicName] = useState("");
+    const [startingMission, setStartingMission] = useState(false);
+    const alert = useThemedAlert();
     const [subtopicPage, setSubtopicPage] = useState(1);
     const [subtopicsPerPage, setSubtopicsPerPage] = useState(8);
     const [currentStandard, setCurrentStandard] = useState(form || "Form 4");
@@ -231,10 +230,46 @@ export default function SubjectMissionPage() {
             }),
         );
     };
-    const openSubtopicMission = (topic) => {
-        setSelectedTopic(topic.id);
-        setSelectedTopicName(topic.name);
-        setSubtopicMissionOpen(true);
+    // The mission is created here first; the mission page only opens once it is ready.
+    const openSubtopicMission = async (topic) => {
+        if (startingMission) return;
+        setStartingMission(true);
+        alert.loading({ title: tr('Preparing mission…', 'Menyediakan misi…') });
+        try {
+            await fetch("/sanctum/csrf-cookie", { credentials: "same-origin" });
+            const response = await fetch(route("mission.subtopic.start"), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute("content"),
+                    Accept: "application/json",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({ subject_id, level_id, topic_id: topic.id }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.session_id) {
+                throw new Error(data.message || `HTTP ${response.status}`);
+            }
+            router.visit(
+                route("mission.subtopic.page", {
+                    topic: topic.id,
+                    session_id: data.session_id,
+                    subject: subject_abbr || subject,
+                    form: currentStandard,
+                }),
+                { onFinish: () => setStartingMission(false) },
+            );
+        } catch (error) {
+            console.error("Cannot start mission", error);
+            setStartingMission(false);
+            alert.close();
+            void alert.message({
+                title: tr("Cannot start mission", "Tidak dapat memulakan misi"),
+                text: tr("Please try again.", "Sila cuba lagi."),
+                icon: "error",
+            });
+        }
     };
 
     const percentage = progressData?.percentage || 0;
@@ -514,6 +549,12 @@ export default function SubjectMissionPage() {
                                                                     }{" "}
                                                                     {tr('of 5', 'daripada 5')}
                                                                 </span>
+                                                                <span
+                                                                    className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700"
+                                                                    title={tr('Active, published and approved questions', 'Soalan aktif, published dan diluluskan')}
+                                                                >
+                                                                    {skill.mission_question_count ?? skill.question_count ?? 0} {tr('questions', 'soalan')}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -646,18 +687,6 @@ export default function SubjectMissionPage() {
                 subjectId={subject_id}
                 levelId={level_id}
                 subjectKey={subject}
-            />
-            <SubtopicMission
-                isOpen={subtopicMissionOpen}
-                onClose={() => {
-                    setSubtopicMissionOpen(false);
-                    refreshMission();
-                }}
-                subjectId={subject_id}
-                levelId={level_id}
-                subjectKey={subject}
-                topicId={selectedTopic}
-                topicName={selectedTopicName}
             />
         </SubjectLayout>
     );

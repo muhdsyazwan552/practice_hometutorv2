@@ -16,6 +16,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
 use App\Traits\InertiaLocaleTrait;
@@ -35,7 +36,8 @@ class ReportController extends Controller
         $levelId = $request->get('level_id');
         $form = $request->get('form');
         $questionType = $request->get('question_type', 'Objective');
-        $sessionType = $request->get('session_type') === 'mission' ? 'mission' : 'practice';
+        // Practice and mission sessions are reported together.
+        $sessionType = null;
 
         $userId = Auth::id();
         $user = Auth::user();
@@ -156,7 +158,6 @@ class ReportController extends Controller
             'level_id' => $levelId,
             'form' => $form,
             'question_type' => $questionType,
-            'session_type' => $sessionType,
             'objective_topics' => $objectiveData,
             'subjective_topics' => $subjectiveData,
             'topics' => $currentData,
@@ -359,6 +360,7 @@ class ReportController extends Controller
             ->where('question_type_id', $questionTypeId)
             ->where('user_id', $userId)
             ->when($sessionType, fn ($query) => $query->where('session_type', $sessionType))
+            ->tap(fn ($query) => $this->onlyCountableSessions($query))
             ->groupBy(DB::raw('COALESCE(NULLIF(subtopic_id, 0), topic_id)'))
             ->get()
             ->keyBy('topic_id');
@@ -412,6 +414,26 @@ class ReportController extends Controller
         }
 
         return $result;
+    }
+
+    /**
+     * Report practice and mission sessions together, skipping missions that
+     * were opened but never answered (still in progress with no attempts).
+     */
+    private function onlyCountableSessions($query)
+    {
+        if (! Schema::hasColumn('practice_session', 'status') || ! Schema::hasTable('quiz_attempts')) {
+            return $query;
+        }
+
+        return $query->where(function ($sessions) {
+            $sessions->whereRaw("COALESCE(session_type, 'practice') <> 'mission'")
+                ->orWhereNull('status')
+                ->orWhere('status', '<>', 'in_progress')
+                ->orWhereExists(fn ($attempts) => $attempts->selectRaw('1')
+                    ->from('quiz_attempts as qa')
+                    ->whereColumn('qa.session_id', 'practice_session.id'));
+        });
     }
 
     private function missionTopicProgress(array $topicIds, $questionTypeId): array
@@ -501,6 +523,7 @@ class ReportController extends Controller
                 })
                 ->where('question_type_id', $questionTypeId)
                 ->where('user_id', Auth::id())
+                ->tap(fn ($query) => $this->onlyCountableSessions($query))
                 ->selectRaw('COUNT(DISTINCT id) as total_sessions')
                 ->selectRaw('AVG(score) as average_score')
                 ->selectRaw('MAX(score) as max_score')
@@ -520,6 +543,7 @@ class ReportController extends Controller
                 })
                 ->where('question_type_id', $questionTypeId)
                 ->where('user_id', Auth::id())
+                ->tap(fn ($query) => $this->onlyCountableSessions($query))
                 ->orderBy('created_at', 'asc')
                 ->limit(8)
                 ->pluck('score')
@@ -589,7 +613,7 @@ class ReportController extends Controller
     /**
      * Get report data yang OPTIMIZED
      */
-    private function getOptimizedReportData($subjectId, $levelId, $questionTypeId, string $sessionType)
+    private function getOptimizedReportData($subjectId, $levelId, $questionTypeId, ?string $sessionType)
     {
         // Progress is user-specific and changes after every completed session,
         // so it must not be stored in a shared report cache.
@@ -887,6 +911,7 @@ class ReportController extends Controller
                     ->where('question_type_id', $questionTypeId)
                     ->where('user_id', Auth::id())
                     ->when($sessionType, fn ($query) => $query->where('session_type', $sessionType))
+                    ->tap(fn ($query) => $this->onlyCountableSessions($query))
                     ->orderBy('created_at', 'desc')
                     ->get();
 

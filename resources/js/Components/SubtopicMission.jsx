@@ -4,8 +4,10 @@ import ReportQuestionButton from '@/Components/ReportQuestionButton';
 import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 import useThemedAlert from '@/utils/useThemedAlert';
 import ThemeLoader from '@/Components/ThemeLoader';
+import Swal from 'sweetalert2';
+import ObjectiveQuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
 
-export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName }) {
+export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName, asPage = false, initialSessionId = null }) {
     const alert = useThemedAlert();
     const [sessionId, setSessionId] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -26,6 +28,7 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
     const [elapsedTime, setElapsedTime] = useState(0);
     const [showResultModal, setShowResultModal] = useState(false);
     const [missionResults, setMissionResults] = useState(null);
+    const [leaving, setLeaving] = useState(false);
 
     // Helper function to get CSRF token
     const getCsrfToken = () => {
@@ -111,7 +114,8 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
         if (isOpen && !sessionId) {
             console.log('Modal opened, starting new mission session');
             console.log('Mission topic:', { topicId, topicName });
-            startMission();
+            // The list page already created the session; just resume it here.
+            initialSessionId ? resumeSession(initialSessionId) : startMission();
         }
 
         // Cleanup timer on unmount
@@ -121,6 +125,19 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
             }
         };
     }, [isOpen]);
+
+    // The list page shows a "preparing" alert while the mission is created; drop it once the first question is ready.
+    useEffect(() => {
+        if (asPage && !loading) alert.close();
+    }, [asPage, loading]);
+
+    const resumeSession = async (sid) => {
+        setLoading(true);
+        setSessionId(sid);
+        startSessionTimer();
+        // Independent requests: run them together instead of one after the other.
+        await Promise.all([loadSessionProgress(sid), loadNextQuestion(sid)]);
+    };
 
     const startMission = async () => {
         setLoading(true);
@@ -398,6 +415,14 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
 };
 
     const handleClose = () => {
+        // Full page: keep the page as it is and show a loader until the list page arrives.
+        // Resetting the mission state here used to leave an empty screen while that page loaded.
+        if (asPage) {
+            if (sessionTimer) clearInterval(sessionTimer);
+            setLeaving(true);
+            onClose();
+            return;
+        }
         setLoading(true);
         // Clean up timer
         if (sessionTimer) {
@@ -525,15 +550,65 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
   );
 }
 
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
-            <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
+    const actionButtons = (
+        <div className="flex w-full space-x-3 sm:w-auto">
+        {!showResult ? (
+            <button
+                onClick={handleSubmit}
+                disabled={!selectedAnswer || isSubmitting}
+                className={`w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 sm:w-auto`}
+            >
+                {isSubmitting ? (
+                    <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>{alert.tr('Submitting…', 'Sedang menghantar…')}</span>
+                    </>
+                ) : (
+                    <>
+                        <span>{alert.tr('Submit Answer', 'Hantar Jawapan')}</span>
+                    </>
+                )}
+            </button>
+        ) : (
+            // Show "Next" button if not the last question, "See Results" if last
+            questionNumber < totalQuestions ? (
+                <button
+                    onClick={handleNext}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
+                >
+                    <span>{alert.tr('Next Question', 'Soalan Seterusnya')}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </button>
+            ) : (
+                <button
+                    onClick={() => {
+                        stopSessionTimer();
+                        loadSummary(sessionId);
+                    }}
+                    className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
+                >
+                    <span>{alert.tr('See Results', 'Lihat Keputusan')}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            )
+        )}
+        </div>
+    );
+
+    const missionBody = (
+        <>
                 {loading && !currentQuestion ? (
                     <ThemeLoader message={alert.tr('Loading mission session…', 'Sedang memuatkan sesi misi…')} />
                 ) : summary ? (
                     <ThemeLoader message={alert.tr('Preparing your results…', 'Sedang menyediakan keputusan anda…')} />
                 ) : currentQuestion ? (
                     <div>
+                        {!asPage && (
+                        <>
                         {/* Header with Progress Circles */}
                         <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 relative sm:p-6">
                             {/* Close button - positioned absolutely */}
@@ -610,6 +685,9 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                             ></div>
                         </div>
 
+                        </>
+                        )}
+
                         {/* Question Content */}
                         <div className="p-4 sm:p-6 md:p-8">
                             <div className="mb-3 flex justify-end">
@@ -618,7 +696,7 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                             <div className="mb-6">
                                 {/* Question Text or Image */}
                                 {currentQuestion.question_text ? (
-                                    <div className="prose max-w-none">
+                                    <div className={asPage ? "prose max-w-none text-sm font-semibold leading-relaxed text-gray-900 md:text-lg xl:text-xl" : "prose max-w-none"}>
                                         {renderContent(currentQuestion.question_text)}
                                     </div>
                                 ) : currentQuestion.question_file ? (
@@ -651,7 +729,7 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                                                 key={answer.id}
                                                 onClick={() => handleAnswerSelect(answer.id)}
                                                 disabled={showResult}
-                                                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${showCorrect
+                                                className={`w-full ${asPage ? 'p-4 md:p-5 rounded-xl' : 'p-4 rounded-lg'} text-left border-2 transition-all ${showCorrect
                                                         ? 'border-green-500 bg-green-50'
                                                         : showWrong
                                                             ? 'border-red-500 bg-red-50'
@@ -662,12 +740,12 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex flex-1 items-start gap-2">
-                                                        <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                                                        <span className={`mt-0.5 flex flex-none items-center justify-center rounded-full bg-slate-100 font-bold text-slate-500 ${asPage ? 'h-7 w-7 text-xs' : 'h-5 w-5 text-[10px]'}`}>
                                                             {String.fromCharCode(65 + index)}
                                                         </span>
                                                         <div className="flex-1">
                                                             {answer.answer_text ? (
-                                                                <div className="prose prose-sm max-w-none">
+                                                                <div className={`prose max-w-none ${asPage ? 'prose-base md:prose-lg' : 'prose-sm'}`}>
                                                                     {renderContent(answer.answer_text)}
                                                                 </div>
                                                             ) : answer.answer_option_file ? (
@@ -800,59 +878,9 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                                 </div>
                             )}
 
-                            {/* Action Buttons */}
-                            {/* Action Buttons */}
-<div className="mt-8 flex justify-end">
-    <div className="flex w-full space-x-3 sm:w-auto">
-        {!showResult ? (
-            <button
-                onClick={handleSubmit}
-                disabled={!selectedAnswer || isSubmitting}
-                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 sm:w-auto"
-            >
-                {isSubmitting ? (
-                    <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>{alert.tr('Submitting…', 'Sedang menghantar…')}</span>
-                    </>
-                ) : (
-                    <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>{alert.tr('Submit Answer', 'Hantar Jawapan')}</span>
-                    </>
-                )}
-            </button>
-        ) : (
-            // Show "Next" button if not the last question, "See Results" if last
-            questionNumber < totalQuestions ? (
-                <button
-                    onClick={handleNext}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
-                >
-                    <span>{alert.tr('Next Question', 'Soalan Seterusnya')}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                </button>
-            ) : (
-                <button
-                    onClick={() => {
-                        stopSessionTimer();
-                        loadSummary(sessionId);
-                    }}
-                    className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2 sm:w-auto"
-                >
-                    <span>{alert.tr('See Results', 'Lihat Keputusan')}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-            )
-        )}
-    </div>
-</div>
+                            {!asPage && (
+                                <div className="mt-8 flex justify-end">{actionButtons}</div>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -860,6 +888,58 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                         <p className="text-gray-500">{alert.tr('No question data available', 'Tiada data soalan tersedia')}</p>
                     </div>
                 )}
+        </>
+    );
+
+    const questionStatuses = Array.from({ length: totalQuestions }, (_, index) => {
+        const answered = answerHistory.find(h => h.questionNumber === index + 1);
+        return answered ? !!answered.isCorrect : null;
+    });
+    const getTimeColor = () => (elapsedTime < 300 ? 'text-green-600' : elapsedTime < 600 ? 'text-yellow-600' : 'text-red-600');
+
+    // Full page: same shell as practice (header with back button, dots and timer; classroom background).
+    if (asPage) {
+        if (leaving) {
+            return <ThemeLoader variant="page" message={alert.tr('Returning to missions…', 'Kembali ke senarai misi…')} />;
+        }
+        // Nothing of the mission page shows until the first question is ready.
+        // While the list page's "preparing" alert is still open it is the only loader; a refresh has no alert, so show one.
+        if (loading && !currentQuestion && !summary && initialSessionId && Swal.isVisible()) {
+            return <div className="min-h-screen" />;
+        }
+        if ((loading && !currentQuestion) || summary) {
+            return <ThemeLoader variant="page" message={summary ? alert.tr('Preparing your results…', 'Sedang menyediakan keputusan anda…') : alert.tr('Loading mission session…', 'Sedang memuatkan sesi misi…')} />;
+        }
+
+        return (
+            <ObjectiveQuestionLayout
+                subject={subjectKey}
+                currentTopic={topicName}
+                sectionTitle={alert.tr('Mission', 'Misi')}
+                questionStatuses={questionStatuses}
+                currentIndex={Math.max(0, questionNumber - 1)}
+                timeElapsed={elapsedTime}
+                getTimeColor={getTimeColor}
+                formatTime={formatTime}
+                answeredQuestions={new Set()}
+                handleBackNavigation={confirmClose}
+                footerContent={currentQuestion ? <div className="mx-auto flex w-full max-w-6xl justify-end">{actionButtons}</div> : <div />}
+            >
+                <div className="bg-cover bg-center bg-no-repeat py-2 sm:py-4" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
+                    <div className="relative mx-auto max-w-full px-4 sm:px-0 md:px-4 lg:px-10 xl:max-w-5xl 2xl:max-w-6xl">
+                        <div className="mb-10 mt-6 overflow-hidden rounded-2xl bg-white shadow-xl">
+                            {missionBody}
+                        </div>
+                    </div>
+                </div>
+            </ObjectiveQuestionLayout>
+        );
+    }
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-2 sm:p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
+                {missionBody}
             </div>
         </div>
     );

@@ -46,6 +46,8 @@ export default function SubjectLayout({
   useEffect(() => {
     const stopStart = router.on('start', (event) => {
       const path = new URL(String(event.detail.visit.url), window.location.origin).pathname;
+      // Opening a mission already shows its own "preparing" alert.
+      if (path.includes('/mission/subtopic/')) return;
       const tr = (en, ms) => locale === 'ms' ? ms : en;
       const message = path.includes('/change-language')
         ? tr('Changing language…', 'Sedang menukar bahasa…')

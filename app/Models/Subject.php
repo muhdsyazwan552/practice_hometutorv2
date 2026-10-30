@@ -32,6 +32,17 @@ class Subject extends Model
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Only subject/level rows that actually have topics. Some rows exist with
+     * no content (e.g. Geografi Form 4/5), and should not be offered to pupils.
+     */
+    public function scopeHasTopics($query)
+    {
+        return $query->whereExists(
+            fn ($topics) => $topics->selectRaw('1')->from('topics')->whereColumn('topics.subject_id', 'subject.id')
+        );
+    }
+
     /** Relationships */
     public function topics()
     {
