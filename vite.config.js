@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+    // Strip debug logs from production builds only (console.error/warn are kept).
+    esbuild: command === 'build'
+        ? { pure: ['console.log', 'console.debug', 'console.info'] }
+        : {},
     plugins: [
         laravel({
             input: [
@@ -20,4 +24,4 @@ export default defineConfig({
         // here can't reach, causing ERR_CONNECTION_REFUSED / blocked assets.
         host: '127.0.0.1',
     },
-});
+}));
