@@ -22,7 +22,7 @@ export default function QuestionPassage({ html }) {
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-amber-700">{locale === 'ms' ? 'Petikan' : 'Passage'}</p>
             <div
-                className="max-h-80 overflow-y-auto pr-1 text-gray-800 leading-relaxed prose max-w-none"
+                className="question-html max-h-80 overflow-y-auto pr-1 text-gray-800 leading-relaxed prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: processedHtml }}
             />
         </div>

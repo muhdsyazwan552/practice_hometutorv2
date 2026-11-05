@@ -4,6 +4,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paragraph spacing for imported question HTML (<p> may already carry its own class,
+   so utility classes injected by JS are ignored by the browser). */
+.question-content p,
+.question-content .question-paragraph,
+.question-html p {
+  margin: 0 0 0.9em;
+}
+
+.question-content p:last-child,
+.question-content .question-paragraph:last-child,
+.question-html p:last-child {
+  margin-bottom: 0;
+}
+
 .student-theme-dashboard {
   transition: background .25s ease, color .25s ease;
 }

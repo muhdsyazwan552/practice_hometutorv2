@@ -278,7 +278,7 @@ function QuestionRunner({ sessionUuid, onFinished, onSessionError }) {
             </div>
             <section className="mt-5 rounded-3xl border border-white/15 bg-[#081c3d]/90 p-5 shadow-2xl backdrop-blur-sm sm:p-8">
                 <div
-                    className="prose prose-invert max-w-none text-lg font-semibold text-white"
+                    className="question-html prose prose-invert max-w-none text-lg font-semibold text-white"
                     dangerouslySetInnerHTML={{ __html: question.question_text }}
                 />
                 {question.question_file && (

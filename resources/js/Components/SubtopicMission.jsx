@@ -696,7 +696,7 @@ export default function SubtopicMission({ isOpen, onClose, subjectId, levelId, s
                             <div className="mb-6">
                                 {/* Question Text or Image */}
                                 {currentQuestion.question_text ? (
-                                    <div className={asPage ? "prose max-w-none text-sm font-semibold leading-relaxed text-gray-900 md:text-lg xl:text-xl" : "prose max-w-none"}>
+                                    <div className={asPage ? "question-html prose max-w-none text-sm font-semibold leading-relaxed text-gray-900 md:text-lg xl:text-xl" : "question-html prose max-w-none"}>
                                         {renderContent(currentQuestion.question_text)}
                                     </div>
                                 ) : currentQuestion.question_file ? (

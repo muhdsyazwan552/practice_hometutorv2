@@ -487,7 +487,7 @@ const getCorrectAnswerInfo = () => {
                             <div className="mb-6">
                                 {/* Question Text or Image */}
                                 {currentQuestion.question_text ? (
-                                    <div className="prose max-w-none">
+                                    <div className="question-html prose max-w-none">
                                         {renderContent(currentQuestion.question_text)}
                                     </div>
                                 ) : currentQuestion.question_file ? (
