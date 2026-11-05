@@ -256,10 +256,9 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
     Route::post('/chat/create-group', [ChatController::class, 'createGroup'])->middleware('throttle:social');
 
     Route::prefix('mission')->name('mission.')->group(function () {
-        Route::get('/{subject}/progress', [SubjectController::class, 'progress'])->name('progress');
-        Route::get('/{subject}/skills', [SubjectController::class, 'skills'])->name('skills');
-        Route::get('/{subject}/challenge', [SubjectController::class, 'challenge'])->name('challenge.info');
-
+        // Static prefixes (challenge/, subtopic/) must be registered BEFORE the
+        // /{subject}/... wildcards below, otherwise /mission/challenge/progress
+        // is swallowed by /{subject}/progress and returns a 400.
         Route::prefix('challenge')->name('challenge.')->group(function () {
             Route::post('/start', [ChallengeController::class, 'startChallenge'])->name('start');
             Route::get('/question', [ChallengeController::class, 'getQuestion'])->name('question');
@@ -277,6 +276,10 @@ Route::middleware(['auth', 'verified', 'role:child,admin', 'child.subscribed'])-
             Route::get('/summary', [ChallengeController::class, 'getSubtopicMissionSummary'])->name('summary');
             Route::post('/save-progress', [ChallengeController::class, 'saveChallengeProgress'])->name('save-progress');
         });
+
+        Route::get('/{subject}/progress', [SubjectController::class, 'progress'])->name('progress');
+        Route::get('/{subject}/skills', [SubjectController::class, 'skills'])->name('skills');
+        Route::get('/{subject}/challenge', [SubjectController::class, 'challenge'])->name('challenge.info');
     });
 });
 
